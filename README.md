@@ -1,7 +1,11 @@
 <p align="center">
 <img src="http://i.imgur.com/4keZTGz.png"></p>
 
-**Please note threat_note is in beta at the moment, and you may experience issues with this app. Please report any problems or suggestions to the issues page.**
+### Disclaimer 
+
+Please note threat_note is in beta at the moment, and you may experience issues with this app. This was tested on Yosemite 10.10.4 running Google Chrome, other browsers or OS'es may experience issues with the rendering, please identify any issues or possible fixes to the issues page.
+
+### About
 
 threat_note is a web application built by [Defense Point Security](http://www.defpoint.com) to allow security researchers the ability to add and retrieve indicators related to their research. As of right now this includes the ability to add IP Addresses, Domains and Threat Actors, with more types being added in the future.
 
