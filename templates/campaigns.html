@@ -1,0 +1,46 @@
+{% include "banners/header.html" %}
+{% block content %}
+  
+  <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    <ul class="breadcrumb">
+      <li><a href="/">threat_note</a></li>
+      <li><a href="/networks">Indicators</a></li>
+      <li class="active">Campaigns</li>
+    </ul>
+        This page contains information on campaigns that was manually entered, as well as 3rd party supplemental information that can aide an analyst in research. 3rd party sources can include VirusTotal, PassiveTotal, Whois, geolocational data, and more.
+        </br>
+        </br>
+
+{% for campaign in campaignents %}
+<center>
+ <div class="row">
+        <div class="col-md-6 col-lg-offset-3">
+        <table data-toggle="table" data-striped="true" data-toolbar="#custom-toolbar">
+            <thead>
+                <tr>
+                  {% if campaign|length == 0 %}
+                  <th class="text-center">-</th>
+                  {% else %}
+                  <th class="text-center">{{ campaign }}</th>
+                  {% endif %}
+                </tr>
+            </thead>
+              <tbody>
+              {% for camprec in campaignents[campaign] %}  
+                <tr>
+                  <td><a href="/network/{{ camprec }}/info">{{ camprec }}</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+        </table>
+        </div>
+</center>
+{% endfor %}
+
+</div>
+</div>
+
+</div>
+
+{% endblock %}
+{% include "banners/footer.html" %}

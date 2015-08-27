@@ -1,0 +1,147 @@
+{% include "banners/header.html" %}
+{% block content %}
+
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+  <ul class="breadcrumb">
+    <li><a href="/">threat_note</a></li>
+    <li><a href="/networks">Network Indicators</a></li>
+    <li><a href="/network/{{ inputuid }}/info">{{ records['object'] }}</a></li>
+    <li class="active">Edit Entry</li>
+  </ul>
+
+<form class="form-horizontal" action="/update/object/" enctype="application/x-www-form-urlencoded" method="POST">
+<fieldset>
+  {% for i in records %}
+    {{ i }} {{ records[i] }}
+  {% endfor %}
+</br>
+</br>
+</br>
+  {{ newdict }}
+    
+    <div class="form-group">
+      <label for="inputuid" class="col-lg-2 control-label">Object UID</label>
+      <div class="col-lg-10">
+        <input type="text" class="form-control" name="inputuid" id="disabledInput" placeholder="Disabled input here..." value="{{ inputuid }}" readonly="readonly">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="inputobject" class="col-lg-2 control-label">Network Object</label>
+      <div class="col-lg-10">
+        <input type="text" class="form-control" name="inputobject" value="{{ inputobject }}">
+      </div>
+    </div>
+
+<div class="form-group">
+      <label for="inputtype" class="col-lg-2 control-label">Object Type</label>
+      <div class="col-lg-10">
+        <select class="form-control" name="inputtype">
+        {% if inputtype == "IPv4" %}
+          <option value="IPv4" selected="true">IPv4</option>
+          <option value="IPv6">IPv6</option>
+          <option value="Domain">Domain</option>
+        {% elif inputtype == "IPv6" %}
+          <option value="IPv4">IPv4</option>
+          <option value="IPv6" selected="true">IPv6</option>
+          <option value="Domain">Domain</option>
+        {% elif inputtype == "Domain" %}
+          <option value="IPv4">IPv4</option>
+          <option value="IPv6">IPv6</option>
+          <option value="Domain" selected="true">Domain</option>
+        {% else %}
+          <option value="IPv4">IPv4</option>
+          <option value="IPv6">IPv6</option>
+          <option value="Domain">Domain</option>
+        {% endif %}
+        </select>
+      </div>
+</div>
+   
+    <div class="form-group">
+      <label for="inputfirstseen" class="col-lg-2 control-label">First Seen</label>
+      <div class="col-lg-10">
+        <input type="text" class="form-control" name="inputfirstseen" value="{{ inputfirstseen }}">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="inputlastseen" class="col-lg-2 control-label">Last Seen</label>
+      <div class="col-lg-10">
+        <input type="text" class="form-control" name="inputlastseen" value="{{ inputlastseen }}">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="inputcampaign" class="col-lg-2 control-label">Campaign</label>
+      <div class="col-lg-10">
+        <input type="text" class="form-control" name="inputcampaign" value="{{ inputcampaign }}">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="textArea" class="col-lg-2 control-label">Comments</label>
+      <div class="col-lg-10">
+        <textarea class="form-control" rows="3" name="inputcomments">{{ inputcomments }}</textarea>
+        <span class="help-block">Enter any additional notes about the network object in this text box.</span>
+      </div>
+    </div>
+   
+    <div class="form-group">
+      <div class="col-lg-10 col-lg-offset-2">
+      <a href="/network/{{ inputuid }}/info" class="btn btn-default">Cancel</a>
+      <button type="submit" class="btn btn-primary">Submit</button>
+      <button type="button" class="btn btn-info" data-toggle="modal" data-target="#myModal">New Field</button>
+      </div>
+    </div>
+  </fieldset>
+</form>
+</div>
+
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">New Field</h4>
+      </div>
+      <div class="modal-body">
+
+<form class="form-horizontal" action="/insert/newfield/" enctype="application/x-www-form-urlencoded" method="POST">
+<fieldset>
+
+    <div class="form-group">
+      <label for="inputnewfieldname" class="col-lg-2 control-label">Name</label>
+      <div class="col-lg-10">
+        <input type="text" class="form-control" name="inputnewfieldname" value="" placeholder="Registrar">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="inputnewfieldvalue" class="col-lg-2 control-label">Value</label>
+      <div class="col-lg-10">
+        <input type="text" class="form-control" name="inputnewfieldvalue" value="" placeholder="GoDaddy">
+      </div>
+    </div>
+    
+    <input type="hidden" name="inputuid" value="{{ inputuid }}">
+    <input type="hidden" name="inputtype" value="{{ inputtype }}">
+    <input type="hidden" name="inputobject" value="{{ inputobject }}">
+    <input type="hidden" name="inputfirstseen" value="{{ inputfirstseen }}">
+    <input type="hidden" name="inputlastseen" value="{{ inputlastseen }}">
+    <input type="hidden" name="inputcampaign" value="{{ inputcampaign }}">
+    <input type="hidden" name="inputcomments" value="{{ inputcomments }}">
+    </div>
+
+      <div class="modal-footer">
+      <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+      <button type="submit" class="btn btn-primary">Submit</button>
+      </div>
+      </div>
+  </fieldset>
+  </form>
+  </div>
+</div>
+
+{% endblock %}
+{% include "banners/footer.html" %}

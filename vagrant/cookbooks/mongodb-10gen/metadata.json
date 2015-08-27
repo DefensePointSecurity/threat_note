@@ -1,0 +1,40 @@
+{
+  "name": "mongodb-10gen",
+  "description": "Installs/Configures mongodb-10gen",
+  "long_description": "Description\n===========\n\n[![Build Status](https://secure.travis-ci.org/higanworks-cookbooks/mongodb-10gen.png)](http://travis-ci.org/higanworks-cookbooks/mongodb-10gen)\n\nAdd apt repository and install mongodb-10gen. \n\n## Platform\n\n* ubuntu\n* debian\n\n### Tested on\n\n* ubuntu 12.04(precise)\n\nRequirements\n============\n\n- OpscodeCookbook[apt]\n\n\nAttributes\n==========\n\n### group ['mongodb']\n\nupdate your mongodb.conf values\n\n### group ['mongodb']['config']\n\nupdate your mongodb_config.conf values\n\n### group ['mongodb']['router']\n\nupdate your mongos.conf values\n\nUsage\n=====\n\n### Available recipes\n\n#### default\n\n- Add 10gen official repository and install newer stable mongodb.\n- **disable** autostart when install or serverboot.\n\n#### single\n\n- setup mongodb single node.\n\n#### config\n\n- setup mongodb config node.\n\n#### router\n\n- setup mongodb router(mongos) node.\n\nAdditions\n=====\n\n### mongorc.js\n\nPrint information to prompt.  \n\nUsage: `cp {mongo_dir}misc/mongorc.js ~/.mongorc.js`\n\n<pre><code># mongo\nMongoDB shell version: 2.0.4\nconnecting to: test\ns01:PRIMARY:[2.0.4] > </code></pre>\n\n\nAuthor\n====\n\n\nAuthor:: HiganWorks LLC (<sawanoboriyu@higanworks.com>)\n",
+  "maintainer": "Higanworks LLC.",
+  "maintainer_email": "sawanoboriyu@higanworks.com",
+  "license": "MIT",
+  "platforms": {
+    "ubuntu": ">= 0.0.0",
+    "debian": ">= 0.0.0"
+  },
+  "dependencies": {
+    "apt": ">= 2.5.0"
+  },
+  "recommendations": {
+
+  },
+  "suggestions": {
+
+  },
+  "conflicting": {
+
+  },
+  "providing": {
+
+  },
+  "replacing": {
+
+  },
+  "attributes": {
+
+  },
+  "groupings": {
+
+  },
+  "recipes": {
+
+  },
+  "version": "0.2.1"
+}

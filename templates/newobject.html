@@ -1,0 +1,96 @@
+{% include "banners/header.html" %}
+{% block content %}
+
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+  <ul class="breadcrumb">
+    <li><a href="/">threat_note</a></li>
+    <li><a href="/indicators">Indicators</a></li>
+    <li class="active">New Entry</li>
+  </ul>
+
+<!--Popup error message if entry already exists -->
+{% if errormessage %}
+
+<div class="alert alert-dismissible alert-danger">
+  <button type="button" class="close" data-dismiss="alert">×</button>
+  {{ errormessage }}
+</div>
+
+{% endif %}
+
+<form class="form-horizontal" action="/insert/object/" enctype="application/x-www-form-urlencoded" method="POST">
+<fieldset>
+
+<div class="form-group">
+  <label for="inputEmail" class="col-lg-2 control-label">Network Object</label>
+  <div class="col-lg-10">
+    <input type="text" class="form-control" name="inputobject" value="" placeholder="8.8.8.8 or www.google.com or Zero Cool">
+  </div>
+</div>
+
+<div class="form-group">
+  <label for="inputtype" class="col-lg-2 control-label">Object Type</label>
+  <div class="col-lg-10">
+    <select class="form-control" name="inputtype">
+      <option value="IPv4">IPv4</option>
+      <option value="IPv6">IPv6</option>
+      <option value="Domain">Domain</option>
+      <option value="Threat Actor">Threat Actor</option>
+    </select>
+  </div>
+</div>
+
+<div class="form-group">
+  <label for="inputEmail" class="col-lg-2 control-label">First Seen</label>
+  <div class="col-lg-10">
+    <input type="text" class="form-control" name="inputfirstseen" value="" placeholder="2015-07-01">
+  </div>
+</div>
+
+<div class="form-group">
+  <label for="inputEmail" class="col-lg-2 control-label">Last Seen</label>
+  <div class="col-lg-10">
+    <input type="text" class="form-control" name="inputlastseen" value="" placeholder="2015-07-30">
+  </div>
+</div>
+
+<div class="form-group">
+  <label for="diamondmodel" class="col-lg-2 control-label">Diamond Model</label>
+  <div class="col-lg-10">
+    <select class="form-control" name="diamondmodel">
+      <option value="Adversary">Adversary</option>
+      <option value="Infrastructure">Infrastructure</option>
+      <option value="Victim">Victim</option>
+    </select>
+  </div>
+</div>
+
+<div class="form-group">
+<label for="inputEmail" class="col-lg-2 control-label">Campaign</label>
+  <div class="col-lg-10">
+    <input type="text" class="form-control" name="inputcampaign" value="" placeholder="LASER PANDA">
+  </div>
+</div>
+
+<div class="form-group">
+  <label for="textArea" class="col-lg-2 control-label">Comments</label>
+  <div class="col-lg-10">
+    <textarea class="form-control" rows="3" name="inputcomments" value=""></textarea>
+    <span class="help-block">Enter any additional notes about the network object in this text box.</span>
+  </div>
+</div>
+
+<div class="form-group">
+  <div class="col-lg-10 col-lg-offset-2">
+    <button type="reset" class="btn btn-default">Cancel</button>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </div>
+</div>
+
+</fieldset>
+</form>
+
+</div>
+
+{% endblock %}
+{% include "banners/footer.html" %}

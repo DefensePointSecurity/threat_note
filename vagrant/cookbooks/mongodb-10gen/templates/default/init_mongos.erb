@@ -1,0 +1,17 @@
+limit nofile 20000 20000
+
+kill timeout 300 # wait 300s between SIGTERM and SIGKILL.
+
+pre-start script
+#   chown mongodb:mongodb <%= @data_dir %>/<%= @nodename %> <%= @log_dir %>
+end script
+
+start on runlevel [2345]
+stop on runlevel [06]
+
+script
+  ENABLE_MONGODB="yes"
+  PIDFILE=/var/run/<%= @nodename %>.pid
+  if [ "x$ENABLE_MONGODB" = "xyes" ]; then exec start-stop-daemon --start --quiet --chuid mongodb -m --pidfile $PIDFILE --exec  /usr/bin/mongos -- --config /data/mongodb/etc/<%= @nodename %>.conf; fi
+end script
+

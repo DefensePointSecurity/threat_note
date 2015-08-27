@@ -1,0 +1,14 @@
+<%= node['mongodb']['log_dir'] %>/<%= @nodename %>.log
+{
+        rotate 4
+        weekly
+        copytruncate
+        compress
+        delaycompress
+        sharedscripts
+        postrotate
+        ##  2.0.3 or later, don't use USR1.
+        #   kill -USR1 `cat /var/run/<%= @nodename %>.pid` >/dev/null 2>&1 || true
+        endscript
+}
+

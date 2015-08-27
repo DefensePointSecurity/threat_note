@@ -1,0 +1,10 @@
+urls = new Array();
+
+<% @shardurls.map do |shardurl| %>
+urls.push("<%= shardurl %>")
+<% end %>
+
+urls.forEach(function(url) {
+ sh._adminCommand({addShard:url}, true);
+});
+

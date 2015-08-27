@@ -1,0 +1,87 @@
+{% include "banners/header.html" %}
+{% block content %}
+
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+  <ul class="breadcrumb">
+    <li><a href="/">threat_note</a></li>
+    <li class="active">Settings</li>
+  </ul>
+
+<!--Popup alert if database deleted -->
+{% if message %}
+<div class="alert alert-dismissible alert-success">
+  <button type="button" class="close" data-dismiss="alert">×</button>
+      {{ message }}
+</div>
+{% endif %}
+
+<h2>Integrations</h2>
+</br>
+{% for p in records %}
+<form class="form-horizontal" action="/update/settings/" enctype="application/x-www-form-urlencoded" method="POST">
+<fieldset>
+
+<div class="form-group">
+  <label for="apikey" class="col-lg-2 control-label">VirusTotal API Key</label>
+  <div class="col-lg-10">
+    <input type="text" class="form-control" name="apikey" value="{{ p['apikey'] }}" placeholder="14923dd494e4db323460180a09312b2f34g529230496dvvfa868c01dead5b709">
+  </div>
+</div>
+
+{% if p['vtinfo'] == "on" %}
+<div class="form-group">
+  <label for="vtinfo" class="col-lg-2 control-label">VirusTotal Lookup</label>
+  <div class="col-lg-10">
+     <input type="checkbox" class="form-control" name="vtinfo" checked="checked">
+  </div>
+</div>
+{% else %}
+<div class="form-group">
+  <label for="vtinfo" class="col-lg-2 control-label">VirusTotal Lookup</label>
+  <div class="col-lg-10">
+     <input type="checkbox" class="form-control" name="vtinfo">
+  </div>
+</div>
+{% endif %}
+
+{% if p['whoisinfo'] == "on" %}
+<div class="form-group">
+  <label for="whoisinfo" class="col-lg-2 control-label">WHOIS Info</label>
+  <div class="col-lg-10">
+     <input type="checkbox" class="form-control" name="whoisinfo" checked="checked">
+  </div>
+</div>
+{% else %}
+<div class="form-group">
+  <label for="whoisinfo" class="col-lg-2 control-label">WHOIS Info</label>
+  <div class="col-lg-10">
+     <input type="checkbox" class="form-control" name="whoisinfo">
+  </div>
+</div>
+{% endif %}
+{% endfor %}
+<div class="form-group">
+  <div class="col-lg-10 col-lg-offset-2">
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </div>
+</div>
+
+</fieldset>
+</form>
+
+<h2>Database Settings</h2>
+</br>
+
+  <div class="row">
+      <div class="col-md-1">
+        <a href="/delete" onclick="return confirm('Are you sure you want to delete the database?');" class="btn btn-danger">Delete Database</a></p>
+      </div>
+      
+      <div class="col-md-7 col-md-offset-1">
+      If you wish to delete the Mongo database that stores all the entries you've created, press the button to the left. <strong>This will destroy the database and you will not have any entries, proceed with caution!</strong>
+      </div>
+  </div>
+</div>
+
+{% endblock %}
+{% include "banners/footer.html" %}

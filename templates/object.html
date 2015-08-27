@@ -1,0 +1,104 @@
+{% include "banners/header.html" %}
+{% block content %}
+  
+  <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    <ul class="breadcrumb">
+      <li><a href="/">threat_note</a></li>
+      <li><a href="/networks">Indicators</a></li>
+      <li class="active">{{ records['object'] }}</li>
+    </ul>
+        This page contains information on {{ records['object'] }} that was manually entered, as well as 3rd party supplemental information that can aide an analyst in research. 3rd party sources can include VirusTotal, PassiveTotal, Whois, geolocational data, and more.
+        </br>
+        </br>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-md-2"></div>
+        <div id="custom-toolbar">
+          <form class="form-horizontal" action="/edit/object/" enctype="application/x-www-form-urlencoded" method="POST">
+          <fieldset>
+            <div class="form-inline" role="form">
+              <input type="hidden" name="records" value="{{ records['_id'] }}">
+              <button type="submit" class="btn btn-default">Edit Entry</button>
+              <a href="/delete/{{ records['_id'] }}/" onclick="return confirm('Are you sure you want to delete this entry?');" class="btn btn-danger">Delete Entry</a>
+              </div>
+        </div>
+          </fieldset>
+          </form>
+
+ <div class="row">
+        <div class="col-md-6">
+        <table data-toggle="table" data-striped="true" data-toolbar="#custom-toolbar">
+            <thead>
+                <tr>
+                  <th class="text-center">Item</th>
+                  <th class="text-center">Value</th>
+                </tr>
+            </thead>
+              <tbody>
+              {% for key in records %}
+                {% if key == "_id" %}
+                 <tr>
+                    <td><strong><span class="text-capitalize">{{key}}</strong></span></td>
+                    <td class="text-left">{{ records[key] }}</td>
+                  </tr>
+                {% else %}
+                  {% if records[key]|length == 0 %}
+                  <tr>
+                    <td><strong><span class="text-capitalize">{{key}}</strong></span></td>
+                    <td class="text-left">-</td>
+                  </tr>
+                  {% else %}
+                  <tr>
+                    <td><strong><span class="text-capitalize">{{key}}</strong></span></td>
+                    <td class="text-left">{{ records[key] }}</td>
+                  </tr>
+                {% endif %}
+                {% endif %}
+              {% endfor %}
+              {% if records['inputtype'] == "IPv4" %}
+                   
+                   {% for setting in settingsvars %}
+                    {% if setting['whoisinfo'] == "on" %}
+                       <tr>
+                <td><strong>Whois Data</strong></td>
+                <td class="text-left">{{ whoisdata }}</br>
+                </td>
+                </tr>
+                  {% endif %}
+
+                    {% if setting['vtinfo'] == "on" %}
+                <tr>
+                <td><strong>Passive DNS</strong></td>
+                {% for record in jsonvt['resolutions'] %}
+                    <td class="text-left"><strong>Last Resolved: </strong>{{ record['last_resolved'] }} <strong>Hostname: </strong>{{ record['hostname'] }}</td></tr>
+                    {% endfor %}
+                    {% endif %}
+                    {% endfor %}
+
+
+              {% elif records['inputtype'] == "Domain" %}
+                <tr>
+                <td><strong>Whois Data</strong></td>
+                <td class="text-left">{{ whoisdata }}</br>
+                </td>
+                </tr>
+
+                <tr>
+                <td><strong>Passive DNS</strong></td>
+                {% for record in jsonvt['resolutions'] %}
+                    <td class="text-left"><strong>Last Resolved: </strong>{{ record['last_resolved'] }} <strong>IP Address: </strong>{{ record['ip_address'] }}</td></tr>
+                {% endfor %}
+              {% endif %}
+              </tbody>
+        </table>
+        </div>
+
+<div class="col-md-2">
+</div>
+</div>
+</div>
+</div>
+
+{% endblock %}
+{% include "banners/footer.html" %}

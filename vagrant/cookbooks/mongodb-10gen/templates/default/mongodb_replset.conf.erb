@@ -1,0 +1,20 @@
+dbpath=<%= File.join(node['mongodb']['data_dir'], node['mongodb']['nodename']) %>
+
+#where to log
+logpath=<%= File.join(node['mongodb']['log_dir'], "#{node['mongodb']['nodename']}.log") %>
+
+logappend=true
+
+port = <%= node['mongodb']['port'] %>
+# verbose = true
+cpu = true
+replSet = <%= node['mongodb']['replSet_name'] %>
+shardsvr = <%= node['mongodb']['enable_shardsvr'] %>
+configsvr = <%= node['mongodb']['enable_configsvr'] %>
+rest = <%= node['mongodb']['enable_rest'] %>
+jsonp = <%= node['mongodb']['enable_jsonp'] %>
+pidfilepath=/var/run/<%= node['mongodb']['nodename'] %>.pid
+oplogSize=5120
+nojournal = <%= node['mongodb']['enable_nojournal'] %> 
+directoryperdb = <%= node['mongodb']['enable_directoryperdb'] %> 
+

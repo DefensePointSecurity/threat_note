@@ -1,0 +1,6 @@
+.DS_Store
+
+*.swp
+/test/kitchen/.kitchen
+.kitchen/
+.kitchen.local.yml

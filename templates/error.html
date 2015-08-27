@@ -1,0 +1,13 @@
+{% include "banners/header.html" %}
+{% block content %}
+
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+  <div class="alert alert-dismissible alert-danger">
+    <button type="button" class="close" data-dismiss="alert">×</button>
+    <h7>Whoops!</h7><p>
+    {{ error }}
+  </div>
+</div>
+
+{% endblock %}
+{% include "banners/footer.html" %}

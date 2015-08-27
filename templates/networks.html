@@ -1,0 +1,65 @@
+{% include "banners/header.html" %}
+{% block content %}
+
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+  <ul class="breadcrumb">
+    <li><a href="/">threat_note</a></li>
+    <li><a href="/indicators">Indicators</a></li>
+    <li class="active">Network Indicators</li>
+  </ul>
+  This page lists all your network based entries. On this page, you can find all the metadata associated with your object, to include Campaign, First and Last Seen as well as any additional notes you may have entered.
+  </br>
+  </br>
+       
+<div id="custom-toolbar">
+    <div class="form-inline" role="form">
+    <button type="submit" class="btn btn-default"><a href="/newobject" class="text-button-color">New Entry</a></button>
+    </div>
+</div>
+
+<table data-toggle="table" data-search="true" data-show-refresh="true" data-show-toggle="true" data-show-columns="true" data-classes="table table-hover table-condensed" data-striped="true" data-pagination="true" data-url="x" data-sort-name="name" data-sort-order="desc" data-toolbar="#custom-toolbar">
+            <thead>
+                <tr>
+                  <th class="text-center" data-sortable="true">Object</th>
+                  <th class="text-center" data-sortable="true">Object Type</th>
+                  <th class="text-center" data-sortable="true">First Seen</th>
+                  <th class="text-center" data-sortable="true">Last Seen</th>
+                  <th class="text-center" data-sortable="true">Campaign</th>
+                  <th class="text-center" data-sortable="true">Diamond Model</th>
+                  <th class="text-center" data-sortable="true">Comments</th>
+               </tr>
+            </thead>
+            <tbody>
+            {% for p in network %}
+            <tr> 
+                <td class="text-center"><a href="/network/{{ p['_id'] }}/info">{{ p['object'] }}</td>
+                    <td class="text-center">{{ p['inputtype'] }}</td>
+                    {% if p['firstseen']|length == 0 %}
+                    <td class="text-center">-</td>
+                    {% else %}
+                    <td class="text-center">{{ p['firstseen'] }}</td>
+                    {% endif %}
+                    {% if p['lastseen']|length == 0 %}
+                    <td class="text-center">-</td>
+                    {% else %}
+                    <td class="text-center">{{ p['lastseen'] }}</td>
+                    {% endif %}
+                    {% if p['campaign']|length == 0 %}
+                    <td class="text-center">-</td>
+                    {% else %}
+                    <td class="text-center">{{ p['campaign'] }}</td>
+                    {% endif %}
+                    <td class="text-center">{{ p['diamondmodel'] }}</td>
+                    {% if p['comments']|length == 0 %}
+                    <td class="text-center">-</td>
+                    {% else %}
+                    <td class="text-center">{{ p['comments'] }}</td>
+                    {% endif %}
+            </tr>
+            {% endfor %}
+            </tbody>
+</table>
+</div>
+
+{% endblock %}
+{% include "banners/footer.html" %}
