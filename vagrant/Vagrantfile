@@ -12,7 +12,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network "forwarded_port", guest: 27017, host: 27017
   config.vm.network "forwarded_port", guest: 7777, host: 7777
 
-  config.vm.synced_folder "../", "/threatnote"
+  config.vm.synced_folder "../", "/threat_note"
 
   config.vm.provision "chef_solo" do |chef|
     chef.cookbooks_path = "cookbooks"

@@ -4,8 +4,8 @@ execute 'apt-get install python-pip -y' do
 end
 
 # Configure working environment for Flask
-execute 'pip install -r /threatnote/requirements.txt' do
-    command 'pip install -r /threatnote/requirements.txt'
+execute 'pip install -r /threat_note/requirements.txt' do
+    command 'pip install -r /threat_note/requirements.txt'
 end
 
 # Install supervisor service to run web interface
