@@ -13,7 +13,7 @@ This app fills the gap between various solutions currently available, by being l
 
 Other applications built for storing indicators and research have some shortcomings that threat_note hopes to fix. Some common complaints with other apps are:
 
-- Hard to install/configure
+- Hard to install/configure/maintain
 - Need to pay for added features (enterprise licenses)
 - Too much information
   - This boils down to there being so much stuff to do to create new indicators or trying to cram a ton of functions inside the app.
