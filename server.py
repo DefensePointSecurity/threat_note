@@ -269,7 +269,10 @@ def not_found(error):
 # Initialize the Settings database
 @app.before_first_request
 def _run_on_start():
-    mongo.db.settings.insert({'apikey':'','vtinfo':'','whoisinfo':''})
+    if len(convert(mongo.db.settings.distinct("apikey"))) > 0:
+        pass
+    else:
+        mongo.db.settings.insert({'apikey':'','vtinfo':'','whoisinfo':''})
 
 ####################
 # Global Variables #
