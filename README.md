@@ -27,8 +27,14 @@ That's it! By using Vagrant it'll save you the time and hassle of configuring yo
 So, if you have Vagrant installed on your machine, simply run the following:
 
 ```
-cd vagrant
+cd threat_note/vagrant
 vagrant up
 ```
 
 If you don't get any errors, you can just browse to http://localhost:7777 and you'll have yourself a brand new threat_note server to start populating.
+
+### License
+
+This software is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
+Copyright (c) 2015 Brian Warehime, Defense Point Security, LLC.
