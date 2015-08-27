@@ -27,7 +27,7 @@ That's it! By using Vagrant it'll save you the time and hassle of configuring yo
 So, if you have Vagrant installed on your machine, simply run the following:
 
 ```
-cd vagrant
+cd threat_note/vagrant
 vagrant up
 ```
 
