@@ -1,5 +1,5 @@
 <p align="center">
-<img src="http://i.imgur.com/jpwhCCP.png"></p>
+<img src="http://i.imgur.com/4keZTGz.png"></p>
 
 threat_note is a web application built by [Defense Point Security](www.defpoint.com) to allow security researchers the ability to add and retrieve indicators related to their research. As of right now this includes the ability to add IP Addresses, Domains and Threat Actors, with more types being added in the future.
 
