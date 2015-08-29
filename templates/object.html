@@ -15,7 +15,7 @@
 
   <div class="container">
     <div class="row">
-      <div class="col-md-2"></div>
+      <div class="col-sm-1"></div>
         <div id="custom-toolbar">
           <form class="form-horizontal" action="/edit/object/" enctype="application/x-www-form-urlencoded" method="POST">
           <fieldset>
@@ -29,7 +29,7 @@
           </form>
 
  <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-8">
         <table data-toggle="table" data-striped="true" data-toolbar="#custom-toolbar">
             <thead>
                 <tr>
@@ -64,7 +64,23 @@
                     {% if setting['whoisinfo'] == "on" %}
                        <tr>
                 <td><strong>Whois Data</strong></td>
-                <td class="text-left">{{ whoisdata }}</br>
+                <td class="text-left">
+                   {% for line in whoisdata %}
+                    {% if line == "raw" or line == "raw_referral" or line == "referral" %}
+                      <div></div>
+                     {% elif line == "nets" %}
+                      {% for i in whoisdata['nets'][0] %}
+                      <span class="text-uppercase"><b> {{ i }}</b></span> : {{ whoisdata['nets'][0][i] }} 
+                      </br>
+                      {% endfor %}
+                    {% elif line == "asn" %}
+                      <span class="text-uppercase"><b>{{ line }}</b></span>: {{ whoisdata[line] }}
+                    {% else %}
+                    <span class="text-uppercase"><b>{{ line }}</b></span>: {{ whoisdata[line] }}
+                    </br>
+                    {% endif %}
+                  {% endfor %}
+                </br>
                 </td>
                 </tr>
                   {% endif %}
@@ -72,9 +88,13 @@
                     {% if setting['vtinfo'] == "on" %}
                 <tr>
                 <td><strong>Passive DNS</strong></td>
+                <td class="text-left">
                 {% for record in jsonvt['resolutions'] %}
-                    <td class="text-left"><strong>Last Resolved: </strong>{{ record['last_resolved'] }} <strong>Hostname: </strong>{{ record['hostname'] }}</td></tr>
+                    <strong>Last Resolved: </strong>{{ record['last_resolved'] }} <strong>Hostname: </strong>{{ record['hostname'] }}
+                    </br>
                     {% endfor %}
+                    </td>
+                    </tr>
                     {% endif %}
                     {% endfor %}
 
@@ -82,15 +102,24 @@
               {% elif records['inputtype'] == "Domain" %}
                 <tr>
                 <td><strong>Whois Data</strong></td>
-                <td class="text-left">{{ whoisdata }}</br>
+                <td class="text-left">
+                {% for line in whoisdata %}
+                <span class="text-uppercase"><b>{{ line }}</b></span>: {{ whoisdata[line] }}
+                </br>
+                {% endfor %}
                 </td>
                 </tr>
 
                 <tr>
                 <td><strong>Passive DNS</strong></td>
+                <td class="text-left">
                 {% for record in jsonvt['resolutions'] %}
-                    <td class="text-left"><strong>Last Resolved: </strong>{{ record['last_resolved'] }} <strong>IP Address: </strong>{{ record['ip_address'] }}</td></tr>
-                {% endfor %}
+                    <strong>Last Resolved: </strong>{{ record['last_resolved'] }} <strong>IP Address: </strong>{{ record['ip_address'] }}
+                    </br>
+                  {% endfor %}
+                    </td>
+                    </tr>
+                
               {% endif %}
               </tbody>
         </table>

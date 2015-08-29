@@ -2,7 +2,8 @@
 
 ########################################################
 # threat_note v1.0                                     #
-# Developed By: Defense Point Security (defpoint.com)  #
+# Developed By: Brian Warehime                         #
+# Defense Point Security (defpoint.com)                #
 # August 24, 2015                                      #
 ########################################################
 
@@ -19,6 +20,7 @@ import collections
 from ipwhois import IPWhois
 import whois
 import re
+import ast
 
 #################
 # Configuration #
@@ -97,7 +99,7 @@ def newobj():
 @app.route('/insert/object/', methods=['POST'])
 def newobject():
     try:
-        inputobject= request.form.get('inputobject')
+        inputobject = request.form.get('inputobject')
         inputuid = request.form.get('inputuid')
         inputfirstseen = request.form.get('inputfirstseen')
         inputlastseen = request.form.get('inputlastseen')
@@ -113,6 +115,7 @@ def newobject():
                     errormessage = "Entry already exists in database."
                     return render_template('newobject.html', errormessage=errormessage, inputuid=inputuid, inputtype=inputtype, inputobject=inputobject, inputfirstseen=inputfirstseen, inputlastseen=inputlastseen, inputcampaign=inputcampaign, inputcomments=inputcomments, diamondmodel=diamondmodel)
                 else:
+                    inputobject = inputobject.strip()
                     newdata = {"object":inputobject, "firstseen":inputfirstseen,"lastseen":inputlastseen,"campaign":inputcampaign,"comments":inputcomments,"inputtype":inputtype, "diamondmodel":diamondmodel}
                     mongo.db.network.insert(newdata)
                     network = mongo.db.network.find()
@@ -124,6 +127,7 @@ def newobject():
                     errormessage = "Entry already exists in database."
                     return render_template('newobject.html', errormessage=errormessage, inputuid=inputuid, inputtype=inputtype, inputobject=inputobject, inputfirstseen=inputfirstseen, inputlastseen=inputlastseen, inputcampaign=inputcampaign, inputcomments=inputcomments, diamondmodel=diamondmodel)
             else:
+                inputobject = inputobject.strip()
                 newdata = {"object":inputobject, "firstseen":inputfirstseen,"lastseen":inputlastseen,"campaign":inputcampaign,"comments":inputcomments,"inputtype":inputtype, "diamondmodel":diamondmodel}
                 mongo.db.network.insert(newdata)
                 network = mongo.db.network.find()
@@ -201,7 +205,7 @@ def updateobject():
         elif str(http['inputtype']) == "Domain":
             whoisdata = domainwhois(str(http['object']))
             jsonvt = vt_domain_lookup(str(http['object']))
-        return render_template('object.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,settingsvars=settingsvars)
+        return render_template('object.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,settingsvars=settingsvars, something=something)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -273,6 +277,7 @@ def _run_on_start():
         pass
     else:
         mongo.db.settings.insert({'apikey':'','vtinfo':'','whoisinfo':''})
+
 
 ####################
 # Global Variables #
