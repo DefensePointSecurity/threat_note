@@ -1,5 +1,39 @@
 {% include "banners/header.html" %}
 {% block content %}
+<div class="container-fluid">
+      <div class="row">
+       <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar list-group">
+            <li class="list-group-item">  
+            <a href="/"><span class="glyphicon glyphicon-home"></span></span><span style="padding-left:5px"></span>Overview</a>
+            </li>
+            
+            <li class="list-group-item">
+            <span class='badge'>{{ totalcount }}</span>
+            <a href="/indicators"><span class="glyphicon glyphicon-map-marker"></span></span><span style="padding-left:5px"></span>Indicators</a>
+            </li>
+            <li class="list-group-item active">
+            <span class='badge'>{{ networkcount }}</span>
+            <a href="/networks"><span style="padding-left:2em"><span class="glyphicon glyphicon-cloud"></span></span><span style="padding-left:5px"></span>Network</span></a>
+            </li>
+            <li class="list-group-item">
+            <span class='badge'>{{ threatactorcount }}</span>
+            <a href="/threatactors"><span style="padding-left:2em"><span class="glyphicon glyphicon-user"></span></span><span style="padding-left:5px"></span>Threat Actors</span></a>
+            </li>
+           
+            <li class="list-group-item">
+            <span class='badge'>{{ campaigncount }}</span>
+            <a href="/campaigns"><span style="padding-left:2em"><span class="glyphicon glyphicon-fire"></span></span><span style="padding-left:5px"></span>Campaigns</span></a>
+            </li>
+
+            <li class="list-group-item">
+            <a href="/settings"><span class="glyphicon glyphicon-cog"></span><span style="padding-left:5px"></span>Settings</a>
+            </li>
+            <li class="list-group-item">
+            <a href="/about"><span class="glyphicon glyphicon-list-alt"></span><span style="padding-left:5px"></span>About</a>
+            </li>
+            
+      </div>
 
 <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
   <ul class="breadcrumb">
