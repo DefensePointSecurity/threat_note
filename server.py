@@ -135,7 +135,7 @@ def newobject():
                     return render_template('newobject.html', errormessage=errormessage, inputuid=inputuid, inputtype=inputtype, inputobject=inputobject, inputfirstseen=inputfirstseen, inputlastseen=inputlastseen, inputcampaign=inputcampaign, inputcomments=inputcomments, diamondmodel=diamondmodel)
                 else:
                     inputobject = inputobject.strip()
-                    newdata = {"object":inputobject, "firstseen":inputfirstseen,"lastseen":inputlastseen,"campaign":inputcampaign,"comments":inputcomments,"inputtype":inputtype, "diamondmodel":diamondmodel, favorite:"False"}
+                    newdata = {"object":inputobject, "firstseen":inputfirstseen,"lastseen":inputlastseen,"campaign":inputcampaign,"comments":inputcomments,"inputtype":inputtype, "diamondmodel":diamondmodel, "favorite":"False"}
                     mongo.db.network.insert(newdata)
                     network = mongo.db.network.find()
             else:
@@ -147,7 +147,7 @@ def newobject():
                     return render_template('newobject.html', errormessage=errormessage, inputuid=inputuid, inputtype=inputtype, inputobject=inputobject, inputfirstseen=inputfirstseen, inputlastseen=inputlastseen, inputcampaign=inputcampaign, inputcomments=inputcomments, diamondmodel=diamondmodel)
             else:
                 inputobject = inputobject.strip()
-                newdata = {"object":inputobject, "firstseen":inputfirstseen,"lastseen":inputlastseen,"campaign":inputcampaign,"comments":inputcomments,"inputtype":inputtype, "diamondmodel":diamondmodel, favorite: "False"}
+                newdata = {"object":inputobject, "firstseen":inputfirstseen,"lastseen":inputlastseen,"campaign":inputcampaign,"comments":inputcomments,"inputtype":inputtype, "diamondmodel":diamondmodel, "favorite": "False"}
                 mongo.db.network.insert(newdata)
                 network = mongo.db.network.find()
         return render_template('networks.html', network=network)
