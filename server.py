@@ -135,7 +135,7 @@ def newobject():
                     return render_template('newobject.html', errormessage=errormessage, inputuid=inputuid, inputtype=inputtype, inputobject=inputobject, inputfirstseen=inputfirstseen, inputlastseen=inputlastseen, inputcampaign=inputcampaign, inputcomments=inputcomments, diamondmodel=diamondmodel)
                 else:
                     inputobject = inputobject.strip()
-                    newdata = {"object":inputobject, "firstseen":inputfirstseen,"lastseen":inputlastseen,"campaign":inputcampaign,"comments":inputcomments,"inputtype":inputtype, "diamondmodel":diamondmodel}
+                    newdata = {"object":inputobject, "firstseen":inputfirstseen,"lastseen":inputlastseen,"campaign":inputcampaign,"comments":inputcomments,"inputtype":inputtype, "diamondmodel":diamondmodel, favorite:"False"}
                     mongo.db.network.insert(newdata)
                     network = mongo.db.network.find()
             else:
@@ -147,7 +147,7 @@ def newobject():
                     return render_template('newobject.html', errormessage=errormessage, inputuid=inputuid, inputtype=inputtype, inputobject=inputobject, inputfirstseen=inputfirstseen, inputlastseen=inputlastseen, inputcampaign=inputcampaign, inputcomments=inputcomments, diamondmodel=diamondmodel)
             else:
                 inputobject = inputobject.strip()
-                newdata = {"object":inputobject, "firstseen":inputfirstseen,"lastseen":inputlastseen,"campaign":inputcampaign,"comments":inputcomments,"inputtype":inputtype, "diamondmodel":diamondmodel}
+                newdata = {"object":inputobject, "firstseen":inputfirstseen,"lastseen":inputlastseen,"campaign":inputcampaign,"comments":inputcomments,"inputtype":inputtype, "diamondmodel":diamondmodel, favorite: "False"}
                 mongo.db.network.insert(newdata)
                 network = mongo.db.network.find()
         return render_template('networks.html', network=network)
@@ -256,6 +256,42 @@ def objectsummary(uid):
         whoisdata=""
         settingsvars = mongo.db.settings.find()
         # Run ipwhois or domainwhois based on the type of indicator
+        if str(http['inputtype']) == "IPv4" or str(http['inputtype']) == "IPv6":
+            jsonvt = vt_ipv4_lookup(str(http['object']))
+            whoisdata = ipwhois(str(http['object']))
+        elif str(http['inputtype']) == "Domain":
+            whoisdata = domainwhois(str(http['object']))
+            jsonvt = vt_domain_lookup(str(http['object']))
+        return render_template('object.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,settingsvars=settingsvars)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+@app.route('/favorite/<uid>', methods=['GET'])
+def favorite(uid):
+    try:
+        mongo.db.network.update({'_id':bson.ObjectId(oid=str(uid))}, {'$set':{"favorite":"True"}})
+        http = mongo.db.network.find_one({'_id':bson.ObjectId(oid=str(uid))})
+        jsonvt=""
+        whoisdata=""
+        settingsvars = mongo.db.settings.find()
+        if str(http['inputtype']) == "IPv4" or str(http['inputtype']) == "IPv6":
+            jsonvt = vt_ipv4_lookup(str(http['object']))
+            whoisdata = ipwhois(str(http['object']))
+        elif str(http['inputtype']) == "Domain":
+            whoisdata = domainwhois(str(http['object']))
+            jsonvt = vt_domain_lookup(str(http['object']))
+        return render_template('object.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,settingsvars=settingsvars)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+@app.route('/unfavorite/<uid>', methods=['GET'])
+def unfavorite(uid):
+    try:
+        mongo.db.network.update({'_id':bson.ObjectId(oid=str(uid))}, {'$set':{"favorite":"False"}})
+        http = mongo.db.network.find_one({'_id':bson.ObjectId(oid=str(uid))})
+        jsonvt=""
+        whoisdata=""
+        settingsvars = mongo.db.settings.find()
         if str(http['inputtype']) == "IPv4" or str(http['inputtype']) == "IPv6":
             jsonvt = vt_ipv4_lookup(str(http['object']))
             whoisdata = ipwhois(str(http['object']))

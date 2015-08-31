@@ -66,6 +66,33 @@
             </thead>
             <tbody>
                 {% for p in network %}
+                 {% if p['favorite'] == "True" %}
+            <tr class="info"> 
+                <td class="text-center"><a href="/network/{{ p['_id'] }}/info">{{ p['object'] }}</td>
+                    <td class="text-center">{{ p['inputtype'] }}</td>
+                    {% if p['firstseen']|length == 0 %}
+                    <td class="text-center">-</td>
+                    {% else %}
+                    <td class="text-center">{{ p['firstseen'] }}</td>
+                    {% endif %}
+                    {% if p['lastseen']|length == 0 %}
+                    <td class="text-center">-</td>
+                    {% else %}
+                    <td class="text-center">{{ p['lastseen'] }}</td>
+                    {% endif %}
+                    {% if p['campaign']|length == 0 %}
+                    <td class="text-center">-</td>
+                    {% else %}
+                    <td class="text-center">{{ p['campaign'] }}</td>
+                    {% endif %}
+                    <td class="text-center">{{ p['diamondmodel'] }}</td>
+                    {% if p['comments']|length == 0 %}
+                    <td class="text-center">-</td>
+                    {% else %}
+                    <td class="text-left">{{ p['comments'] }}</td>
+                    {% endif %}
+            </tr>
+         {% else %}
                 <tr> 
                <td class="text-center"><a href="/network/{{ p['_id'] }}/info">{{ p['object'] }}</td>
                     <td class="text-center">{{ p['inputtype'] }}</td>
@@ -91,6 +118,7 @@
                     <td class="text-left">{{ p['comments'] }}</td>
                     {% endif %}
                 </tr>
+                {% endif %}
                 {% endfor %}
             </tbody>
 </table>
