@@ -18,6 +18,8 @@ Other applications built for storing indicators and research have some shortcomi
 - Too much information
   - This boils down to there being so much stuff to do to create new indicators or trying to cram a ton of functions inside the app.
 
+For a good "Getting Started" guide on using threat_note, check out this post by [@CYINT_dude](https://twitter.com/CYINT_dude) on his blog, which you can read [here](http://www.cyintanalysis.com/playing-with-threat_note/).
+
 ### Installation
 
 As this tool tries to be lightweight and easy to setup, we tried to make the setup as easy as possible. To get started, you'll need to install [Vagrant](https://www.vagrantup.com/) along with a provider (Using VirtualBox is recommended since it's free and available on all platforms and already built into Vagrant.)
