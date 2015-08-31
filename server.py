@@ -52,7 +52,7 @@ def about():
 def networks():
     try:
         # Grab only network indicators
-        network = mongo.db.network.find({"$or": [{"inputtype": "IPv4"}, {"inputtype": "IPv6"}, {"inputtype": "Domain"}]})
+        network = mongo.db.network.find({"$or": [{"inputtype": "IPv4"}, {"inputtype":"Network"},{"inputtype": "IPv6"}, {"inputtype": "Domain"}]})
         return render_template('networks.html', network=network)
     except Exception as e:
         return render_template('error.html', error=e)

@@ -32,24 +32,39 @@
             <option value="IPv4" selected="true">IPv4</option>
             <option value="IPv6">IPv6</option>
             <option value="Domain">Domain</option>
+             <option value="Domain">Threat Actor</option>
+             <option value="Domain">Network</option>
           {% elif entry[0][item] == "IPv6" %}
             <option value="IPv4">IPv4</option>
             <option value="IPv6" selected="true">IPv6</option>
+            <option value="Domain">Network</option>
             <option value="Domain">Domain</option>
+            <option value="Domain">Threat Actor</option>
           {% elif entry[0][item] == "Domain" %}
             <option value="IPv4">IPv4</option>
             <option value="IPv6">IPv6</option>
+            <option value="Domain">Network</option>
             <option value="Domain" selected="true">Domain</option>
+            <option value="Domain">Threat Actor</option>
           {% elif entry[0][item] == "Threat Actor" %}
             <option value="IPv4">IPv4</option>
             <option value="IPv6">IPv6</option>
+            <option value="Domain">Network</option>
             <option value="Domain">Domain</option>
             <option value="Threat Actor" selected="true">Threat Actor</option>
+          {% elif entry[0][item] == "Network" %}
+            <option value="IPv4">IPv4</option>
+            <option value="IPv6">IPv6</option>
+            <option value="Domain" selected="true">Network</option>
+            <option value="Domain">Domain</option>
+            <option value="Threat Actor">Threat Actor</option>
           {% else %}
             <option value="IPv4">IPv4</option>
             <option value="IPv6">IPv6</option>
+            <option value="Domain">Network</option>
             <option value="Domain">Domain</option>
             <option value="Threat Actor" selected="true">Threat Actor</option>
+
           {% endif %}
           </select>
         </div>
