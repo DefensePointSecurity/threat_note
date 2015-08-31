@@ -18,7 +18,7 @@ Other applications built for storing indicators and research have some shortcomi
 - Too much information
   - This boils down to there being so much stuff to do to create new indicators or trying to cram a ton of functions inside the app.
 
-For a good "Getting Started" guide on using threat_note, check out this post by [@CYINT_dude](https://twitter.com/CYINT_dude) on his blog, which you can read [here].(http://www.cyintanalysis.com/playing-with-threat_note/)
+For a good "Getting Started" guide on using threat_note, check out this post by [@CYINT_dude](https://twitter.com/CYINT_dude) on his blog, which you can read [here](http://www.cyintanalysis.com/playing-with-threat_note/).
 
 ### Installation
 
