@@ -18,8 +18,6 @@ Other applications built for storing indicators and research have some shortcomi
 - Too much information
   - This boils down to there being so much stuff to do to create new indicators or trying to cram a ton of functions inside the app.
 
-For a good "Getting Started" guide on using threat_note, check out this post by [@CYINT_dude](https://twitter.com/CYINT_dude) on his blog, which you can read [here](http://www.cyintanalysis.com/playing-with-threat_note/).
-
 ### Installation
 
 As this tool tries to be lightweight and easy to setup, we tried to make the setup as easy as possible. To get started, you'll need to install [Vagrant](https://www.vagrantup.com/) along with a provider (Using VirtualBox is recommended since it's free and available on all platforms and already built into Vagrant.)
@@ -34,6 +32,32 @@ vagrant up
 ```
 
 If you don't get any errors, you can just browse to http://localhost:7777 and you'll have yourself a brand new threat_note server to start populating.
+
+### Usage
+
+For a good "Getting Started" guide on using threat_note, check out this post by [@CYINT_dude](https://twitter.com/CYINT_dude) on his blog, which you can read [here](http://www.cyintanalysis.com/playing-with-threat_note/).
+
+### Screenshots
+
+Below is a screenshot of the "New Indicator" page, here you can enter as many or as few details about your indicator as you'd like. 
+
+<p align="center">
+<img src="http://i.imgur.com/GbumDll.png" href="http://i.imgur.com/GbumDll.png"></p>
+
+The settings page, where you can turn on and configure your 3rd part integrations.
+
+<p align="center">
+<img src="http://i.imgur.com/0xn1dk2.png" href="http://i.imgur.com/0xn1dk2.png"></p>
+
+The page below is the indicator page for an indicator already created. Here you can edit it, delete it, or "star" it (when you "star" the indicator, it will be highlighted in the "Indicators" pages). 
+
+<p align="center">
+<img src="http://i.imgur.com/wa3l0qW.png" href="http://i.imgur.com/wa3l0qW.png"></p>
+
+Below is a shot of what a "favorited" indicator looks like in the "networks" page.
+
+<p align="center">
+<img src="http://i.imgur.com/LhzdYHs.png" href="http://i.imgur.com/LhzdYHs.png"></p>
 
 ### License
 
