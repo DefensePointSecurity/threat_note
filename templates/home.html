@@ -6,8 +6,53 @@
     <li><a href="#">threat_note</a></li>
     <li class="active">Overview</li>
   </ul>
-         Fancy dashboards will go here eventually...
-</div>
+         Welcome to your threat_note overview page. Here you can find the latest indicators added to your databases, as well as other useful information to give you a birds eye view of your entries. 
+         </br>
+         <h2>Latest Indicators</h2>
+</br>
+
+<table data-toggle="table">
+            <thead>
+                <tr>
+                  <th class="text-center">Object</th>
+                  <th class="text-center">Object Type</th>
+                  <th class="text-center">First Seen</th>
+                  <th class="text-center">Last Seen</th>
+                  <th class="text-center">Campaign</th>
+                  <th class="text-center">Diamond Model</th>
+                  <th class="text-center">Comments</th>
+               </tr>
+            </thead>
+            <tbody>
+            {% for p in network %}
+            <tr> 
+                <td class="text-center"><a href="/network/{{ p['_id'] }}/info">{{ p['object'] }}</td>
+                    <td class="text-center">{{ p['inputtype'] }}</td>
+                    {% if p['firstseen']|length == 0 %}
+                    <td class="text-center">-</td>
+                    {% else %}
+                    <td class="text-center">{{ p['firstseen'] }}</td>
+                    {% endif %}
+                    {% if p['lastseen']|length == 0 %}
+                    <td class="text-center">-</td>
+                    {% else %}
+                    <td class="text-center">{{ p['lastseen'] }}</td>
+                    {% endif %}
+                    {% if p['campaign']|length == 0 %}
+                    <td class="text-center">-</td>
+                    {% else %}
+                    <td class="text-center">{{ p['campaign'] }}</td>
+                    {% endif %}
+                    <td class="text-center">{{ p['diamondmodel'] }}</td>
+                    {% if p['comments']|length == 0 %}
+                    <td class="text-center">-</td>
+                    {% else %}
+                    <td class="text-left">{{ p['comments'] }}</td>
+                    {% endif %}
+            </tr>
+            {% endfor %}
+            </tbody>
+</table>
 
 {% endblock %}
 {% include "banners/footer.html" %}

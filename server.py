@@ -18,6 +18,7 @@ import bson
 import requests
 import collections
 from ipwhois import IPWhois
+import pymongo
 import whois
 import re
 import ast
@@ -39,7 +40,7 @@ mongo = PyMongo(app, config_prefix='MONGO')
 @app.route('/', methods=['GET'])
 def home():
     try:
-        network = mongo.db.network.find()
+        network = mongo.db.network.find({}).sort('_id', pymongo.DESCENDING).limit(1)
         return render_template('home.html', network=network)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -78,6 +79,24 @@ def campaigns():
             campaignents[camp] = camprec
         campaignents = convert(campaignents)
         return render_template('campaigns.html', network=campaigns, campaignents=campaignents)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+@app.route('/campaign/<uid>/info', methods=['GET'])
+def campaignsummary(uid):
+    try:
+        http = mongo.db.network.find_one({"object":uid})
+        jsonvt=""
+        whoisdata=""
+        settingsvars = mongo.db.settings.find()
+        # Run ipwhois or domainwhois based on the type of indicator
+        if str(http['inputtype']) == "IPv4" or str(http['inputtype']) == "IPv6":
+            jsonvt = vt_ipv4_lookup(str(http['object']))
+            whoisdata = ipwhois(str(http['object']))
+        elif str(http['inputtype']) == "Domain":
+            whoisdata = domainwhois(str(http['object']))
+            jsonvt = vt_domain_lookup(str(http['object']))
+        return render_template('object.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,settingsvars=settingsvars)
     except Exception as e:
         return render_template('error.html', error=e)
 
