@@ -67,8 +67,8 @@
            <tbody>
                 {% for p in network %}
                 {% if p['favorite'] == "True" %}
-            <tr class="info"> 
-                <td class="text-center"><a href="/network/{{ p['_id'] }}/info">{{ p['object'] }}</td>
+                    <tr class="info"> 
+                    <td class="text-center"><a href="/network/{{ p['_id'] }}/info">{{ p['object'] }}</td>
                     <td class="text-center">{{ p['inputtype'] }}</td>
                     {% if p['firstseen']|length == 0 %}
                     <td class="text-center">-</td>

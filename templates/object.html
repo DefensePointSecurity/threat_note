@@ -138,26 +138,34 @@
                     {% endfor %}
 
 
-              {% elif records['inputtype'] == "Domain" %}
-                <tr>
+            {% elif records['inputtype'] == "Domain" %}
+                {% for setting in settingsvars %}
+                  {% if setting['whoisinfo'] == "on" %}
+                 <tr>
                 <td><strong>Whois Data</strong></td>
                 <td class="text-left">
-                {% for line in whoisdata %}
-                <span class="text-uppercase"><b>{{ line }}</b></span>: {{ whoisdata[line] }}
-                </br>
-                {% endfor %}
+                    {% for line in whoisdata %}
+                    <span class="text-uppercase"><b>{{ line }}</b></span>: {{ whoisdata[line] }}
+                    </br>
+                    {% endfor %}
                 </td>
                 </tr>
+                  {% endif %}
 
-                <tr>
+                  {% if setting['vtinfo'] == "on" %}
+                 <tr>
                 <td><strong>Passive DNS</strong></td>
                 <td class="text-left">
                 {% for record in jsonvt['resolutions'] %}
                     <strong>Last Resolved: </strong>{{ record['last_resolved'] }} <strong>IP Address: </strong>{{ record['ip_address'] }}
                     </br>
-                  {% endfor %}
+                    {% endfor %}
                     </td>
                     </tr>
+                {% endif %}
+                 
+                
+                {% endfor %}
               {% endif %}
               </tbody>
         </table>

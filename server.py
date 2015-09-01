@@ -430,7 +430,10 @@ def ipwhois(entity):
 # Domain Whois
 def domainwhois(entity):
     domain = whois.whois(entity)
-    return domain
+    domaindict = {}
+    for i in domain:
+        domaindict[i] = domain[i]
+    return domaindict
 
 # Convert function
 def convert(data):
