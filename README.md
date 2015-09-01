@@ -35,7 +35,7 @@ If you don't get any errors, you can just browse to http://localhost:7777 and yo
 
 ### Usage
 
-For a good "Getting Started" guide on using threat_note, check out this post by [@CYINT_dude](https://twitter.com/CYINT_dude) on his blog, which you can read [here](http://www.cyintanalysis.com/playing-with-threat_note/).
+For a good "Getting Started" guide on using threat_note, check out [this](http://www.cyintanalysis.com/playing-with-threat_note/) post by [@CYINT_dude](https://twitter.com/CYINT_dude) on his blog.
 
 ### Screenshots
 
