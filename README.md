@@ -39,6 +39,11 @@ For a good "Getting Started" guide on using threat_note, check out this post by 
 
 ### Screenshots
 
+First up is a shot of the overview page, which has the latest indicators, the latest starred indicators, and a campaign and indicator type breakdown.
+
+<p align="center">
+<img src="http://i.imgur.com/1lvLTOq.png" href="http://i.imgur.com/1lvLTOq.png"></p>
+
 Below is a screenshot of the "New Indicator" page, here you can enter as many or as few details about your indicator as you'd like. 
 
 <p align="center">
@@ -58,11 +63,6 @@ Below is a shot of what a "favorited" indicator looks like in the "networks" pag
 
 <p align="center">
 <img src="http://i.imgur.com/LhzdYHs.png" href="http://i.imgur.com/LhzdYHs.png"></p>
-
-Next is a shot of the overview page, which has the latest indicators, the latest starred indicators, and a campaign and indicator type breakdown.
-
-<p align="center">
-<img src="http://i.imgur.com/1lvLTOq.png" href="http://i.imgur.com/1lvLTOq.png"></p>
 
 ### License
 
