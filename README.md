@@ -62,7 +62,7 @@ Below is a shot of what a "favorited" indicator looks like in the "networks" pag
 Next is a shot of the overview page, which has the latest indicators, the latest starred indicators, and a campaign and indicator type breakdown.
 
 <p align="center">
-<img src="http://i.imgur.com/iQMSvDD.png" href="http://i.imgur.com/iQMSvDD.png"></p>
+<img src="http://i.imgur.com/1lvLTOq.png" href="http://i.imgur.com/1lvLTOq.png"></p>
 
 ### License
 
