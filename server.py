@@ -352,27 +352,7 @@ def delete():
 @app.route('/test', methods=['GET'])
 def test():
     try:
-        networks = convert(mongo.db.network.distinct("campaign"))
-        dictcount = {}
-        dictlist = []
-        counts = float(mongo.db.network.count())
-        network = mongo.db.network.find({}).sort('_id', pymongo.DESCENDING).limit(5)
-        favs = mongo.db.network.find({"favorite":"True"}).sort('_id', pymongo.DESCENDING)
-        for i in networks:
-            x = mongo.db.network.find({"campaign":i}).count()
-            if i == "":
-                dictcount["category"] = "Unknown"
-                tempx = x / counts
-                newtemp = tempx * 100
-                dictcount["value"] = newtemp
-            else:
-                dictcount["category"] = i
-                tempx = x / counts
-                newtemp = tempx * 100
-                dictcount["value"] = newtemp
-
-            dictlist.append(dictcount.copy())
-        return render_template('test.html', networks=dictlist, network=network, favs=favs)
+        return render_template('test.html')
     except Exception as e:
         return render_template('error.html', error=e)
 
