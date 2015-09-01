@@ -52,9 +52,9 @@
             <thead>
                 <tr>
                   {% if campaign|length == 0 %}
-                  <th class="text-center">-</th>
+                  <th class="text-center"><span class="glyphicon glyphicon-fire"></span> Unknown</th>
                   {% else %}
-                  <th class="text-center">{{ campaign }}</th>
+                  <th class="text-center"><span class="glyphicon glyphicon-fire"></span> {{ campaign }}</th>
                   {% endif %}
                 </tr>
             </thead>
@@ -71,6 +71,8 @@
 {% endfor %}
 
 </div>
+
+
 </div>
 
 </div>

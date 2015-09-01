@@ -22,6 +22,7 @@ import pymongo
 import whois
 import re
 import ast
+from bson.son import SON
 
 #################
 # Configuration #
@@ -40,8 +41,36 @@ mongo = PyMongo(app, config_prefix='MONGO')
 @app.route('/', methods=['GET'])
 def home():
     try:
-        network = mongo.db.network.find({}).sort('_id', pymongo.DESCENDING).limit(1)
-        return render_template('home.html', network=network)
+        networks = convert(mongo.db.network.distinct("campaign"))
+        dictcount = {}
+        dictlist = []
+        counts = float(mongo.db.network.count())
+        network = mongo.db.network.find({}).sort('_id', pymongo.DESCENDING).limit(5)
+        favs = mongo.db.network.find({"favorite":"True"}).sort('_id', pymongo.DESCENDING)
+        for i in networks:
+            x = mongo.db.network.find({"campaign":i}).count()
+            if i == "":
+                dictcount["category"] = "Unknown"
+                tempx = x / counts
+                newtemp = tempx * 100
+                dictcount["value"] = round(newtemp,2)
+            else:
+                dictcount["category"] = i
+                tempx = x / counts
+                newtemp = tempx * 100
+                dictcount["value"] = round(newtemp,2)
+            dictlist.append(dictcount.copy())
+        types = convert(mongo.db.network.distinct("inputtype"))
+        typedict = {}
+        typelist = []
+        for i in types:
+            x = mongo.db.network.find({"inputtype":i}).count()
+            typedict["category"] = i
+            tempx = x / counts
+            newtemp = tempx * 100
+            typedict["value"] = round(newtemp,2)
+            typelist.append(typedict.copy())
+        return render_template('home.html', networks=dictlist, network=network, favs=favs, typelist=typelist)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -317,6 +346,33 @@ def delete():
         collection.drop()
         message = "Database deleted successfully."
         return render_template('settings.html', message=message)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+@app.route('/test', methods=['GET'])
+def test():
+    try:
+        networks = convert(mongo.db.network.distinct("campaign"))
+        dictcount = {}
+        dictlist = []
+        counts = float(mongo.db.network.count())
+        network = mongo.db.network.find({}).sort('_id', pymongo.DESCENDING).limit(5)
+        favs = mongo.db.network.find({"favorite":"True"}).sort('_id', pymongo.DESCENDING)
+        for i in networks:
+            x = mongo.db.network.find({"campaign":i}).count()
+            if i == "":
+                dictcount["category"] = "Unknown"
+                tempx = x / counts
+                newtemp = tempx * 100
+                dictcount["value"] = newtemp
+            else:
+                dictcount["category"] = i
+                tempx = x / counts
+                newtemp = tempx * 100
+                dictcount["value"] = newtemp
+
+            dictlist.append(dictcount.copy())
+        return render_template('test.html', networks=dictlist, network=network, favs=favs)
     except Exception as e:
         return render_template('error.html', error=e)
 
