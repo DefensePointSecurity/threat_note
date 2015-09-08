@@ -39,30 +39,50 @@ For a good "Getting Started" guide on using threat_note, check out [this](http:/
 
 ### Screenshots
 
-First up is a shot of the overview page, which has the latest indicators, the latest starred indicators, and a campaign and indicator type breakdown.
+First up is a shot of the dashboard, which has the latest indicators, the latest starred indicators, and a campaign and indicator type breakdown.
 
 <p align="center">
-<img src="http://i.imgur.com/1lvLTOq.png" href="http://i.imgur.com/1lvLTOq.png"></p>
+<img src="http://i.imgur.com/hWknd2C.png" href="http://i.imgur.com/hWknd2C.png"></p>
 
-Below is a screenshot of the "New Indicator" page, here you can enter as many or as few details about your indicator as you'd like. 
-
-<p align="center">
-<img src="http://i.imgur.com/GbumDll.png" href="http://i.imgur.com/GbumDll.png"></p>
-
-The settings page, where you can turn on and configure your 3rd part integrations.
+Next is a screenshot of the Network Indicators page, here you will see all the indicators that have a type of "Domain", "Network", or "IP Address". 
 
 <p align="center">
-<img src="http://i.imgur.com/0xn1dk2.png" href="http://i.imgur.com/0xn1dk2.png"></p>
+<img src="http://i.imgur.com/uSaLH6y.png" href="http://i.imgur.com/uSaLH6y.png"></p>
 
-The page below is the indicator page for an indicator already created. Here you can edit it, delete it, or "star" it (when you "star" the indicator, it will be highlighted in the "Indicators" pages). 
-
-<p align="center">
-<img src="http://i.imgur.com/wa3l0qW.png" href="http://i.imgur.com/wa3l0qW.png"></p>
-
-Below is a shot of what a "favorited" indicator looks like in the "networks" page.
+You can edit or remove the indicator right from this page, by hovering over the applicable icon on the right-hand side of the indicator.
 
 <p align="center">
-<img src="http://i.imgur.com/LhzdYHs.png" href="http://i.imgur.com/LhzdYHs.png"></p>
+<img src="http://i.imgur.com/ovzUgBV.png" href="http://i.imgur.com/ovzUgBV.png"></p>
+
+Clicking on a network indicator will pull up the details page for the indicator. If you have Whois information turned on, you'll see the city and country underneath the indicator.
+
+<p align="center">
+<img src="http://i.imgur.com/7DsYbgl.png" href="http://i.imgur.com/7DsYbgl.png"></p>
+
+Clicking on the "New Indicator" button on the Network or Threat Actor page will bring up a page to enter details about your new indicator.
+
+<p align="center">
+<img src="http://i.imgur.com/m6hQswB.png" href="http://i.imgur.com/m6hQswB.png"></p>
+
+If you click on the "Edit Indicator" icon next to an indicator, you'll be presented with a page to edit any of the details you previously entered. You can also click on the "New Attribute" icon at the bottom right to add a new attribute to your indicator.
+
+<p align="center">
+<img src="http://i.imgur.com/W3LShn7.png" href="http://i.imgur.com/W3LShn7.png"></p>
+
+In the screenshot below you can see the "Threat Actors" page, which is similiar to the "Network Indicators" page, however, you'll only be presented with the Threat Actors you've entered.
+
+<p align="center">
+<img src="http://i.imgur.com/8KgVPRW.png" href="http://i.imgur.com/8KgVPRW.png"></p>
+
+Below is the Campaign page. It contains all of your indicators, broken out by campaign name. *Please note that the "Edit Description" button to the right of the campaign description is broken right now, and will be fixed in a future release.* Clicking on an indicator will take you to the indicator detail page.
+
+<p align="center">
+<img src="http://i.imgur.com/CUBmvXz.png" href="http://i.imgur.com/CUBmvXz.png"></p>
+
+Lastly, here is the Settings page, where you can delete your threat_note database, as well as control any 3rd party integrations, such as Whois data or VirusTotal information. Turning these integrations on can slow down the time to retrieve details about your indicator. 
+
+<p align="center">
+<img src="http://i.imgur.com/vrBEu9F.png" href="http://i.imgur.com/vrBEu9F.png"></p>
 
 ### License
 
