@@ -1,128 +1,181 @@
-{% include "banners/header.html" %}
+{% include "banners/newheader.html" %}
 {% block content %}
-<div class="container-fluid">
-      <div class="row">
-       <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar list-group">
-            <li class="list-group-item">  
-            <a href="/"><span class="glyphicon glyphicon-home"></span></span><span style="padding-left:5px"></span>Overview</a>
-            </li>
-            
-            <li class="list-group-item">
-            <span class='badge'>{{ totalcount }}</span>
-            <a href="/indicators"><span class="glyphicon glyphicon-map-marker"></span></span><span style="padding-left:5px"></span>Indicators</a>
-            </li>
-            <li class="list-group-item">
-            <span class='badge'>{{ networkcount }}</span>
-            <a href="/networks"><span style="padding-left:2em"><span class="glyphicon glyphicon-cloud"></span></span><span style="padding-left:5px"></span>Network</span></a>
-            </li>
-            <li class="list-group-item active">
-            <span class='badge'>{{ threatactorcount }}</span>
-            <a href="/threatactors"><span style="padding-left:2em"><span class="glyphicon glyphicon-user"></span></span><span style="padding-left:5px"></span>Threat Actors</span></a>
-            </li>
-           
-            <li class="list-group-item">
-            <span class='badge'>{{ campaigncount }}</span>
-            <a href="/campaigns"><span style="padding-left:2em"><span class="glyphicon glyphicon-fire"></span></span><span style="padding-left:5px"></span>Campaigns</span></a>
-            </li>
+<body> 
 
-            <li class="list-group-item">
-            <a href="/settings"><span class="glyphicon glyphicon-cog"></span><span style="padding-left:5px"></span>Settings</a>
-            </li>
-            <li class="list-group-item">
-            <a href="/about"><span class="glyphicon glyphicon-list-alt"></span><span style="padding-left:5px"></span>About</a>
-            </li>
-            
-      </div>
-<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-    <ul class="breadcrumb">
-        <li><a href="/">threat_note</a></li>
-        <li><a href="/indicators">Indicators</a></li>
-        <li class="active">Threat Actors</li>
-    </ul>
-	 This page contains all the threat actors in the threat_note database. Along with the threat actors, you'll also find key attributes and their values that have been entered. 
-  </p>
-  Use the "New Entry" button below to create a new indicator in the threat_note database. You can also use the filtering buttons on the top-right to perform various filtering tasks. You can use the search box to search for specific indicators or narrow down to a particular campaign or diamond model. You can also use the column dropdown button <span class="glyphicon glyphicon-th"></span> to only show certain attributes in the table.
-	</br>
-	</br>
+<div class="wrapper">
+    <div class="sidebar" data-color="azure">    
 
-<div id="custom-toolbar">
-    <div class="form-inline" role="form">
-    <a href="/newobject" class="btn btn-default text-button-color"><span class="glyphicon glyphicon-plus"></span> New Entry</a>
+        <div class="sidebar-wrapper">
+            <div class="logo">
+                <a href="/" class="simple-text">
+                    threat_note
+                </a>
+            </div>
+                       
+            <ul class="nav">
+                <li>
+                    <a href="/">
+                        <i class="pe-7s-graph2"></i> 
+                        <p>Dashboard</p>
+                    </a>            
+                </li>
+                <li>
+                    <a href="/networks">
+                        <i class="pe-7s-global"></i> 
+                        <p>Network Indicators</p>
+                    </a>
+                </li> 
+                <li  class="active">
+                    <a href="/threatactors">
+                        <i class="pe-7s-users"></i> 
+                        <p>Threat Actors</p>
+                    </a>        
+                </li>
+                    <li>
+                    <a href="/campaigns">
+                        <i class="pe-7s-shield"></i> 
+                        <p>Campaigns</p>
+                    </a>        
+                </li>
+                <li>
+                    <a href="/settings">
+                        <i class="pe-7s-config"></i> 
+                        <p>Settings</p>
+                    </a>        
+                </li>
+                <li>
+                    <a href="/about">
+                        <i class="pe-7s-info"></i> 
+                        <p>About</p>
+                    </a>        
+                </li>
+            </ul> 
+        </div>
     </div>
-</div>
+    
+    <div class="main-panel">
+        <nav class="navbar navbar-default navbar-fixed">
+            <div class="container-fluid">    
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navigation-example-2">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">Threat Actors</a>
+                </div>
+            </div>
+        </nav>
+                     
+                     
+        <div class="content">
+            <div class="container-fluid">
+                <div class="row">                   
+                    <div class="col-md-12">
+                    This page contains all the threat actors in the threat_note database. Along with the threat actors, you'll also find key attributes and their values that have been entered.
+</br>
+</br>
+                        <div class="card">
+                            <div class="header">
+                                <h4 class="title">Threat Actors</h4>
+                                <p class="category">This table shows you all of the threat actors.</p>
+                            </div>
 
- <table data-toggle="table" data-search="true" data-show-refresh="true" data-show-toggle="true" data-show-columns="true" data-classes="table table-hover table-condensed" data-striped="true" data-pagination="true" data-url="x" data-sort-name="name" data-sort-order="desc" data-toolbar="#custom-toolbar">
-            <thead>
-                <tr>
-                    <th class="text-center" data-sortable="true">Object</th>
-                    <th class="text-center" data-sortable="true">Object Type</th>
-                    <th class="text-center" data-sortable="true">First Seen</th>
-                    <th class="text-center" data-sortable="true">Last Seen</th>
-                    <th class="text-center" data-sortable="true">Campaign</th>
-                    <th class="text-center" data-sortable="true">Diamond Model</th>
-                    <th class="text-center" data-sortable="true">Comments</th>
-               </tr>
-            </thead>
-            <tbody>
-                {% for p in network %}
-                 {% if p['favorite'] == "True" %}
-            <tr class="info"> 
-                <td class="text-center"><a href="/network/{{ p['_id'] }}/info">{{ p['object'] }}</td>
-                    <td class="text-center">{{ p['inputtype'] }}</td>
-                    {% if p['firstseen']|length == 0 %}
-                    <td class="text-center">-</td>
-                    {% else %}
-                    <td class="text-center">{{ p['firstseen'] }}</td>
-                    {% endif %}
-                    {% if p['lastseen']|length == 0 %}
-                    <td class="text-center">-</td>
-                    {% else %}
-                    <td class="text-center">{{ p['lastseen'] }}</td>
-                    {% endif %}
-                    {% if p['campaign']|length == 0 %}
-                    <td class="text-center">-</td>
-                    {% else %}
-                    <td class="text-center">{{ p['campaign'] }}</td>
-                    {% endif %}
-                    <td class="text-center">{{ p['diamondmodel'] }}</td>
-                    {% if p['comments']|length == 0 %}
-                    <td class="text-center">-</td>
-                    {% else %}
-                    <td class="text-left">{{ p['comments'] }}</td>
-                    {% endif %}
-            </tr>
-         {% else %}
-                <tr> 
-               <td class="text-center"><a href="/network/{{ p['_id'] }}/info">{{ p['object'] }}</td>
-                    <td class="text-center">{{ p['inputtype'] }}</td>
-                    {% if p['firstseen']|length == 0 %}
-                    <td class="text-center">-</td>
-                    {% else %}
-                    <td class="text-center">{{ p['firstseen'] }}</td>
-                    {% endif %}
-                    {% if p['lastseen']|length == 0 %}
-                    <td class="text-center">-</td>
-                    {% else %}
-                    <td class="text-center">{{ p['lastseen'] }}</td>
-                    {% endif %}
-                    {% if p['campaign']|length == 0 %}
-                    <td class="text-center">-</td>
-                    {% else %}
-                    <td class="text-center">{{ p['campaign'] }}</td>
-                    {% endif %}
-                    <td class="text-center">{{ p['diamondmodel'] }}</td>
-                    {% if p['comments']|length == 0 %}
-                    <td class="text-center">-</td>
-                    {% else %}
-                    <td class="text-left">{{ p['comments'] }}</td>
-                    {% endif %}
-                </tr>
-                {% endif %}
-                {% endfor %}
-            </tbody>
-</table>
+                            <div class="content table-responsive table-full-width">
+                                <table class="table table-hover table-striped">
+                                    <thead>
+                                        <th data-sortable="true">Object</th>
+                                        <th>Object Type</th>
+                                        <th>First Seen</th>
+                                        <th>Last Seen</th>
+                                        <th>Campaign</th>
+                                        <th>Diamond Model</th>
+                                        <th>Comments</th>
+                                    </thead>
+                                    <tbody>
+                                           {% for p in network %}
+                                                <tr> 
+                                                <td><a href="/threatactors/{{ p['_id'] }}/info">{{ p['object'] }}</td>
+                                                    <td>{{ p['inputtype'] }}</td>
+                                                    {% if p['firstseen']|length == 0 %}
+                                                    <td>-</td>
+                                                    {% else %}
+                                                    <td>{{ p['firstseen'] }}</td>
+                                                    {% endif %}
+                                                    {% if p['lastseen']|length == 0 %}
+                                                    <td>-</td>
+                                                    {% else %}
+                                                    <td>{{ p['lastseen'] }}</td>
+                                                    {% endif %}
+                                                    {% if p['campaign']|length == 0 %}
+                                                    <td>-</td>
+                                                    {% else %}
+                                                    <td>{{ p['campaign'] }}</td>
+                                                    {% endif %}
+                                                    <td>{{ p['diamondmodel'] }}</td>
+                                                    {% if p['comments']|length == 0 %}
+                                                    <td>-</td>
+                                                    {% else %}
+                                                    <td>{{ p['comments'] }}</td>
+                                                    {% endif %}
+                                                     <td class="td-actions text-right">
+                                                    <a href="/edit/{{ p['_id'] }}" role="button" rel="tooltip" title="Edit Indicator" class="btn btn-info btn-simple btn-xs">
+                                                        <i class="fa fa-pencil"></i>
+                                                    </a>
+                                                    <a href="/delete/threatactor/{{ p['_id'] }}" role="button" rel="tooltip" title="Remove" class="btn btn-danger btn-simple btn-xs">
+                                                        <i class="fa fa-times"></i>
+                                                    </a>
+                                                </td>     
+                                            </tr>
+                                            {% endfor %}
+                                    </tbody>
+                                </table>                
+                            </div>
+                        </div>
+                         <div style="float: right;">
+                        <a href="/newobject" class="btn btn-info btn-fill"><i class="fa fa-plus"></i> New Indicator</a>
+                        </div>
+                    </div>                   
+                </div>                    
+            </div>
+        </div>
+        
+       <footer class="footer">
+            <div class="container-fluid">
+                
+                <p class="copyright pull-right">
+                    &copy; 2015 <a href="https://defpoint.com/">Defense Point Security</a>
+                </p>
+            </div>
+        </footer>
+    </div>   
 </div>
+</body>
 
+     <!--   Core JS Files   -->
+    <script src="../../static/js/jquery-1.10.2.js" type="text/javascript"></script>
+    <script src="../../static/js/bootstrap.min.js" type="text/javascript"></script>
+    
+    <!--  Checkbox, Radio & Switch Plugins -->
+    <script src="../../static/js/bootstrap-checkbox-radio-switch.js"></script>
+    
+    <!--  Charts Plugin -->
+    <script src="../../static/js/chartist.min.js"></script>
+
+    <!--  Notifications Plugin    -->
+    <script src="../../static/js/bootstrap-notify.js"></script>
+    
+    <!--  Google Maps Plugin    -->
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+    
+    <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
+    <script src="../../static/js/light-bootstrap-dashboard.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.8.1/bootstrap-table-all.js"></script>
+    
+    <!-- Light Bootstrap Table DEMO methods, don't include it in your project! -->
+    <script src="../../static/js/demo.js"></script>
+
+    
+</html>
 {% endblock %}
-{% include "banners/footer.html" %}

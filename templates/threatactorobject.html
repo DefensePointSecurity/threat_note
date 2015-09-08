@@ -1,6 +1,33 @@
-{% include "banners/newheader.html" %}
-{% block content %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/png" href="../../static/img/favicon.ico">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 
+    <title>threat_note | Security Researchers Notebook</title>
+
+    <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
+    <meta name="viewport" content="width=device-width" />
+    
+    <!-- Bootstrap core CSS     -->
+    <link href="../../static/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Animation library for notifications   -->
+    <link href="../../static/css/animate.min.css" rel="stylesheet"/>
+    
+    <!--  Light Bootstrap Table core CSS    -->
+    <link href="../../static/css/light-bootstrap-dashboard.css" rel="stylesheet"/>
+    
+    <!--  CSS for Demo Purpose, don't include it in your project     -->
+    <link href="../../static/css/demo.css" rel="stylesheet" />
+        
+    <!--     Fonts and icons     -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700,300' rel='stylesheet' type='text/css'>
+    <link href="../../static/css/pe-icon-7-stroke.css" rel="stylesheet" />
+    
+</head>
 <body> 
 
 <div class="wrapper">
@@ -20,13 +47,13 @@
                         <p>Dashboard</p>
                     </a>            
                 </li>
-                <li  class="active">
+                <li>
                     <a href="/networks">
                         <i class="pe-7s-global"></i> 
                         <p>Network Indicators</p>
                     </a>
                 </li> 
-                <li>
+                <li   class="active">
                     <a href="/threatactors">
                         <i class="pe-7s-users"></i> 
                         <p>Threat Actors</p>
@@ -64,7 +91,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="#">Network Indicators</a>
+                    <a class="navbar-brand" href="#">{{ records['object'] }}</a>
                 </div>
             </div>
         </nav>
@@ -73,70 +100,53 @@
         <div class="content">
             <div class="container-fluid">
                 <div class="row">                   
-                    <div class="col-md-12">
-                    This page contains all the network indicators in the threat_note database, which includes IP Addresses, Domains and Network Blocks. Along with your indicators, you'll also find key attributes and their values that have been entered.
-</br>
-</br>
+                    <div class="col-md-8 col-md-offset-2">
+                     <div class="card">
+                     <div class="content">
+                     This page contains information on {{ records['object'] }} that was manually entered, as well as 3rd party supplemental information that can aide an analyst in research. 3rd party sources can include VirusTotal, PassiveTotal, Whois, geolocational data, and more. You can enable these 3rd party integrations in the <a href="/settings">settings</a> menu.
+        </p>
+        On this page, you can also edit the entry to add new fields or change any attributes previously entered. You can also delete the entry if it's no longer needed.
+        </br>
+        </br>
+        </div>
+        </div>
                         <div class="card">
                             <div class="header">
-                                <h4 class="title">Network Indicators</h4>
-                                <p class="category">This table shows you all of your network indicators.</p>
+                                <h4 class="title"><i class="pe-7s-user"></i>    {{ records['object'] }}</h4>
+                                <p class="category">Other info will go here.</p>
                             </div>
 
                             <div class="content table-responsive table-full-width">
                                 <table class="table table-hover table-striped">
                                     <thead>
-                                        <th>Object</th>
-                                    	<th>Object Type</th>
-                                    	<th>First Seen</th>
-                                    	<th>Last Seen</th>
-                                    	<th>Campaign</th>
-                                        <th>Diamond Model</th>
-                                        <th>Comments</th>
+                                        <th>Attribute</th>
+                                        <th>Value</th>
                                     </thead>
                                     <tbody>
-                                           {% for p in network %}
-                                        <tr>
-                                            <td><a href="/network/{{ p['_id'] }}/info">{{ p['object'] }}</td>
-                                           <td>{{ p['inputtype'] }}</td>
-                                            {% if p['firstseen']|length == 0 %}
+                                       {% for key in records %}
+                                        {% if key == "_id" %}
+                                         <div></div>
+                                         {% elif key == "object" %}
+                                         <div></div>
+                                          {% elif key == "favorite" %}
+                                          <div></div>
+                                        {% else %}
+                                          {% if records[key]|length == 0 %}
+                                          <tr>
+                                            <td><span class="text-capitalize">{{key}}</span></td>
                                             <td>-</td>
-                                            {% else %}
-                                            <td>{{ p['firstseen'] }}</td>
-                                            {% endif %}
-                                            {% if p['lastseen']|length == 0 %}
-                                            <td>-</td>
-                                            {% else %}
-                                            <td>{{ p['lastseen'] }}</td>
-                                            {% endif %}
-                                            {% if p['campaign']|length == 0 %}
-                                            <td>-</td>
-                                            {% else %}
-                                            <td>{{ p['campaign'] }}</td>
-                                            {% endif %}
-                                            <td>{{ p['diamondmodel'] }}</td>
-                                            {% if p['comments']|length == 0 %}
-                                            <td>-</td>
-                                            {% else %}
-                                            <td>{{ p['comments'] }}</td>
-                                            {% endif %}
-                                              <td class="td-actions text-right">
-                                                    <a href="/edit/{{ p['_id'] }}" role="button" rel="tooltip" title="Edit Indicator" class="btn btn-info btn-simple btn-xs">
-                                                        <i class="fa fa-pencil"></i>
-                                                    </a>
-                                                    <a href="/delete/network/{{ p['_id'] }}" role="button" rel="tooltip" title="Remove" class="btn btn-danger btn-simple btn-xs">
-                                                        <i class="fa fa-times"></i>
-                                                    </a>
-                                                </td>     
-                                    </tr>
-                                    {% endfor %}
+                                          </tr>
+                                          {% else %}
+                                          <tr>
+                                            <td><span class="text-capitalize">{{key}}</span></td>
+                                            <td>{{ records[key] }}</td>
+                                          </tr>
+                                        {% endif %}
+                                        {% endif %}
+                                      {% endfor %}
                                     </tbody>
-                                </table>
-
-                            </div> 
-                        </div>
-                        <div style="float: right;">
-                        <a href="/newobject" class="btn btn-info btn-fill"><i class="fa fa-plus"></i> New Indicator</a>
+                                </table>                
+                            </div>
                         </div>
                     </div>                   
                 </div>                    
@@ -178,6 +188,5 @@
     <!-- Light Bootstrap Table DEMO methods, don't include it in your project! -->
     <script src="../../static/js/demo.js"></script>
 
-	
+    
 </html>
-{% endblock %}

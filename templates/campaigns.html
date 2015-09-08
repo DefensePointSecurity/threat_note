@@ -1,81 +1,161 @@
-{% include "banners/header.html" %}
+{% include "banners/newheader.html" %}
 {% block content %}
-<div class="container-fluid">
-      <div class="row">
-       <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar list-group">
-            <li class="list-group-item">  
-            <a href="/"><span class="glyphicon glyphicon-home"></span></span><span style="padding-left:5px"></span>Overview</a>
-            </li>
-            
-            <li class="list-group-item">
-            <span class='badge'>{{ totalcount }}</span>
-            <a href="/indicators"><span class="glyphicon glyphicon-map-marker"></span></span><span style="padding-left:5px"></span>Indicators</a>
-            </li>
-            <li class="list-group-item">
-            <span class='badge'>{{ networkcount }}</span>
-            <a href="/networks"><span style="padding-left:2em"><span class="glyphicon glyphicon-cloud"></span></span><span style="padding-left:5px"></span>Network</span></a>
-            </li>
-            <li class="list-group-item">
-            <span class='badge'>{{ threatactorcount }}</span>
-            <a href="/threatactors"><span style="padding-left:2em"><span class="glyphicon glyphicon-user"></span></span><span style="padding-left:5px"></span>Threat Actors</span></a>
-            </li>
-           
-            <li class="list-group-item active">
-            <span class='badge'>{{ campaigncount }}</span>
-            <a href="/campaigns"><span style="padding-left:2em"><span class="glyphicon glyphicon-fire"></span></span><span style="padding-left:5px"></span>Campaigns</span></a>
-            </li>
+<body> 
 
-            <li class="list-group-item">
-            <a href="/settings"><span class="glyphicon glyphicon-cog"></span><span style="padding-left:5px"></span>Settings</a>
-            </li>
-            <li class="list-group-item">
-            <a href="/about"><span class="glyphicon glyphicon-list-alt"></span><span style="padding-left:5px"></span>About</a>
-            </li>
-            
-      </div>
-  <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-    <ul class="breadcrumb">
-      <li><a href="/">threat_note</a></li>
-      <li><a href="/networks">Indicators</a></li>
-      <li class="active">Campaigns</li>
-    </ul>
-        This page lists the campaigns that have been associated with indicators in the database. Each campaign is in it's own table, with the campaign name at the top, and the indicators that are associated with that particular campaign. Clicking on an indicator in each campaign will take you to their object page, where you can edit or delete the indicator.
-        </br>
-        </br>
+<div class="wrapper">
+    <div class="sidebar" data-color="azure">    
 
-{% for campaign in campaignents %}
-<center>
- <div class="row">
-        <div class="col-md-6 col-lg-offset-3">
-        <table data-toggle="table" data-striped="true" data-toolbar="#custom-toolbar">
-            <thead>
-                <tr>
-                  {% if campaign|length == 0 %}
-                  <th class="text-center"><span class="glyphicon glyphicon-fire"></span> Unknown</th>
-                  {% else %}
-                  <th class="text-center"><span class="glyphicon glyphicon-fire"></span> {{ campaign }}</th>
-                  {% endif %}
-                </tr>
-            </thead>
-              <tbody>
-              {% for camprec in campaignents[campaign] %}  
-                <tr>
-                  <td><a href="/campaign/{{ camprec }}/info">{{ camprec }}</td>
-                </tr>
-              {% endfor %}
-              </tbody>
-        </table>
+        <div class="sidebar-wrapper">
+            <div class="logo">
+                <a href="http://www.creative-tim.com" class="simple-text">
+                    threat_note
+                </a>
+            </div>
+                       
+            <ul class="nav">
+                  <li>
+                    <a href="/">
+                        <i class="pe-7s-graph2"></i> 
+                        <p>Dashboard</p>
+                    </a>            
+                </li>
+                <li>
+                    <a href="/networks">
+                        <i class="pe-7s-global"></i> 
+                        <p>Network Indicators</p>
+                    </a>
+                </li> 
+                <li>
+                    <a href="/threatactors">
+                        <i class="pe-7s-users"></i> 
+                        <p>Threat Actors</p>
+                    </a>        
+                </li>
+                    <li  class="active">
+                    <a href="/campaigns">
+                        <i class="pe-7s-shield"></i> 
+                        <p>Campaigns</p>
+                    </a>        
+                </li>
+                <li>
+                    <a href="/settings">
+                        <i class="pe-7s-config"></i> 
+                        <p>Settings</p>
+                    </a>        
+                </li>
+                <li>
+                    <a href="/about">
+                        <i class="pe-7s-info"></i> 
+                        <p>About</p>
+                    </a>        
+                </li>
+            </ul> 
         </div>
-</center>
-{% endfor %}
+    </div>
+    
+    <div class="main-panel">
+        <nav class="navbar navbar-default navbar-fixed">
+            <div class="container-fluid">    
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navigation-example-2">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">Campaigns</a>
+                </div>
+            </div>
+        </nav>
+                     
+                     
+        <div class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="header">
+                                <h4 class="title">Campaigns</h4>
+                            </div>
+                                <div class="content">
+                                     This page lists the campaigns that have been associated with indicators in the database. Each campaign is in it's own table, with the campaign name at the top, and the indicators that are associated with that particular campaign. Clicking on an indicator in each campaign will take you to their object page, where you can edit or delete the indicator.</p>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+
+            {% for campaign in campaignents %}
+            <div class="row">
+                    <div class="col-md-6 col-md-offset-3">
+                        <div class="card">
+                            <div class="header">
+                              {% if campaign == "" %}
+                              <h4 class="title"><i class="pe-7s-shield"></i> Unknown</h4>
+                              {% else %}
+                              <h4 class="title"><i class="pe-7s-shield"></i> {{ campaign }}</h4>
+                              {% endif %}
+                               <p class="category">Campaign Description <a href="/editcampaign/{{ campaign }}" class="fa fa-pencil fa-fw text-muted"></a></p>
+                            </div>
+
+
+                                 <div class="content table-responsive table-full-width">
+                                <table class="table table-hover table-striped">
+                                    <thead>
+                                        <th>Indicator</th>
+                                    </thead>
+                                    <tbody>
+                                        {% for p in campaignents[campaign] %}
+                                        <tr>
+                                            <td><a href="/campaign/{{ p }}/info">{{ p }}</a></td>
+                                       </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% endfor %}
 
 </div>
+        </div>
+        <footer class="footer">
+            <div class="container-fluid">
+                <p class="copyright pull-right">
+                    &copy; 2015 <a href="https://defpoint.com/">Defense Point Security</a>
+                </p>
+            </div>
+        </footer>
+        </div>
+        </div>
+</body>
 
 
-</div>
 
-</div>
+       <!--   Core JS Files   -->
+    <script src="../../static/js/jquery-1.10.2.js" type="text/javascript"></script>
+    <script src="../../static/js/bootstrap.min.js" type="text/javascript"></script>
+    
+    <!--  Checkbox, Radio & Switch Plugins -->
+    <script src="../../static/js/bootstrap-checkbox-radio-switch.js"></script>
+    
+    <!--  Charts Plugin -->
+    <script src="../../static/js/chartist.min.js"></script>
 
+    <!--  Notifications Plugin    -->
+    <script src="../../static/js/bootstrap-notify.js"></script>
+    
+    <!--  Google Maps Plugin    -->
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+    
+    <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
+    <script src="../../static/js/light-bootstrap-dashboard.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.8.1/bootstrap-table-all.js"></script>
+    
+    <!-- Light Bootstrap Table DEMO methods, don't include it in your project! -->
+    <script src="../../static/js/demo.js"></script>
+
+    
+</html>
 {% endblock %}
-{% include "banners/footer.html" %}
