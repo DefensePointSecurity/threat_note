@@ -74,7 +74,7 @@ In the screenshot below you can see the "Threat Actors" page, which is similiar 
 <p align="center">
 <img src="http://i.imgur.com/8KgVPRW.png" href="http://i.imgur.com/8KgVPRW.png"></p>
 
-Below is the Campaign page. It contains all of your indicators, broken out by campaign name. *Please note that the "Edit Description" button to the right of the campaign description is broken right now, and will be fixed in a future release.* Clicking on an indicator will take you to the indicator detail page.
+Below is the Campaign page. It contains all of your indicators, broken out by campaign name. **Please note that the "Edit Description" button to the right of the campaign description is broken right now, and will be fixed in a future release.** Clicking on an indicator will take you to the indicator detail page.
 
 <p align="center">
 <img src="http://i.imgur.com/CUBmvXz.png" href="http://i.imgur.com/CUBmvXz.png"></p>
