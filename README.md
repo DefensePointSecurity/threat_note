@@ -84,6 +84,10 @@ Lastly, here is the Settings page, where you can delete your threat_note databas
 <p align="center">
 <img src="http://i.imgur.com/vrBEu9F.png" href="http://i.imgur.com/vrBEu9F.png"></p>
 
+### Credits
+
+Thanks to the guys over at [Creative Tim](http://www.creative-tim.com/) for their awesome Bootstrap theme. Download your version for free [here](http://demos.creative-tim.com/light-bootstrap-dashboard). 
+
 ### License
 
 This software is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
