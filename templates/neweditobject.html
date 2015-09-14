@@ -225,6 +225,12 @@
                                                 <label>{{ i }}</label>
                                                 <input type="text" class="form-control" name="{{ i }}" value="{{ entry[i] }}" placeholder="LASER PANDA">
                                             </div>   
+                                            {% elif i == "comments" %}
+                                            <div class="form-group">
+                                                <label>{{ i }}</label>
+                                                 <textarea class="form-control" rows="3" name="inputcomments" value="{{ entry[i] }}">{{ entry[i] }}</textarea>
+                                            </div>   
+                                           
 
                                             {% else %}
                                             <div class="form-group">
