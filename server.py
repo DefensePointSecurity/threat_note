@@ -151,8 +151,7 @@ def newobject():
                     errormessage = "Entry already exists in database."
                     return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'], inputobject=newdict['inputobject'], inputfirstseen=newdict['inputfirstseen'], inputlastseen=newdict['inputlastseen'], inputcampaign=newdict['inputcampaign'], inputcomments=newdict['inputcomments'], diamondmodel=newdict['diamondmodel'])
                 else:
-                    inputobject = newdict['inputobject'].strip()
-                    newdata = {"object":newdict['inputobject'], "firstseen":newdict['inputfirstseen'],"lastseen":newdict['inputlastseen'],"campaign":newdict['inputcampaign'],"comments":newdict['inputcomments'],"inputtype":newdict['inputtype'], "diamondmodel":newdict['diamondmodel'], "favorite":"False"}
+                    newdata = {"object":newdict['inputobject'].strip(), "firstseen":newdict['inputfirstseen'],"lastseen":newdict['inputlastseen'],"campaign":newdict['inputcampaign'],"comments":newdict['inputcomments'],"inputtype":newdict['inputtype'], "diamondmodel":newdict['diamondmodel'], "favorite":"False"}
                     mongo.db.network.insert(newdata)
                     network = mongo.db.network.find({"$or": [{"inputtype": "IPv4"}, {"inputtype":"Network"},{"inputtype": "IPv6"}, {"inputtype": "Domain"}]})
                     return render_template('networks.html', network=network)
@@ -164,8 +163,7 @@ def newobject():
                     errormessage = "Entry already exists in database."
                     return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'], inputobject=newdict['inputobject'], inputfirstseen=newdict['inputfirstseen'], inputlastseen=newdict['inputlastseen'], inputcampaign=newdict['inputcampaign'], inputcomments=newdict['inputcomments'], diamondmodel=newdict['diamondmodel'])
             else:
-                inputobject = newdict['inputobject'].strip()
-                newdata = {"object":newdict['inputobject'], "firstseen":newdict['inputfirstseen'],"lastseen":newdict['inputlastseen'],"campaign":newdict['inputcampaign'],"comments":newdict['inputcomments'],"inputtype":newdict['inputtype'], "diamondmodel":newdict['diamondmodel'], "favorite":"False"}
+                newdata = {"object":newdict['inputobject'].strip(), "firstseen":newdict['inputfirstseen'],"lastseen":newdict['inputlastseen'],"campaign":newdict['inputcampaign'],"comments":newdict['inputcomments'],"inputtype":newdict['inputtype'], "diamondmodel":newdict['diamondmodel'], "favorite":"False"}
                 mongo.db.network.insert(newdata)
                 if newdata['inputtype'] == "IPv6" or newdata['inputtype'] == "Domain" or newdata['inputtype'] == "Network":
                     network = mongo.db.network.find({"$or": [{"inputtype": "IPv4"}, {"inputtype":"Network"},{"inputtype": "IPv6"}, {"inputtype": "Domain"}]})
@@ -301,7 +299,7 @@ def objectsummary(uid):
             jsonvt = vt_domain_lookup(str(http['object']))
         if settingsvars['whoisinfo'] == "on":
             if str(http['inputtype']) == "Domain":
-                address= str(whoisdata['city']) + ", " + str(whoisdata['country'])
+                address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
             else:
                 address = str(whoisdata['nets'][0]['city']) + ", " + str(whoisdata['nets'][0]['country'])
         else:
@@ -452,11 +450,13 @@ def ipwhois(entity):
 
 # Domain Whois
 def domainwhois(entity):
-    domain = whois.whois(entity)
-    domaindict = {}
-    for i in domain:
-        domaindict[i] = domain[i]
-    return domaindict
+    domain = json.loads(str(whois.whois(entity)))
+    for k, v in domain.iteritems():
+        if type(v) == list:
+                domain[k] = ', '.join(v)
+    if 'city' not in domain.keys():
+        domain['city'] = 'N/A'
+    return domain
 
 # Convert function
 def convert(data):
