@@ -29,7 +29,7 @@ import csv
 # Configuration #
 #################
 app = Flask(__name__)
-app.config['MONGO_HOST'] = 'localhost'
+app.config['MONGO_HOST'] = '127.0.0.1'
 app.config['MONGO_PORT'] = 27017
 app.config['MONGO_DBNAME'] = 'threatnote'
 
@@ -149,7 +149,7 @@ def newobject():
             if ipregex:     
                 if mongo.db.network.find({"object":newdict['inputobject']}).count() > 0:
                     errormessage = "Entry already exists in database."
-                    return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['type'], inputobject=newdict['inputobject'], inputfirstseen=newdict['inputfirstseen'], inputlastseen=newdict['inputlastseen'], inputcampaign=newdict['inputcampaign'], inputcomments=newdict['inputcomments'], diamondmodel=newdict['diamondmodel'])
+                    return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'], inputobject=newdict['inputobject'], inputfirstseen=newdict['inputfirstseen'], inputlastseen=newdict['inputlastseen'], inputcampaign=newdict['inputcampaign'], inputcomments=newdict['inputcomments'], diamondmodel=newdict['diamondmodel'])
                 else:
                     inputobject = newdict['inputobject'].strip()
                     newdata = {"object":newdict['inputobject'], "firstseen":newdict['inputfirstseen'],"lastseen":newdict['inputlastseen'],"campaign":newdict['inputcampaign'],"comments":newdict['inputcomments'],"inputtype":newdict['inputtype'], "diamondmodel":newdict['diamondmodel'], "favorite":"False"}
