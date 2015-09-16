@@ -29,7 +29,7 @@ import csv
 # Configuration #
 #################
 app = Flask(__name__)
-app.config['MONGO_HOST'] = 'localhost'
+app.config['MONGO_HOST'] = '192.168.78.132'
 app.config['MONGO_PORT'] = 27017
 app.config['MONGO_DBNAME'] = 'threatnote'
 
@@ -301,7 +301,7 @@ def objectsummary(uid):
             jsonvt = vt_domain_lookup(str(http['object']))
         if settingsvars['whoisinfo'] == "on":
             if str(http['inputtype']) == "Domain":
-                address= str(whoisdata['city']) + ", " + str(whoisdata['country'])
+                address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
             else:
                 address = str(whoisdata['nets'][0]['city']) + ", " + str(whoisdata['nets'][0]['country'])
         else:
@@ -452,11 +452,13 @@ def ipwhois(entity):
 
 # Domain Whois
 def domainwhois(entity):
-    domain = whois.whois(entity)
-    domaindict = {}
-    for i in domain:
-        domaindict[i] = domain[i]
-    return domaindict
+    domain = json.loads(str(whois.whois(entity)))
+    for k, v in domain.iteritems():
+        if type(v) == list:
+                domain[k] = ', '.join(v)
+    if 'city' not in domain.keys():
+        domain['city'] = 'N/A'
+    return domain
 
 # Convert function
 def convert(data):
