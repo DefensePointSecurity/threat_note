@@ -426,6 +426,7 @@ def vt_ipv4_lookup(ipv4):
         params = {'ip': ipv4, 'apikey': apikey}
         r = requests.get(url, params=params, verify=False)
         j = json.loads(r.text)
+        j['resolutions'] = sorted(j['resolutions'], key=lambda k: k['last_resolved'], reverse=True)
         return j
     except:
         pass
@@ -439,7 +440,6 @@ def vt_domain_lookup(domain):
         r = requests.get(url, params=params, verify=False)
         j = json.loads(r.text)
         j['resolutions'] = sorted(j['resolutions'], key=lambda k: k['last_resolved'], reverse=True)
-
         return j
     except:
         pass
@@ -459,6 +459,7 @@ def domainwhois(entity):
     if 'city' not in domain.keys():
         domain['city'] = 'N/A'
     return domain
+
 
 # Convert function
 def convert(data):
