@@ -438,6 +438,8 @@ def vt_domain_lookup(domain):
         params = {'domain': domain, 'apikey': apikey}
         r = requests.get(url, params=params, verify=False)
         j = json.loads(r.text)
+        j['resolutions'] = sorted(j['resolutions'], key=lambda k: k['last_resolved'], reverse=True)
+
         return j
     except:
         pass
