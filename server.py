@@ -253,7 +253,7 @@ def updateobject():
                 jsonvt = vt_ipv4_lookup(str(http['object']))
         elif newdict['inputtype'] == "Domain":
             if settingsvars['whoisinfo'] == "on":
-                whoisdata = ipwhois(str(http['object']))
+                whoisdata = domainwhois(str(http['object']))
             if settingsvars['vtinfo'] == "on":
                 jsonvt = vt_ipv4_lookup(str(http['object']))
         if newdict['inputtype'] == "Threat Actor":
@@ -426,6 +426,7 @@ def vt_ipv4_lookup(ipv4):
         params = {'ip': ipv4, 'apikey': apikey}
         r = requests.get(url, params=params, verify=False)
         j = json.loads(r.text)
+        j['resolutions'] = sorted(j['resolutions'], key=lambda k: k['last_resolved'], reverse=True)
         return j
     except:
         pass
@@ -438,6 +439,7 @@ def vt_domain_lookup(domain):
         params = {'domain': domain, 'apikey': apikey}
         r = requests.get(url, params=params, verify=False)
         j = json.loads(r.text)
+        j['resolutions'] = sorted(j['resolutions'], key=lambda k: k['last_resolved'], reverse=True)
         return j
     except:
         pass
@@ -457,6 +459,7 @@ def domainwhois(entity):
     if 'city' not in domain.keys():
         domain['city'] = 'N/A'
     return domain
+
 
 # Convert function
 def convert(data):
