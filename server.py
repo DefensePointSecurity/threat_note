@@ -253,7 +253,7 @@ def updateobject():
                 jsonvt = vt_ipv4_lookup(str(http['object']))
         elif newdict['inputtype'] == "Domain":
             if settingsvars['whoisinfo'] == "on":
-                whoisdata = ipwhois(str(http['object']))
+                whoisdata = domainwhois(str(http['object']))
             if settingsvars['vtinfo'] == "on":
                 jsonvt = vt_ipv4_lookup(str(http['object']))
         if newdict['inputtype'] == "Threat Actor":
