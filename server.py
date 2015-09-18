@@ -256,7 +256,7 @@ def updatesettings():
 			else:
 				mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {"whoisinfo": "off"}})
 			mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {'apikey': newdict['apikey']}})
-			if 'odns' in newdict.keys():
+			if 'odnsinfo' in newdict.keys():
 				mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {"odnsinfo": "on"}})
 			else:
 				mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {"odnsinfo": "off"}})
@@ -492,10 +492,13 @@ def campaigncount():
 #############
 
 def get_proxy():
-	proxies = {
-	    'http': mongo.db.settings.find_one()['httpproxy'],
-	    'https': mongo.db.settings.find_one()['httpsproxy'],
-	}
+	try:
+		proxies = {
+	        'http': mongo.db.settings.find_one()['httpproxy'],
+	        'https': mongo.db.settings.find_one()['httpsproxy'],
+		}
+	except KeyError:
+		proxies = {}
 	return proxies
 
 # IPv4 VirusTotal function for passive DNS
