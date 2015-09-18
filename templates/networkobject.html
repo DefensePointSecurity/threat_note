@@ -182,7 +182,18 @@
                     </td>
                     </tr>
                     {% endif %}
-                
+
+                    {% if settingsvars['odnsinfo'] == "on" %}
+                <tr>
+                <td><strong>Investigate Known Malicious Domains</strong></td>
+                <td class="text-left">
+                {% for record in odnsdata%}
+                    <strong>Domain: </strong>{{ record }}
+                    </br>
+                    {% endfor %}
+                    </td>
+                    </tr>
+                    {% endif %}
 
 
             {% elif records['inputtype'] == "Domain" %}
