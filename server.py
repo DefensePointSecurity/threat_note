@@ -555,15 +555,13 @@ def investigate_ip_query(entity):
 		mal_domains = []
 		ip = entity.strip()
 		endpoint = 'ips/{ip}/latest_domains'.format(ip=ip)
-		p = get_proxy()
-		response = requests.get(api_url + endpoint, headers=headers, proxies=p)
+		response = requests.get(api_url + endpoint, headers=headers, proxies=get_proxy())
 		if response.text != '[]':
 			results = response.json()
 			for entry in results:
 				mal_domains.append(entry['name'])
 			return mal_domains
-	except Exception as e:
-		print str(e)
+	except:
 		pass
 
 
