@@ -104,6 +104,25 @@
 
                               </div>
                             </div>
+                        <div class="card ">
+                        <form class="form-horizontal" action="/update/settings/" enctype="application/x-www-form-urlencoded" method="POST">
+                            <div class="header">
+                                <h4 class="title">Proxy Settings</h4>
+                                <p class="category">Network Proxy Configuration Settings</p>
+                            </div>
+                            <div class="content">
+                              <div class="row">
+                              <div class="col-md-8">
+                                <fieldset>
+                                <label>HTTP</label>
+                                <input type="text" class="form-control" name="httpproxy" value="{{ records['httpproxy'] }}" placeholder="http://127.0.0.1:8080"></br>
+                                <label>HTTPS</label>
+                                <input type="text" class="form-control" name="httpsproxy" value="{{ records['httpsproxy'] }}" placeholder="https://127.0.0.1:8080"></br>
+                                </fieldset>
+                              </div>
+                            </div>
+                           </div>
+                            </div>
                         </div>
                     
                     <div class="col-md-6">
@@ -113,8 +132,7 @@
                                 <p class="category">Configure 3rd Party Data Providers Options</p>
                             </div>
 
-                            <div class="content table-responsive table-full-width">                      
-                               <form class="form-horizontal" action="/update/settings/" enctype="application/x-www-form-urlencoded" method="POST">
+                            <div class="content table-responsive table-full-width">
                                 <fieldset>
                                     <table class="table">
                                         <tbody>
@@ -145,13 +163,28 @@
                                                 </td>
                                                 <td>VirusTotal Passive DNS Information</td>
                                             </tr>
+                                            <tr>
+                                                <td>
+                                                 {% if records['odns'] == "on" %}
+                                             <label class="checkbox">
+                                              <input type="checkbox" class="form-control" name="odns" checked data-toggle="checkbox">
+                                            {% else %}
+                                              <label class="checkbox">
+                                                 <input type="checkbox" class="form-control" name="odns" data-toggle="checkbox">
+                                            {% endif %}
+                                                </td>
+                                                <td>OpenDNS Investigate</td>
+                                            </tr>
                                         </tbody>
                                     </table>
                            
                                 </div>
                                 <div class="content">
+                                                <h4 class="title">Configure API Keys</h4>
                                                 <label>VirusTotal API Key</label>
                                                 <input type="text" class="form-control" name="apikey" value="{{ records['apikey'] }}" placeholder="149d08c494b4db323420180b09312b2f34e529230496cddfa868c01eea"></br>
+                                                <label>Investigate API Key</label>
+                                                <input type="text" class="form-control" name="odnskey" value="{{ records['odnskey'] }}" placeholder="89ba67a0-b1f2-75ef-9fb9-04eae0434963"></br>
                                              <button type="submit" class="btn btn-info btn-fill" >Submit</button>
                                             
 
