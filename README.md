@@ -79,10 +79,10 @@ Below is the Campaign page. It contains all of your indicators, broken out by ca
 <p align="center">
 <img src="http://i.imgur.com/CUBmvXz.png" href="http://i.imgur.com/CUBmvXz.png"></p>
 
-Lastly, here is the Settings page, where you can delete your threat_note database, as well as control any 3rd party integrations, such as Whois data or VirusTotal information. Turning these integrations on can slow down the time to retrieve details about your indicator. 
+Lastly, here is the Settings page, where you can delete your threat_note database, as well as control any 3rd party integrations, such as Whois data or VirusTotal information. Turning these integrations on can slow down the time to retrieve details about your indicator. A new feature recently added by [@alxhrck](https://github.com/alxhrck) was the ability to add an HTTP(s) proxy if you need it to connect to 3rd parties. He also recently added support for a new 3rd party integration, OpenDNS Investigate, which can be activated on this page.
 
 <p align="center">
-<img src="http://i.imgur.com/vrBEu9F.png" href="http://i.imgur.com/vrBEu9F.png"></p>
+<img src="http://i.imgur.com/AwRYkEI.png" href="http://i.imgur.com/AwRYkEI.png"></p>
 
 ### Credits
 
