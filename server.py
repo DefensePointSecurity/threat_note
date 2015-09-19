@@ -29,7 +29,7 @@ import csv
 # Configuration #
 #################
 app = Flask(__name__)
-app.config['MONGO_HOST'] = 'localhost'
+app.config['MONGO_HOST'] = '172.16.143.131'  # 'localhost'
 app.config['MONGO_PORT'] = 27017
 app.config['MONGO_DBNAME'] = 'threatnote'
 
@@ -320,7 +320,7 @@ def insertnewfield():
 		imd = ImmutableMultiDict(something)
 		records = convert(imd)
 		newdict = {}
-		#dictlist = []
+        # dictlist = []
 		for i in records:
 			if i == "inputnewfieldname":
 				newdict[records[i]] = records['inputnewfieldvalue']
@@ -328,7 +328,7 @@ def insertnewfield():
 				pass
 			else:
 				newdict[i] = records[i]
-		#dictlist.append(newdict)
+        # dictlist.append(newdict)
 		return render_template('neweditobject.html', entry=newdict)
 	except Exception as e:
 		return render_template('error.html', error=e)
@@ -456,7 +456,7 @@ def _run_on_start():
 		pass
 	else:
 		mongo.db.settings.insert(
-			{'apikey': '', 'vtinfo': '', 'whoisinfo': '', 'odnskey': '', 'httpsproxy': '', 'httpproxy': ''})
+			{'apikey': '', 'vtinfo': '', 'whoisinfo': '', 'odnsinfo':'', 'odnskey': '', 'httpsproxy': '', 'httpproxy': ''})
 
 
 ####################
@@ -473,7 +473,8 @@ def totalcount():
 @app.context_processor
 def networkcount():
 	return dict(networkcount=mongo.db.network.find({
-		"$or": [{"inputtype": "IPv4"}, {"inputtype": "IPv6"}, {"inputtype": "Network"}, {"inputtype": "Domain"}]}).count())
+		"$or": [{"inputtype": "IPv4"}, {"inputtype": "IPv6"}, {"inputtype": "Network"},
+		        {"inputtype": "Domain"}]}).count())
 
 
 # Total Threat Actor Indicators
@@ -494,12 +495,13 @@ def campaigncount():
 def get_proxy():
 	try:
 		proxies = {
-	        'http': mongo.db.settings.find_one()['httpproxy'],
-	        'https': mongo.db.settings.find_one()['httpsproxy'],
+			'http': mongo.db.settings.find_one()['httpproxy'],
+			'https': mongo.db.settings.find_one()['httpsproxy'],
 		}
 	except KeyError:
 		proxies = {}
 	return proxies
+
 
 # IPv4 VirusTotal function for passive DNS
 def vt_ipv4_lookup(ipv4):
