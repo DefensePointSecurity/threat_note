@@ -221,6 +221,17 @@
                     </td>
                     </tr>
                 {% endif %}
+                  {% if settingsvars['odnsinfo'] == "on" %}
+                <tr>
+                <td><strong>Investigate Domain Categorization</strong></td>
+                <td class="text-left">
+                {% for record in odnsdata%}
+                    <strong>Category: </strong>{{ record }}
+                    </br>
+                    {% endfor %}
+                    </td>
+                    </tr>
+                    {% endif %}
               {% endif %}
                                     </tbody>
                                 </table>                
