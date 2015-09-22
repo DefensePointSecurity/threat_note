@@ -130,6 +130,23 @@
                                           <div></div>
                                           {% elif key == "favorite" %}
                                           <div></div>
+                                          {% elif key == "confidence" %}
+                                          {% if records[key] == "Low" %}
+                                          <tr>
+                                          <td><span class="text-capitalize">{{ key }}</span></td>
+                                          <td><i class="fa fa-circle text-warning"></i> {{ records[key] }}</td>
+                                          </tr>
+                                          {% elif records[key] == "Medium" %}
+                                         <tr>
+                                          <td><span class="text-capitalize">{{ key }}</span></td>
+                                          <td><i class="fa fa-circle text-info"></i> {{ records[key] }}</td>
+                                          </tr>
+                                           {% elif records[key] == "High" %}
+                                         <tr>
+                                          <td><span class="text-capitalize">{{ key }}</span></td>
+                                          <td><i class="fa fa-circle text-danger"></i> {{ records[key] }}</td>
+                                          </tr>
+                                          {% endif %}
                                         {% else %}
                                           {% if records[key]|length == 0 %}
                                           <tr>

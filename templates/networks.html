@@ -95,6 +95,7 @@
                                     	<th>First Seen</th>
                                     	<th>Last Seen</th>
                                     	<th>Campaign</th>
+                                        <th>Confidence</th>
                                         <th>Diamond Model</th>
                                         <th>Comments</th>
                                     </thead>
@@ -117,6 +118,13 @@
                                             <td>-</td>
                                             {% else %}
                                             <td>{{ p['campaign'] }}</td>
+                                            {% endif %}
+                                            {% if p['confidence'] == "Low" %}
+                                            <td><i class="fa fa-circle text-warning"></i> {{ p['confidence'] }}</td>
+                                            {% elif p['confidence'] == "Medium" %}
+                                            <td><i class="fa fa-circle text-info"></i> {{ p['confidence'] }}</td>
+                                            {% elif p['confidence'] == "High" %}
+                                            <td><i class="fa fa-circle text-danger"></i> {{ p['confidence'] }}</td>
                                             {% endif %}
                                             <td>{{ p['diamondmodel'] }}</td>
                                             {% if p['comments']|length == 0 %}

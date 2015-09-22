@@ -195,7 +195,31 @@
                                                     <option value="Victim" selected="true">Victim</option>
                                                   {% endif %}
                                                 </select>
-                                            </div>       
+                                            </div> 
+                                            {% elif i == "confidence" %}
+                                            <div class="form-group">
+                                                <label>Confidence</label>
+                                                 <select class="form-control" name="confidence">
+                                                  {% if entry['confidence'] == "Low" %}
+                                                    <option value="Low" selected="true">Low</option>
+                                                    <option value="Medium">Medium</option>
+                                                    <option value="High">High</option>
+                                                  {% elif entry['confidence'] == "Medium" %}
+                                                    <option value="Low">Low</option>
+                                                    <option value="Medium" selected="true">Medium</option>
+                                                    <option value="High">High</option>
+                                                  {% elif entry['confidence'] == "High" %}
+                                                    <option value="Low">Low</option>
+                                                    <option value="Medium">Medium</option>
+                                                    <option value="High" selected="true">High</option>
+                                                  {% else %}
+                                                     <option value="Low" selected="true">Low</option>
+                                                    <option value="Medium">Medium</option>
+                                                    <option value="High">High</option>
+                                                  {% endif %}
+                                                </select>
+                                            </div>        
+
                                             {% elif i == "favorite" %}
                                             <div></div>
 
@@ -228,7 +252,7 @@
                                             {% elif i == "comments" %}
                                             <div class="form-group">
                                                 <label>{{ i }}</label>
-                                                 <textarea class="form-control" rows="3" name="inputcomments" value="{{ entry[i] }}">{{ entry[i] }}</textarea>
+                                                 <textarea class="form-control" rows="3" name="comments" value="{{ entry[i] }}">{{ entry[i] }}</textarea>
                                             </div>   
                                            
 

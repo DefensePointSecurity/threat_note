@@ -191,13 +191,40 @@
                                             </div>        
                                         </div>
                                     </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>Confidence</label>
+                                                 <select class="form-control" name="confidence">
+                                                  {% if confidence == "Low" %}
+                                                    <option value="Low" selected="true">Low</option>
+                                                    <option value="Medium">Medium</option>
+                                                    <option value="High">High</option>
+                                                  {% elif confidence == "Medium" %}
+                                                    <option value="Low">Low</option>
+                                                    <option value="Medium" selected="true">Medium</option>
+                                                    <option value="High">High</option>
+                                                  {% elif confidence == "High" %}
+                                                    <option value="Low">Low</option>
+                                                    <option value="Medium">Medium</option>
+                                                    <option value="High" selected="true">High</option>
+                                                  {% else %}
+                                                     <option value="Low" selected="true">Low</option>
+                                                    <option value="Medium">Medium</option>
+                                                    <option value="High">High</option>
+                                                  {% endif %}
+                                                </select>
+                                            </div>        
+                                        </div>
+                                    </div>
                                       
 
                                     <div class="row">
                                         <div class="col-md-12">
                                             <div class="form-group">
                                                 <label>Comments</label>
-                                                <textarea class="form-control" rows="3" name="inputcomments" value="{{ inputcomments }}">{{ inputcomments }}</textarea>
+                                                <textarea class="form-control" rows="3" name="comments" value="{{ comments }}">{{ comments }}</textarea>
                                             </div>        
                                         </div>
                                     </div>

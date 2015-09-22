@@ -163,11 +163,11 @@ def newobject():
                                            inputobject=newdict['inputobject'], inputfirstseen=newdict['inputfirstseen'],
                                            inputlastseen=newdict['inputlastseen'],
                                            inputcampaign=newdict['inputcampaign'],
-                                           inputcomments=newdict['inputcomments'], diamondmodel=newdict['diamondmodel'])
+                                           comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
                 else:
                     newdata = {"object": newdict['inputobject'].strip(), "firstseen": newdict['inputfirstseen'],
-                               "lastseen": newdict['inputlastseen'], "campaign": newdict['inputcampaign'],
-                               "comments": newdict['inputcomments'], "inputtype": newdict['inputtype'],
+                               "lastseen": newdict['inputlastseen'], "confidence": newdict['confidence'], "campaign": newdict['inputcampaign'],
+                               "comments": newdict['comments'], "inputtype": newdict['inputtype'],
                                "diamondmodel": newdict['diamondmodel'], "favorite": "False"}
                     mongo.db.network.insert(newdata)
                     network = mongo.db.network.find({
@@ -178,19 +178,19 @@ def newobject():
                 errormessage = "Not a valid IP Address."
                 return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
                                        inputobject=newdict['inputobject'], inputfirstseen=newdict['inputfirstseen'],
-                                       inputlastseen=newdict['inputlastseen'], inputcampaign=newdict['inputcampaign'],
-                                       inputcomments=newdict['inputcomments'], diamondmodel=newdict['diamondmodel'])
+                                       inputlastseen=newdict['inputlastseen'], confidence=newdict['confidence'],inputcampaign=newdict['inputcampaign'],
+                                       comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
         else:
             if mongo.db.network.find({"object": newdict['inputobject']}).count() > 0:
                 errormessage = "Entry already exists in database."
                 return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
                                        inputobject=newdict['inputobject'], inputfirstseen=newdict['inputfirstseen'],
-                                       inputlastseen=newdict['inputlastseen'], inputcampaign=newdict['inputcampaign'],
-                                       inputcomments=newdict['inputcomments'], diamondmodel=newdict['diamondmodel'])
+                                       inputlastseen=newdict['inputlastseen'], confidence=newdict['confidence'], inputcampaign=newdict['inputcampaign'],
+                                       comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
             else:
                 newdata = {"object": newdict['inputobject'].strip(), "firstseen": newdict['inputfirstseen'],
-                           "lastseen": newdict['inputlastseen'], "campaign": newdict['inputcampaign'],
-                           "comments": newdict['inputcomments'], "inputtype": newdict['inputtype'],
+                           "lastseen": newdict['inputlastseen'], "confidence": newdict['confidence'], "campaign": newdict['inputcampaign'],
+                           "comments": newdict['comments'], "inputtype": newdict['inputtype'],
                            "diamondmodel": newdict['diamondmodel'], "favorite": "False"}
                 mongo.db.network.insert(newdata)
                 if newdata['inputtype'] == "IPv6" or newdata['inputtype'] == "Domain" or newdata[
@@ -256,7 +256,7 @@ def updatesettings():
             else:
                 mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {"whoisinfo": "off"}})
             mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {'apikey': newdict['apikey']}})
-            if 'odnsinfo' in newdict.keys():
+            if 'odns' in newdict.keys():
                 mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {"odnsinfo": "on"}})
             else:
                 mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {"odnsinfo": "off"}})
@@ -320,7 +320,7 @@ def insertnewfield():
         imd = ImmutableMultiDict(something)
         records = convert(imd)
         newdict = {}
-        # dictlist = []
+        #dictlist = []
         for i in records:
             if i == "inputnewfieldname":
                 newdict[records[i]] = records['inputnewfieldvalue']
@@ -328,7 +328,7 @@ def insertnewfield():
                 pass
             else:
                 newdict[i] = records[i]
-        # dictlist.append(newdict)
+        #dictlist.append(newdict)
         return render_template('neweditobject.html', entry=newdict)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -353,7 +353,6 @@ def objectsummary(uid):
         elif str(http['inputtype']) == "Domain":
             whoisdata = domainwhois(str(http['object']))
             jsonvt = vt_domain_lookup(str(http['object']))
-            odnsdata = investigate_domain_categories(str(http['object']))
         if settingsvars['whoisinfo'] == "on":
             if str(http['inputtype']) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
@@ -457,7 +456,7 @@ def _run_on_start():
         pass
     else:
         mongo.db.settings.insert(
-            {'apikey': '', 'vtinfo': '', 'whoisinfo': '', 'odnsinfo':'', 'odnskey': '', 'httpsproxy': '', 'httpproxy': ''})
+            {'apikey': '', 'vtinfo': '', 'whoisinfo': '', 'odnskey': '', 'httpsproxy': '', 'httpproxy': ''})
 
 
 ####################
@@ -474,8 +473,7 @@ def totalcount():
 @app.context_processor
 def networkcount():
     return dict(networkcount=mongo.db.network.find({
-        "$or": [{"inputtype": "IPv4"}, {"inputtype": "IPv6"}, {"inputtype": "Network"},
-                {"inputtype": "Domain"}]}).count())
+        "$or": [{"inputtype": "IPv4"}, {"inputtype": "IPv6"}, {"inputtype": "Network"}, {"inputtype": "Domain"}]}).count())
 
 
 # Total Threat Actor Indicators
@@ -494,15 +492,11 @@ def campaigncount():
 #############
 
 def get_proxy():
-    try:
-        proxies = {
-            'http': mongo.db.settings.find_one()['httpproxy'],
-            'https': mongo.db.settings.find_one()['httpsproxy'],
-        }
-    except KeyError:
-        proxies = {}
+    proxies = {
+        'http': mongo.db.settings.find_one()['httpproxy'],
+        'https': mongo.db.settings.find_one()['httpsproxy'],
+    }
     return proxies
-
 
 # IPv4 VirusTotal function for passive DNS
 def vt_ipv4_lookup(ipv4):
@@ -549,21 +543,6 @@ def domainwhois(entity):
         domain['city'] = 'N/A'
     return domain
 
-def investigate_domain_categories(enity):
-    api_url = 'https://investigate.api.opendns.com/'
-    api_key = mongo.db.settings.distinct("odnskey")[0]
-    headers = {'Authorization': 'Bearer ' + api_key}
-    endpoint = 'domains/categorization/'
-    labels = '?showLabels'
-    response = requests.get(api_url + endpoint + enity + labels, headers=headers, proxies=get_proxy()).json()
-    for domain, values in response.iteritems():
-        if values['status'] == -1: # -1 if domain is malicous
-            return values['security_categories']
-        elif values['status'] == 0:
-            return ['Unclassified']
-        elif values['status'] == 1:
-            return values['content_categories']
-
 
 def investigate_ip_query(entity):
     try:
@@ -578,10 +557,7 @@ def investigate_ip_query(entity):
             results = response.json()
             for entry in results:
                 mal_domains.append(entry['name'])
-        else:
-            mal_domains.append('None')
-
-        return mal_domains
+            return mal_domains
     except:
         pass
 
