@@ -177,7 +177,6 @@ def newobject():
                         network = mongo.db.network.find({
                             "$or": [{"inputtype": "IPv4"}, {"inputtype": "Network"}, {"inputtype": "IPv6"},
                                     {"inputtype": "Domain"}]})
-                        #return render_template('networks.html', network=network)
                 else:
                     errormessage = "Not a valid IP Address."
                     newobject = ', '.join(newdict['inputobject'])
@@ -201,7 +200,7 @@ def newobject():
                                "diamondmodel": newdict['diamondmodel'], "favorite": "False"}
                     mongo.db.network.insert(newdata)
         if newdata['inputtype'] == "IPv4" or newdata['inputtype'] == "Domain" or newdata[
-            'inputtype'] == "Network":
+            'inputtype'] == "Network" or newdata['inputtype'] == "IPv6":
             network = mongo.db.network.find({
                 "$or": [{"inputtype": "IPv4"}, {"inputtype": "Network"}, {"inputtype": "IPv6"},
                         {"inputtype": "Domain"}]})
