@@ -157,8 +157,7 @@ def newobject():
         ipregex = re.match(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', newdict['inputobject'])
 
        # Convert the inputobject of IP or Domain to a list for Bulk Add functionality.
-        if ('IP' in newdict['inputtype']) or ('Domain' in newdict['inputtype']):
-            newdict['inputobject'] = newdict['inputobject'].split(',')
+        newdict['inputobject'] = newdict['inputobject'].split(',')
         for newobject in newdict['inputobject']:
             if newdict['inputtype'] == "IPv4":
                 if ipregex:
@@ -178,7 +177,7 @@ def newobject():
                         network = mongo.db.network.find({
                             "$or": [{"inputtype": "IPv4"}, {"inputtype": "Network"}, {"inputtype": "IPv6"},
                                     {"inputtype": "Domain"}]})
-                        return render_template('networks.html', network=network)
+                        #return render_template('networks.html', network=network)
                 else:
                     errormessage = "Not a valid IP Address."
                     newobject = ', '.join(newdict['inputobject'])
@@ -201,7 +200,7 @@ def newobject():
                                "comments": newdict['comments'], "inputtype": newdict['inputtype'],
                                "diamondmodel": newdict['diamondmodel'], "favorite": "False"}
                     mongo.db.network.insert(newdata)
-        if newdata['inputtype'] == "IPv6" or newdata['inputtype'] == "Domain" or newdata[
+        if newdata['inputtype'] == "IPv4" or newdata['inputtype'] == "Domain" or newdata[
             'inputtype'] == "Network":
             network = mongo.db.network.find({
                 "$or": [{"inputtype": "IPv4"}, {"inputtype": "Network"}, {"inputtype": "IPv6"},
