@@ -29,7 +29,7 @@ import csv
 # Configuration #
 #################
 app = Flask(__name__)
-app.config['MONGO_HOST'] = 'localhost'
+app.config['MONGO_HOST'] = '10.8.8.70'#'localhost'
 app.config['MONGO_PORT'] = 27017
 app.config['MONGO_DBNAME'] = 'threatnote'
 
@@ -256,7 +256,7 @@ def updatesettings():
             else:
                 mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {"whoisinfo": "off"}})
             mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {'apikey': newdict['apikey']}})
-            if 'odns' in newdict.keys():
+            if 'odnsinfo' in newdict.keys():
                 mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {"odnsinfo": "on"}})
             else:
                 mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {"odnsinfo": "off"}})
@@ -353,6 +353,8 @@ def objectsummary(uid):
         elif str(http['inputtype']) == "Domain":
             whoisdata = domainwhois(str(http['object']))
             jsonvt = vt_domain_lookup(str(http['object']))
+            if settingsvars['odnsinfo'] == "on":
+                odnsdata = investigate_domain_categories(str(http['object']))
         if settingsvars['whoisinfo'] == "on":
             if str(http['inputtype']) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
@@ -456,7 +458,7 @@ def _run_on_start():
         pass
     else:
         mongo.db.settings.insert(
-            {'apikey': '', 'vtinfo': '', 'whoisinfo': '', 'odnskey': '', 'httpsproxy': '', 'httpproxy': ''})
+            {'apikey': '', 'vtinfo': '', 'whoisinfo': '','odnsinfo':'', 'odnskey': '', 'httpsproxy': '', 'httpproxy': ''})
 
 
 ####################
@@ -492,11 +494,15 @@ def campaigncount():
 #############
 
 def get_proxy():
-    proxies = {
-        'http': mongo.db.settings.find_one()['httpproxy'],
-        'https': mongo.db.settings.find_one()['httpsproxy'],
-    }
+    try:
+        proxies = {
+            'http': mongo.db.settings.find_one()['httpproxy'],
+            'https': mongo.db.settings.find_one()['httpsproxy'],
+        }
+    except KeyError:
+        proxies = {}
     return proxies
+
 
 # IPv4 VirusTotal function for passive DNS
 def vt_ipv4_lookup(ipv4):
@@ -544,6 +550,22 @@ def domainwhois(entity):
     return domain
 
 
+def investigate_domain_categories(enity):
+    api_url = 'https://investigate.api.opendns.com/'
+    api_key = mongo.db.settings.distinct("odnskey")[0]
+    headers = {'Authorization': 'Bearer ' + api_key}
+    endpoint = 'domains/categorization/'
+    labels = '?showLabels'
+    response = requests.get(api_url + endpoint + enity + labels, headers=headers, proxies=get_proxy()).json()
+    for domain, values in response.iteritems():
+        if values['status'] == -1: # -1 if domain is malicous
+            return values['security_categories']
+        elif values['status'] == 0:
+            return ['Unclassified']
+        elif values['status'] == 1:
+            return values['content_categories']
+
+
 def investigate_ip_query(entity):
     try:
         api_url = 'https://investigate.api.opendns.com/'
@@ -557,7 +579,9 @@ def investigate_ip_query(entity):
             results = response.json()
             for entry in results:
                 mal_domains.append(entry['name'])
-            return mal_domains
+        else:
+            mal_domains.append('None')
+        return mal_domains
     except:
         pass
 
