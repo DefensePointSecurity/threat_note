@@ -155,53 +155,60 @@ def newobject():
             newdict[i] = records[i]
         # Makes sure if you submit an IPv4 indicator, it's an actual IP address.
         ipregex = re.match(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', newdict['inputobject'])
-        if newdict['inputtype'] == "IPv4":
-            if ipregex:
-                if mongo.db.network.find({"object": newdict['inputobject']}).count() > 0:
+
+       # Convert the inputobject of IP or Domain to a list for Bulk Add functionality.
+        if ('IP' in newdict['inputtype']) or ('Domain' in newdict['inputtype']):
+            newdict['inputobject'] = newdict['inputobject'].split(',')
+        for newobject in newdict['inputobject']:
+            if newdict['inputtype'] == "IPv4":
+                if ipregex:
+                    if mongo.db.network.find({"object": newobject}).count() > 0:
+                        errormessage = "Entry already exists in database."
+                        return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
+                                               inputobject=newobject, inputfirstseen=newdict['inputfirstseen'],
+                                               inputlastseen=newdict['inputlastseen'],
+                                               inputcampaign=newdict['inputcampaign'],
+                                               comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
+                    else:
+                        newdata = {"object": newobject.strip(), "firstseen": newdict['inputfirstseen'],
+                                   "lastseen": newdict['inputlastseen'], "confidence": newdict['confidence'], "campaign": newdict['inputcampaign'],
+                                   "comments": newdict['comments'], "inputtype": newdict['inputtype'],
+                                   "diamondmodel": newdict['diamondmodel'], "favorite": "False"}
+                        mongo.db.network.insert(newdata)
+                        network = mongo.db.network.find({
+                            "$or": [{"inputtype": "IPv4"}, {"inputtype": "Network"}, {"inputtype": "IPv6"},
+                                    {"inputtype": "Domain"}]})
+                        return render_template('networks.html', network=network)
+                else:
+                    errormessage = "Not a valid IP Address."
+                    newobject = ', '.join(newdict['inputobject'])
+                    return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
+                                           inputobject=newobject, inputfirstseen=newdict['inputfirstseen'],
+                                           inputlastseen=newdict['inputlastseen'], confidence=newdict['confidence'],inputcampaign=newdict['inputcampaign'],
+                                           comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
+            else:
+                if mongo.db.network.find({"object": newobject}).count() > 0:
                     errormessage = "Entry already exists in database."
                     return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
-                                           inputobject=newdict['inputobject'], inputfirstseen=newdict['inputfirstseen'],
-                                           inputlastseen=newdict['inputlastseen'],
-                                           inputcampaign=newdict['inputcampaign'],
+                                           inputobject=newobject, inputfirstseen=newdict['inputfirstseen'],
+                                           inputlastseen=newdict['inputlastseen'], confidence=newdict['confidence'], inputcampaign=newdict['inputcampaign'],
                                            comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
                 else:
-                    newdata = {"object": newdict['inputobject'].strip(), "firstseen": newdict['inputfirstseen'],
+                    # Runs when Indicators is New and ready to be added to DB.
+                    newdata = {"object": newobject.strip(), "firstseen": newdict['inputfirstseen'],
                                "lastseen": newdict['inputlastseen'], "confidence": newdict['confidence'], "campaign": newdict['inputcampaign'],
                                "comments": newdict['comments'], "inputtype": newdict['inputtype'],
                                "diamondmodel": newdict['diamondmodel'], "favorite": "False"}
                     mongo.db.network.insert(newdata)
-                    network = mongo.db.network.find({
-                        "$or": [{"inputtype": "IPv4"}, {"inputtype": "Network"}, {"inputtype": "IPv6"},
-                                {"inputtype": "Domain"}]})
-                    return render_template('networks.html', network=network)
-            else:
-                errormessage = "Not a valid IP Address."
-                return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
-                                       inputobject=newdict['inputobject'], inputfirstseen=newdict['inputfirstseen'],
-                                       inputlastseen=newdict['inputlastseen'], confidence=newdict['confidence'],inputcampaign=newdict['inputcampaign'],
-                                       comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
+        if newdata['inputtype'] == "IPv6" or newdata['inputtype'] == "Domain" or newdata[
+            'inputtype'] == "Network":
+            network = mongo.db.network.find({
+                "$or": [{"inputtype": "IPv4"}, {"inputtype": "Network"}, {"inputtype": "IPv6"},
+                        {"inputtype": "Domain"}]})
+            return render_template('networks.html', network=network)
         else:
-            if mongo.db.network.find({"object": newdict['inputobject']}).count() > 0:
-                errormessage = "Entry already exists in database."
-                return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
-                                       inputobject=newdict['inputobject'], inputfirstseen=newdict['inputfirstseen'],
-                                       inputlastseen=newdict['inputlastseen'], confidence=newdict['confidence'], inputcampaign=newdict['inputcampaign'],
-                                       comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
-            else:
-                newdata = {"object": newdict['inputobject'].strip(), "firstseen": newdict['inputfirstseen'],
-                           "lastseen": newdict['inputlastseen'], "confidence": newdict['confidence'], "campaign": newdict['inputcampaign'],
-                           "comments": newdict['comments'], "inputtype": newdict['inputtype'],
-                           "diamondmodel": newdict['diamondmodel'], "favorite": "False"}
-                mongo.db.network.insert(newdata)
-                if newdata['inputtype'] == "IPv6" or newdata['inputtype'] == "Domain" or newdata[
-                    'inputtype'] == "Network":
-                    network = mongo.db.network.find({
-                        "$or": [{"inputtype": "IPv4"}, {"inputtype": "Network"}, {"inputtype": "IPv6"},
-                                {"inputtype": "Domain"}]})
-                    return render_template('networks.html', network=network)
-                else:
-                    threatactors = mongo.db.network.find({"inputtype": "Threat Actor"})
-                    return render_template('threatactors.html', network=threatactors)
+            threatactors = mongo.db.network.find({"inputtype": "Threat Actor"})
+            return render_template('threatactors.html', network=threatactors)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -351,8 +358,10 @@ def objectsummary(uid):
             if settingsvars['odnsinfo'] == "on":
                 odnsdata = investigate_ip_query(str(http['object']))
         elif str(http['inputtype']) == "Domain":
-            whoisdata = domainwhois(str(http['object']))
-            jsonvt = vt_domain_lookup(str(http['object']))
+            if settingsvars['whoisinfo'] == "on":
+                whoisdata = domainwhois(str(http['object']))
+            if settingsvars['vtinfo'] == "on":
+                jsonvt = vt_domain_lookup(str(http['object']))
             if settingsvars['odnsinfo'] == "on":
                 odnsdata = investigate_domain_categories(str(http['object']))
         if settingsvars['whoisinfo'] == "on":
