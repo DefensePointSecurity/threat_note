@@ -189,6 +189,7 @@ def newobject():
             else:
                 if mongo.db.network.find({"object": newobject}).count() > 0:
                     errormessage = "Entry already exists in database."
+                    newobject = ', '.join(newdict['inputobject'])
                     return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
                                            inputobject=newobject, inputfirstseen=newdict['inputfirstseen'],
                                            inputlastseen=newdict['inputlastseen'], confidence=newdict['confidence'], inputcampaign=newdict['inputcampaign'],
