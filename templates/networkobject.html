@@ -240,10 +240,10 @@
                 {% endif %}
                   {% if settingsvars['odnsinfo'] == "on" %}
                 <tr>
-                <td><strong>Investigate Domain Categorization</strong></td>
+                <td><strong>Investigate Domain Info</strong></td>
                 <td class="text-left">
-                {% for record in odnsdata%}
-                    <strong>Category: </strong>{{ record }}
+                {% for k,v in odnsdata.iteritems()%}
+                    <strong>{{ k }}: </strong>{{ v }}
                     </br>
                     {% endfor %}
                     </td>

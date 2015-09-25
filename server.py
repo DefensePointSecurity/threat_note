@@ -29,7 +29,7 @@ import csv
 # Configuration #
 #################
 app = Flask(__name__)
-app.config['MONGO_HOST'] = 'localhost'
+app.config['MONGO_HOST'] = '172.16.143.131'#'localhost'
 app.config['MONGO_PORT'] = 27017
 app.config['MONGO_DBNAME'] = 'threatnote'
 
@@ -558,6 +558,49 @@ def domainwhois(entity):
     return domain
 
 
+def investigate_domain_security(enity):
+    api_url = 'https://investigate.api.opendns.com/'
+    api_key = mongo.db.settings.distinct("odnskey")[0]
+    headers = {'Authorization': 'Bearer ' + api_key}
+    domain = enity
+    endpoint = 'security/name/{}.json'
+    response = requests.get(api_url + endpoint.format(domain), headers=headers, proxies=get_proxy()).json()
+    newdict = {}
+    newdict['domain'] = domain
+    newdict['attack'] = response['attack']
+    newdict['asn_score'] = response['asn_score']
+    newdict['dga_score'] = response['dga_score']
+    newdict['prefix_score'] = response['prefix_score']
+    newdict['fastflux'] = response['fastflux']
+    newdict['securerank2'] = response['securerank2']
+    newdict['threat_type'] = response['threat_type']
+    return newdict
+
+
+def investigate_domain_tag(enity):
+    api_url = 'https://investigate.api.opendns.com/'
+    api_key = mongo.db.settings.distinct("odnskey")[0]
+    headers = {'Authorization': 'Bearer ' + api_key}
+    domain = enity
+    endpoint = 'domains/{}/latest_tags'
+    response = requests.get(api_url + endpoint.format(domain), headers=headers, proxies=get_proxy()).json()
+    newlist = []
+    for row in response:
+        newdict = {}
+        begin_date = row['period']['begin']
+        end_date = row['period']['end']
+        newdict['begin'] = begin_date
+        newdict['end'] = end_date
+        if row['url'] is None:
+            newdict['url'] = 'None'
+        else:
+            newdict['url'] = row['url']
+        newdict['domain'] = domain
+        newdict['category'] = row['category']
+        newlist.append(newdict)
+    return newlist
+
+
 def investigate_domain_categories(enity):
     api_url = 'https://investigate.api.opendns.com/'
     api_key = mongo.db.settings.distinct("odnskey")[0]
@@ -567,11 +610,16 @@ def investigate_domain_categories(enity):
     response = requests.get(api_url + endpoint + enity + labels, headers=headers, proxies=get_proxy()).json()
     for domain, values in response.iteritems():
         if values['status'] == -1: # -1 if domain is malicous
-            return values['security_categories']
+            sec = investigate_domain_security(enity)
+            for row in investigate_domain_tag(enity):
+                c = row.copy()
+                c.update(sec)
+            return c
+
         elif values['status'] == 0:
-            return ['Unclassified']
+            return {'Category': 'Unclassified'}
         elif values['status'] == 1:
-            return values['content_categories']
+            return {'Category': ', '.join(values['content_categories'])}
 
 
 def investigate_ip_query(entity):
