@@ -25,7 +25,7 @@ import csv
 # Configuration #
 #################
 app = Flask(__name__)
-app.config['MONGO_HOST'] = 'localhost'
+app.config['MONGO_HOST'] = '172.16.143.131'#'localhost'
 app.config['MONGO_PORT'] = 27017
 app.config['MONGO_DBNAME'] = 'threatnote'
 
@@ -100,6 +100,16 @@ def threatactors():
         # Grab threat actors
         threatactors = mongo.db.network.find({"inputtype": "Threat Actor"})
         return render_template('threatactors.html', network=threatactors)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+
+@app.route('/victims', methods=['GET'])
+def victims():
+    try:
+        # Grab threat actors
+        victims = mongo.db.network.find({"inputtype": "Victim"})
+        return render_template('victims.html', network=victims)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -446,7 +456,7 @@ def delete():
         return render_template('error.html', error=e)
 
 
-@app.route('/download/<uid>')
+@app.route('/download/<uid>', methods=['GET'])
 def download(uid):
     http = mongo.db.network.find_one({'_id': bson.ObjectId(oid=str(uid))})
     response = make_response(str(libs.helpers.convert(http)))
