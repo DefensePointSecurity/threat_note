@@ -20,21 +20,22 @@ import ast
 from bson.son import SON
 import csv
 
-import libs.investigate
-import libs.helpers
-import libs.whois
-import libs.virustotal
 
 #################
 # Configuration #
 #################
 app = Flask(__name__)
-app.config['MONGO_HOST'] = '172.16.143.131'#'localhost'
+app.config['MONGO_HOST'] = 'localhost'
 app.config['MONGO_PORT'] = 27017
 app.config['MONGO_DBNAME'] = 'threatnote'
 
 mongo = PyMongo(app, config_prefix='MONGO')
 
+# Need to import libs after mongo is declared
+import libs.investigate
+import libs.helpers
+import libs.whois
+import libs.virustotal
 
 ###################
 # Creating routes #
@@ -495,12 +496,6 @@ def threatactorcount():
 @app.context_processor
 def campaigncount():
     return dict(campaigncount=len(libs.helpers.convert(mongo.db.network.distinct("campaign"))))
-
-
-#############
-# Functions #
-#############
-
 
 
 
