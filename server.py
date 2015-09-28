@@ -34,7 +34,7 @@ mongo = PyMongo(app, config_prefix='MONGO')
 # Need to import libs after mongo is declared
 import libs.investigate
 import libs.helpers
-import libs.whois
+import libs.whoisinfo
 import libs.virustotal
 
 ###################
@@ -312,12 +312,12 @@ def updateobject():
         settingsvars = mongo.db.settings.find_one()
         if newdict['inputtype'] == "IPv4" or newdict['inputtype'] == "IPv6":
             if settingsvars['whoisinfo'] == "on":
-                whoisdata = libs.whois.ipwhois(str(http['object']))
+                whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
             if settingsvars['vtinfo'] == "on":
                 jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
         elif newdict['inputtype'] == "Domain":
             if settingsvars['whoisinfo'] == "on":
-                whoisdata = libs.whois.domainwhois(str(http['object']))
+                whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
             if settingsvars['vtinfo'] == "on":
                 jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
         if newdict['inputtype'] == "Threat Actor":
@@ -364,12 +364,12 @@ def objectsummary(uid):
             if settingsvars['vtinfo'] == "on":
                 jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
             if settingsvars['whoisinfo'] == "on":
-                whoisdata = libs.whois.ipwhois(str(http['object']))
+                whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
             if settingsvars['odnsinfo'] == "on":
                 odnsdata = libs.investigate.ip_query(str(http['object']))
         elif str(http['inputtype']) == "Domain":
             if settingsvars['whoisinfo'] == "on":
-                whoisdata = libs.whois.domainwhois(str(http['object']))
+                whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
             if settingsvars['vtinfo'] == "on":
                 jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
             if settingsvars['odnsinfo'] == "on":
@@ -406,9 +406,9 @@ def favorite(uid):
         settingsvars = mongo.db.settings.find()
         if str(http['inputtype']) == "IPv4" or str(http['inputtype']) == "IPv6":
             jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
-            whoisdata = libs.whois.ipwhois(str(http['object']))
+            whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
         elif str(http['inputtype']) == "Domain":
-            whoisdata = libs.whois.domainwhois(str(http['object']))
+            whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
             jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
         return render_template('object.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,
                                settingsvars=settingsvars)
@@ -426,9 +426,9 @@ def unfavorite(uid):
         settingsvars = mongo.db.settings.find()
         if str(http['inputtype']) == "IPv4" or str(http['inputtype']) == "IPv6":
             jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
-            whoisdata = libs.whois.ipwhois(str(http['object']))
+            whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
         elif str(http['inputtype']) == "Domain":
-            whoisdata = libs.whois.domainwhois(str(http['object']))
+            whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
             jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
         return render_template('object.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,
                                settingsvars=settingsvars)

@@ -2,7 +2,6 @@ from ipwhois import IPWhois
 import whois
 import json
 
-
 # IPv4 Whois
 def ipwhois(entity):
     obj = IPWhois(entity)
