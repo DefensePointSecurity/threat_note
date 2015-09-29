@@ -25,13 +25,13 @@
                         <p>Network Indicators</p>
                     </a>
                 </li> 
-                <li class="active">
+                <li>
                     <a href="/threatactors">
-                        <i class="pe-7s-users"></i>
+                        <i class="pe-7s-users"></i> 
                         <p>Threat Actors</p>
-                    </a>
+                    </a>        
                 </li>
-               <li>
+               <li  class="active">
                     <a href="/victims">
                         <i class="pe-7s-target"></i>
                         <p>Victims</p>
@@ -69,7 +69,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="#">Threat Actors</a>
+                    <a class="navbar-brand" href="#">Victims</a>
                 </div>
             </div>
         </nav>
@@ -79,13 +79,13 @@
             <div class="container-fluid">
                 <div class="row">                   
                     <div class="col-md-12">
-                    This page contains all the threat actors in the threat_note database. Along with the threat actors, you'll also find key attributes and their values that have been entered.
+                    This page contains all the victims or targets in the threat_note database. Along with the victims, you'll also find key attributes and their values that have been entered.
 </br>
 </br>
                         <div class="card">
                             <div class="header">
-                                <div style="float: left;"><h4 class="title">Threat Actors</h4>
-                                <p class="category">This table shows you all of the threat actors.</p></div>
+                                <div style="float: left;"><h4 class="title">Victims</h4>
+                                <p class="category">This table shows you all of the victims.</p></div>
                                 <div style="float: right;">
                                     <a href="/newobject" class="btn btn-info btn-fill"><i class="fa fa-plus"></i> New Indicator</a>
                                 </div>
@@ -106,7 +106,7 @@
                                     <tbody>
                                            {% for p in network %}
                                                 <tr> 
-                                                <td><a href="/threatactors/{{ p['_id'] }}/info">{{ p['object'] }}</td>
+                                                <td><a href="/victims/{{ p['_id'] }}/info">{{ p['object'] }}</td>
                                                     <td>{{ p['inputtype'] }}</td>
                                                     {% if p['firstseen']|length == 0 %}
                                                     <td>-</td>
@@ -140,7 +140,7 @@
                                                     <a href="/edit/{{ p['_id'] }}" role="button" rel="tooltip" title="Edit Indicator" class="btn btn-info btn-simple btn-xs">
                                                         <i class="fa fa-pencil"></i>
                                                     </a>
-                                                    <a href="/delete/threatactor/{{ p['_id'] }}" role="button" rel="tooltip" title="Remove" class="btn btn-danger btn-simple btn-xs">
+                                                    <a href="/delete/victims/{{ p['_id'] }}" role="button" rel="tooltip" title="Remove" class="btn btn-danger btn-simple btn-xs">
                                                         <i class="fa fa-times"></i>
                                                     </a>
                                                 </td>     

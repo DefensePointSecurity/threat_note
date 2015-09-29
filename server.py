@@ -13,17 +13,13 @@
 from flask.ext.pymongo import PyMongo
 from flask import Flask, jsonify, make_response, render_template, request, url_for, redirect
 from werkzeug.datastructures import ImmutableMultiDict
-import json
 import bson
-import requests
-import collections
-from ipwhois import IPWhois
 import pymongo
-import whois
 import re
 import ast
 from bson.son import SON
 import csv
+
 
 #################
 # Configuration #
@@ -35,6 +31,11 @@ app.config['MONGO_DBNAME'] = 'threatnote'
 
 mongo = PyMongo(app, config_prefix='MONGO')
 
+# Need to import libs after mongo is declared
+import libs.investigate
+import libs.helpers
+import libs.whoisinfo
+import libs.virustotal
 
 ###################
 # Creating routes #
@@ -43,7 +44,7 @@ mongo = PyMongo(app, config_prefix='MONGO')
 @app.route('/', methods=['GET'])
 def home():
     try:
-        networks = convert(mongo.db.network.distinct("campaign"))
+        networks = libs.helpers.convert(mongo.db.network.distinct("campaign"))
         dictcount = {}
         dictlist = []
         counts = float(mongo.db.network.count())
@@ -62,7 +63,7 @@ def home():
                 newtemp = tempx * 100
                 dictcount["value"] = round(newtemp, 2)
             dictlist.append(dictcount.copy())
-        types = convert(mongo.db.network.distinct("inputtype"))
+        types = libs.helpers.convert(mongo.db.network.distinct("inputtype"))
         typedict = {}
         typelist = []
         for i in types:
@@ -103,17 +104,27 @@ def threatactors():
         return render_template('error.html', error=e)
 
 
+@app.route('/victims', methods=['GET'])
+def victims():
+    try:
+        # Grab threat actors
+        victims = mongo.db.network.find({"inputtype": "Victim"})
+        return render_template('victims.html', network=victims)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+
 @app.route('/campaigns', methods=['GET'])
 def campaigns():
     try:
         campaigns = mongo.db.network.distinct("campaign")
         # Convert campaigns into Python dictionary
-        campaigns = convert(campaigns)
+        campaigns = libs.helpers.convert(campaigns)
         campaignents = {}
         for camp in campaigns:
             camprec = mongo.db.network.find({"campaign": camp}).distinct("object")
             campaignents[camp] = camprec
-        campaignents = convert(campaignents)
+        campaignents = libs.helpers.convert(campaignents)
         return render_template('campaigns.html', network=campaigns, campaignents=campaignents)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -149,7 +160,7 @@ def newobject():
     try:
         something = request.form
         imd = ImmutableMultiDict(something)
-        records = convert(imd)
+        records = libs.helpers.convert(imd)
         newdict = {}
         for i in records:
             newdict[i] = records[i]
@@ -247,12 +258,12 @@ def updatesettings():
     try:
         something = request.form
         imd = ImmutableMultiDict(something)
-        records = convert(imd)
+        records = libs.helpers.convert(imd)
         newdict = {}
         for i in records:
             newdict[i] = records[i]
         # Make sure we're updating the settings instead of overwriting them
-        if len(convert(mongo.db.settings.distinct("apikey"))) > 0:
+        if len(libs.helpers.convert(mongo.db.settings.distinct("apikey"))) > 0:
             if 'vtinfo' in newdict.keys():
                 mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {"vtinfo": "on"}})
             else:
@@ -286,7 +297,7 @@ def updateobject():
         # Updates entry information
         something = request.form
         imd = ImmutableMultiDict(something)
-        records = convert(imd)
+        records = libs.helpers.convert(imd)
         newdict = {}
         for i in records:
             if i == "_id":
@@ -301,14 +312,14 @@ def updateobject():
         settingsvars = mongo.db.settings.find_one()
         if newdict['inputtype'] == "IPv4" or newdict['inputtype'] == "IPv6":
             if settingsvars['whoisinfo'] == "on":
-                whoisdata = ipwhois(str(http['object']))
+                whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
             if settingsvars['vtinfo'] == "on":
-                jsonvt = vt_ipv4_lookup(str(http['object']))
+                jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
         elif newdict['inputtype'] == "Domain":
             if settingsvars['whoisinfo'] == "on":
-                whoisdata = domainwhois(str(http['object']))
+                whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
             if settingsvars['vtinfo'] == "on":
-                jsonvt = vt_ipv4_lookup(str(http['object']))
+                jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
         if newdict['inputtype'] == "Threat Actor":
             return render_template('threatactorobject.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,
                                    settingsvars=settingsvars)
@@ -324,7 +335,7 @@ def insertnewfield():
     try:
         something = request.form
         imd = ImmutableMultiDict(something)
-        records = convert(imd)
+        records = libs.helpers.convert(imd)
         newdict = {}
         #dictlist = []
         for i in records:
@@ -351,18 +362,18 @@ def objectsummary(uid):
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http['inputtype']) == "IPv4" or str(http['inputtype']) == "IPv6":
             if settingsvars['vtinfo'] == "on":
-                jsonvt = vt_ipv4_lookup(str(http['object']))
+                jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
             if settingsvars['whoisinfo'] == "on":
-                whoisdata = ipwhois(str(http['object']))
+                whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
             if settingsvars['odnsinfo'] == "on":
-                odnsdata = investigate_ip_query(str(http['object']))
+                odnsdata = libs.investigate.ip_query(str(http['object']))
         elif str(http['inputtype']) == "Domain":
             if settingsvars['whoisinfo'] == "on":
-                whoisdata = domainwhois(str(http['object']))
+                whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
             if settingsvars['vtinfo'] == "on":
-                jsonvt = vt_domain_lookup(str(http['object']))
+                jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
             if settingsvars['odnsinfo'] == "on":
-                odnsdata = investigate_domain_categories(str(http['object']))
+                odnsdata = libs.investigate.domain_categories(str(http['object']))
         if settingsvars['whoisinfo'] == "on":
             if str(http['inputtype']) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
@@ -394,11 +405,11 @@ def favorite(uid):
         whoisdata = ""
         settingsvars = mongo.db.settings.find()
         if str(http['inputtype']) == "IPv4" or str(http['inputtype']) == "IPv6":
-            jsonvt = vt_ipv4_lookup(str(http['object']))
-            whoisdata = ipwhois(str(http['object']))
+            jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
+            whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
         elif str(http['inputtype']) == "Domain":
-            whoisdata = domainwhois(str(http['object']))
-            jsonvt = vt_domain_lookup(str(http['object']))
+            whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
+            jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
         return render_template('object.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,
                                settingsvars=settingsvars)
     except Exception as e:
@@ -414,11 +425,11 @@ def unfavorite(uid):
         whoisdata = ""
         settingsvars = mongo.db.settings.find()
         if str(http['inputtype']) == "IPv4" or str(http['inputtype']) == "IPv6":
-            jsonvt = vt_ipv4_lookup(str(http['object']))
-            whoisdata = ipwhois(str(http['object']))
+            jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
+            whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
         elif str(http['inputtype']) == "Domain":
-            whoisdata = domainwhois(str(http['object']))
-            jsonvt = vt_domain_lookup(str(http['object']))
+            whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
+            jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
         return render_template('object.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,
                                settingsvars=settingsvars)
     except Exception as e:
@@ -445,10 +456,10 @@ def delete():
         return render_template('error.html', error=e)
 
 
-@app.route('/download/<uid>')
+@app.route('/download/<uid>', methods=['GET'])
 def download(uid):
     http = mongo.db.network.find_one({'_id': bson.ObjectId(oid=str(uid))})
-    response = make_response(str(convert(http)))
+    response = make_response(str(libs.helpers.convert(http)))
     response.headers["Content-Disposition"] = "attachment; filename=" + uid + ".txt"
     return response
 
@@ -462,7 +473,7 @@ def not_found(error):
 # Initialize the Settings database
 @app.before_first_request
 def _run_on_start():
-    if len(convert(mongo.db.settings.distinct("apikey"))) > 0:
+    if len(libs.helpers.convert(mongo.db.settings.distinct("apikey"))) > 0:
         pass
     else:
         mongo.db.settings.insert(
@@ -494,116 +505,8 @@ def threatactorcount():
 
 @app.context_processor
 def campaigncount():
-    return dict(campaigncount=len(convert(mongo.db.network.distinct("campaign"))))
+    return dict(campaigncount=len(libs.helpers.convert(mongo.db.network.distinct("campaign"))))
 
-
-#############
-# Functions #
-#############
-
-def get_proxy():
-    try:
-        proxies = {
-            'http': mongo.db.settings.find_one()['httpproxy'],
-            'https': mongo.db.settings.find_one()['httpsproxy'],
-        }
-    except KeyError:
-        proxies = {}
-    return proxies
-
-
-# IPv4 VirusTotal function for passive DNS
-def vt_ipv4_lookup(ipv4):
-    try:
-        apikey = mongo.db.settings.distinct("apikey")[0]
-        url = "https://www.virustotal.com/vtapi/v2/ip-address/report"
-        params = {'ip': ipv4, 'apikey': apikey}
-        r = requests.get(url, params=params, verify=False, proxies=get_proxy())
-        j = json.loads(r.text)
-        j['resolutions'] = sorted(j['resolutions'], key=lambda k: k['last_resolved'], reverse=True)
-        return j
-    except:
-        pass
-
-
-# Domain VirusTotal function for passive DNS
-def vt_domain_lookup(domain):
-    try:
-        apikey = mongo.db.settings.distinct("apikey")[0]
-        url = "https://www.virustotal.com/vtapi/v2/domain/report"
-        params = {'domain': domain, 'apikey': apikey}
-        r = requests.get(url, params=params, verify=False, proxies=get_proxy())
-        j = json.loads(r.text)
-        j['resolutions'] = sorted(j['resolutions'], key=lambda k: k['last_resolved'], reverse=True)
-        return j
-    except:
-        pass
-
-
-# IPv4 Whois
-def ipwhois(entity):
-    obj = IPWhois(entity)
-    whoisdata = obj.lookup()
-    return whoisdata
-
-
-# Domain Whois
-def domainwhois(entity):
-    domain = json.loads(str(whois.whois(entity)))
-    for k, v in domain.iteritems():
-        if type(v) == list:
-            domain[k] = ', '.join(v)
-    if 'city' not in domain.keys():
-        domain['city'] = 'N/A'
-    return domain
-
-
-def investigate_domain_categories(enity):
-    api_url = 'https://investigate.api.opendns.com/'
-    api_key = mongo.db.settings.distinct("odnskey")[0]
-    headers = {'Authorization': 'Bearer ' + api_key}
-    endpoint = 'domains/categorization/'
-    labels = '?showLabels'
-    response = requests.get(api_url + endpoint + enity + labels, headers=headers, proxies=get_proxy()).json()
-    for domain, values in response.iteritems():
-        if values['status'] == -1: # -1 if domain is malicous
-            return values['security_categories']
-        elif values['status'] == 0:
-            return ['Unclassified']
-        elif values['status'] == 1:
-            return values['content_categories']
-
-
-def investigate_ip_query(entity):
-    try:
-        api_url = 'https://investigate.api.opendns.com/'
-        api_key = mongo.db.settings.distinct("odnskey")[0]
-        headers = {'Authorization': 'Bearer ' + api_key}
-        mal_domains = []
-        ip = entity.strip()
-        endpoint = 'ips/{ip}/latest_domains'.format(ip=ip)
-        response = requests.get(api_url + endpoint, headers=headers, proxies=get_proxy())
-        if response.text != '[]':
-            results = response.json()
-            for entry in results:
-                mal_domains.append(entry['name'])
-        else:
-            mal_domains.append('None')
-        return mal_domains
-    except:
-        pass
-
-
-# Convert function
-def convert(data):
-    if isinstance(data, basestring):
-        return str(data)
-    elif isinstance(data, collections.Mapping):
-        return dict(map(convert, data.iteritems()))
-    elif isinstance(data, collections.Iterable):
-        return type(data)(map(convert, data))
-    else:
-        return data
 
 
 if __name__ == '__main__':
