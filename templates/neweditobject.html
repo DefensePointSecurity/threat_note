@@ -200,35 +200,35 @@
                                                     <option value="IPv6">IPv6</option>
                                                     <option value="Domain">Domain</option>
                                                      <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Victim">Victim</option>
+                                                    <option value="User">User</option>
                                                      <option value="Network">Network</option>
                                                   {% elif entry['inputtype'] == "IPv6" %}
                                                     <option value="IPv4">IPv4</option>
                                                     <option value="IPv6" selected="true">IPv6</option>
                                                     <option value="Domain">Domain</option>
                                                      <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Victim">Victim</option>
+                                                    <option value="User">User</option>
                                                      <option value="Network">Network</option>
                                                   {% elif entry['inputtype'] == "Domain" %}
                                                     <option value="IPv4">IPv4</option>
                                                     <option value="IPv6">IPv6</option>
                                                      <option value="Domain" selected="true">Domain</option>
                                                      <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Victim">Victim</option>
+                                                    <option value="User">User</option>
                                                      <option value="Network">Network</option>
                                                   {% elif entry['inputtype'] == "Threat Actor" %}
                                                       <option value="IPv4">IPv4</option>
                                                     <option value="IPv6">IPv6</option>
                                                      <option value="Domain">Domain</option>
                                                      <option value="Threat Actor" selected="true">Threat Actor</option>
-                                                    <option value="Victim">Victim</option>
+                                                    <option value="User">User</option>
                                                      <option value="Network">Network</option>
                                                   {% elif entry['inputtype'] == "Network" %}
                                                        <option value="IPv4">IPv4</option>
                                                     <option value="IPv6">IPv6</option>
                                                      <option value="Domain">Domain</option>
                                                      <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Victim">Victim</option>
+                                                    <option value="User">User</option>
                                                      <option value="Network"  selected="true">Network</option>
                                                    {% elif entry['inputtype'] == "Victim" %}
                                                        <option value="IPv4">IPv4</option>
@@ -242,7 +242,7 @@
                                                     <option value="IPv6">IPv6</option>
                                                      <option value="Domain">Domain</option>
                                                      <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Victim">Victim</option>
+                                                    <option value="User">User</option>
                                                      <option value="Network" >Network</option>
                                                     {% endif %}
                                                 </select>
@@ -254,11 +254,11 @@
                                                    {% if entry['diamondmodel'] == "Adversary" %}
                                                     <option value="Adversary" selected="true">Adversary</option>
                                                     <option value="Infrastructure">Infrastructure</option>
-                                                    <option value="Victim">Victim</option>
+                                                    <option value="User">User</option>
                                                   {% elif entry['diamondmodel'] == "Infrastructure" %}
                                                     <option value="Adversary">Adversary</option>
                                                     <option value="Infrastructure" selected="true">Infrastructure</option>
-                                                    <option value="Victim">Victim</option>
+                                                    <option value="User">User</option>
                                                   {% elif entry['diamondmodel'] == "Victim" %}
                                                     <option value="Adversary">Adversary</option>
                                                     <option value="Infrastructure">Infrastructure</option>
