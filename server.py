@@ -19,13 +19,14 @@ import re
 import ast
 from bson.son import SON
 import csv
+import io
 
 
 #################
 # Configuration #
 #################
 app = Flask(__name__)
-app.config['MONGO_HOST'] = '172.16.143.131'#'localhost'
+app.config['MONGO_HOST'] = 'localhost'
 app.config['MONGO_PORT'] = 27017
 app.config['MONGO_DBNAME'] = 'threatnote'
 
@@ -483,12 +484,24 @@ def delete():
 
 @app.route('/download/<uid>', methods=['GET'])
 def download(uid):
-    http = mongo.db.network.find({'campign': str(uid)})
-    #http = mongo.db.network.find_one({'_id': bson.ObjectId(oid=str(uid))})
-    response = make_response(str(libs.helpers.convert(http)))
-    response.headers["Content-Disposition"] = "attachment; filename=" + uid + ".txt"
-    return response
+    if uid == 'unknown':
+        uid = ""
+    file = io.BytesIO()
+    indicators = mongo.db.network.find({'campaign': str(uid)})
+    fieldnames = ['confidence', 'campaign', 'object', 'favorite', 'comments', 'diamondmodel', 'lastseen', '_id', 'inputtype', 'firstseen']
 
+    w = csv.DictWriter(file, fieldnames=fieldnames)
+    try:
+        w.writeheader()
+        for i in indicators:
+            w.writerow(i)
+        response = make_response(file.getvalue())
+        response.headers["Content-Disposition"] = "attachment; filename=" + uid + "-campaign.csv"
+        response.headers["Content-type"] = "text/csv"
+        return response
+    except Exception as e:
+        print str(e)
+        pass
 
 @app.errorhandler(404)
 def not_found(error):

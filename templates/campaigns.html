@@ -96,14 +96,17 @@
                         <div class="card">
                             <div class="header">
                               {% if campaign == "" %}
+                              <div style="float: right;">
+                               <a href="/download/unknown" class="btn btn-info btn-fill"><i class="fa fa-plus"></i> Download Indicatorsr</a>
+                              </div>
                               <h4 class="title"><i class="pe-7s-shield"></i> Unknown</h4>
                               {% else %}
+                              <div style="float: right;"><a href="/download/{{ campaign }}" class="btn btn-info btn-fill"><i class="fa fa-plus"></i> Download Indicatorsr</a>
+                              </div>
                               <h4 class="title"><i class="pe-7s-shield"></i> {{ campaign }}</h4>
                               {% endif %}
                                <p class="category">Campaign Description <a href="/editcampaign/{{ campaign }}" class="fa fa-pencil fa-fw text-muted"></a></p>
                             </div>
-
-
                                  <div class="content table-responsive table-full-width">
                                 <table class="table table-hover table-striped">
                                     <thead>
