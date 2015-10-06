@@ -25,7 +25,7 @@ import csv
 # Configuration #
 #################
 app = Flask(__name__)
-app.config['MONGO_HOST'] = 'localhost'
+app.config['MONGO_HOST'] = '172.16.143.131'#'localhost'
 app.config['MONGO_PORT'] = 27017
 app.config['MONGO_DBNAME'] = 'threatnote'
 
@@ -483,7 +483,8 @@ def delete():
 
 @app.route('/download/<uid>', methods=['GET'])
 def download(uid):
-    http = mongo.db.network.find_one({'_id': bson.ObjectId(oid=str(uid))})
+    http = mongo.db.network.find({'campign': str(uid)})
+    #http = mongo.db.network.find_one({'_id': bson.ObjectId(oid=str(uid))})
     response = make_response(str(libs.helpers.convert(http)))
     response.headers["Content-Disposition"] = "attachment; filename=" + uid + ".txt"
     return response
