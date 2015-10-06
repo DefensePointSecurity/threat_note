@@ -56,7 +56,7 @@
                     </a>        
                 </li>
             </ul>
-                {% elif entry['inputtype'] == "Victim" %}
+                {% elif entry['inputtype'] == "Entity" %}
             <ul class="nav">
                 <li>
                     <a href="/">
@@ -230,12 +230,12 @@
                                                      <option value="Threat Actor">Threat Actor</option>
                                                     <option value="Entity">Enitiy</option>
                                                      <option value="Network"  selected="true">Network</option>
-                                                   {% elif entry['inputtype'] == "Victim" %}
+                                                   {% elif entry['inputtype'] == "Entity" %}
                                                        <option value="IPv4">IPv4</option>
                                                     <option value="IPv6">IPv6</option>
                                                      <option value="Domain">Domain</option>
                                                      <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Victim" selected="true">Victim</option>
+                                                    <option value="Entity" selected="true">Entity</option>
                                                      <option value="Network">Network</option>
                                                    {% else %}
                                                       <option value="IPv4"  selected="true">IPv4</option>
@@ -254,11 +254,11 @@
                                                    {% if entry['diamondmodel'] == "Adversary" %}
                                                     <option value="Adversary" selected="true">Adversary</option>
                                                     <option value="Infrastructure">Infrastructure</option>
-                                                    <option value="Entity">Enitiy</option>
+                                                    <option value="Victim">Victim</option>
                                                   {% elif entry['diamondmodel'] == "Infrastructure" %}
                                                     <option value="Adversary">Adversary</option>
                                                     <option value="Infrastructure" selected="true">Infrastructure</option>
-                                                    <option value="Entity">Enitiy</option>
+                                                    <option value="Victim">Victim</option>
                                                   {% elif entry['diamondmodel'] == "Victim" %}
                                                     <option value="Adversary">Adversary</option>
                                                     <option value="Infrastructure">Infrastructure</option>
