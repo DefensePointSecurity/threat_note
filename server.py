@@ -19,6 +19,7 @@ import re
 import ast
 from bson.son import SON
 import csv
+import io
 
 
 #################
@@ -107,8 +108,7 @@ def threatactors():
 @app.route('/victims', methods=['GET'])
 def victims():
     try:
-        # Grab threat actors
-        victims = mongo.db.network.find({"inputtype": "Victim"})
+        victims = mongo.db.network.find({"diamondmodel": "Victim"})
         return render_template('victims.html', network=victims)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -216,6 +216,10 @@ def newobject():
                 "$or": [{"inputtype": "IPv4"}, {"inputtype": "Network"}, {"inputtype": "IPv6"},
                         {"inputtype": "Domain"}]})
             return render_template('networks.html', network=network)
+
+        elif newdict['diamondmodel'] == "Victim":
+            victims = mongo.db.network.find({"diamondmodel": "Victim"})
+            return render_template('victims.html', network=victims)
         else:
             threatactors = mongo.db.network.find({"inputtype": "Threat Actor"})
             return render_template('threatactors.html', network=threatactors)
@@ -249,6 +253,16 @@ def deletethreatactorobject(uid):
         mongo.db.network.remove({'_id': bson.ObjectId(oid=str(uid))})
         threatactors = mongo.db.network.find({"inputtype": "Threat Actor"})
         return render_template('threatactors.html', network=threatactors)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+
+@app.route('/delete/victims/<uid>', methods=['GET'])
+def deletevictimobject(uid):
+    try:
+        mongo.db.network.remove({'_id': bson.ObjectId(oid=str(uid))})
+        victims = mongo.db.network.find({"diamondmodel": "Victim"})
+        return render_template('victims.html', network=victims)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -323,6 +337,9 @@ def updateobject():
         if newdict['inputtype'] == "Threat Actor":
             return render_template('threatactorobject.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,
                                    settingsvars=settingsvars)
+        elif newdict['diamondmodel'] == "Victim":
+            return render_template('victimobject.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,
+                                   settingsvars=settingsvars)
         else:
             return render_template('networkobject.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,
                                    settingsvars=settingsvars)
@@ -396,6 +413,15 @@ def threatactorobject(uid):
         return render_template('error.html', error=e)
 
 
+@app.route('/victims/<uid>/info', methods=['GET'])
+def victimobject(uid):
+    try:
+        http = mongo.db.network.find_one({'_id': bson.ObjectId(oid=str(uid))})
+        return render_template('victimobject.html', records=http)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+
 @app.route('/favorite/<uid>', methods=['GET'])
 def favorite(uid):
     try:
@@ -458,11 +484,24 @@ def delete():
 
 @app.route('/download/<uid>', methods=['GET'])
 def download(uid):
-    http = mongo.db.network.find_one({'_id': bson.ObjectId(oid=str(uid))})
-    response = make_response(str(libs.helpers.convert(http)))
-    response.headers["Content-Disposition"] = "attachment; filename=" + uid + ".txt"
-    return response
+    if uid == 'unknown':
+        uid = ""
+    file = io.BytesIO()
+    indicators = mongo.db.network.find({'campaign': str(uid)})
+    fieldnames = ['confidence', 'campaign', 'object', 'favorite', 'comments', 'diamondmodel', 'lastseen', '_id', 'inputtype', 'firstseen']
 
+    w = csv.DictWriter(file, fieldnames=fieldnames)
+    try:
+        w.writeheader()
+        for i in indicators:
+            w.writerow(i)
+        response = make_response(file.getvalue())
+        response.headers["Content-Disposition"] = "attachment; filename=" + uid + "-campaign.csv"
+        response.headers["Content-type"] = "text/csv"
+        return response
+    except Exception as e:
+        print str(e)
+        pass
 
 @app.errorhandler(404)
 def not_found(error):
