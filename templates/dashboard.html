@@ -96,7 +96,6 @@
                                 <h4 class="title">Latest Indicators</h4>
                                 <p class="category">This table shows you the latest indicators entered into threat_note.</p>
                             </div>
-
                             <div class="content table-responsive table-full-width">
                                 <table class="table table-hover table-striped">
                                     <thead>
@@ -109,34 +108,34 @@
                                         <th>Comments</th>
                                     </thead>
                                     <tbody>
-                                        {% for p in network %}
+                                        {% for row in network %}
                                         <tr>
-                                            {% if p['inputtype'] == "Threat Actor" %}
-                                            <td><a href="/threatactors/{{ p['_id'] }}/info">{{ p['object'] }}</a></td>
+                                            {% if row[3] == "Threat Actor" %}
+                                            <td><a href="/threatactors/{{ row[0] }}/info">{{ row[1] }}</a></td>
                                             {% else %}
-                                            <td><a href="/network/{{ p['_id'] }}/info">{{ p['object'] }}</a></td>
+                                            <td><a href="/network/{{ row[0] }}/info">{{ row[1] }}</a></td>
                                             {% endif %}
-                                           <td>{{ p['inputtype'] }}</td>
-                                            {% if p['firstseen']|length == 0 %}
+                                           <td>{{ row[3] }}</td>
+                                            {% if row[4]|length == 0 %}
                                             <td>-</td>
                                             {% else %}
-                                            <td>{{ p['firstseen'] }}</td>
+                                            <td>{{ row[4] }}</td>
                                             {% endif %}
-                                            {% if p['lastseen']|length == 0 %}
+                                            {% if row[5]|length == 0 %}
                                             <td>-</td>
                                             {% else %}
-                                            <td>{{ p['lastseen'] }}</td>
+                                            <td>{{ row[5] }}</td>
                                             {% endif %}
-                                            {% if p['campaign']|length == 0 %}
+                                            {% if row[7]|length == 0 %}
                                             <td>-</td>
                                             {% else %}
-                                            <td>{{ p['campaign'] }}</td>
+                                            <td>{{ row[7] }}</td>
                                             {% endif %}
-                                            <td>{{ p['diamondmodel'] }}</td>
-                                            {% if p['comments']|length == 0 %}
+                                            <td>{{ row[6] }}</td>
+                                            {% if row[9]|length == 0 %}
                                             <td>-</td>
                                             {% else %}
-                                            <td>{{ p['comments'] }}</td>
+                                            <td>{{ row[9] }}</td>
                                             {% endif %}
                                     </tr>
                                     {% endfor %}

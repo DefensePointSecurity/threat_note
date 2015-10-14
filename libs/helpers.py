@@ -1,12 +1,10 @@
-from server import mongo
 import collections
-
 
 def get_proxy():
     try:
         proxies = {
-            'http': mongo.db.settings.find_one()['httpproxy'],
-            'https': mongo.db.settings.find_one()['httpsproxy'],
+            #'http': mongo.db.settings.find_one()['httpproxy'],
+            #'https': mongo.db.settings.find_one()['httpsproxy'],
         }
     except KeyError:
         proxies = {}
