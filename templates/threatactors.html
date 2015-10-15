@@ -106,8 +106,8 @@
                                     <tbody>
                                            {% for p in network %}
                                                 <tr> 
-                                                <td><a href="/threatactors/{{ p['_id'] }}/info">{{ p['object'] }}</td>
-                                                    <td>{{ p['inputtype'] }}</td>
+                                                <td><a href="/threatactors/{{ p['id'] }}/info">{{ p['object'] }}</td>
+                                                    <td>{{ p['type'] }}</td>
                                                     {% if p['firstseen']|length == 0 %}
                                                     <td>-</td>
                                                     {% else %}

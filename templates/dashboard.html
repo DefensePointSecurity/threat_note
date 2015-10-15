@@ -110,32 +110,32 @@
                                     <tbody>
                                         {% for row in network %}
                                         <tr>
-                                            {% if row[3] == "Threat Actor" %}
-                                            <td><a href="/threatactors/{{ row[0] }}/info">{{ row[1] }}</a></td>
+                                            {% if row['type'] == "Threat Actor" %}
+                                            <td><a href="/threatactors/{{ row['id'] }}/info">{{ row['object'] }}</a></td>
                                             {% else %}
-                                            <td><a href="/network/{{ row[0] }}/info">{{ row[1] }}</a></td>
+                                            <td><a href="/network/{{ row['id'] }}/info">{{ row['object'] }}</a></td>
                                             {% endif %}
-                                           <td>{{ row[3] }}</td>
-                                            {% if row[4]|length == 0 %}
+                                           <td>{{ row['type'] }}</td>
+                                            {% if row['firstseen']|length == 0 %}
                                             <td>-</td>
                                             {% else %}
-                                            <td>{{ row[4] }}</td>
+                                            <td>{{ row['firstseen'] }}</td>
                                             {% endif %}
-                                            {% if row[5]|length == 0 %}
+                                            {% if row['lastseen']|length == 0 %}
                                             <td>-</td>
                                             {% else %}
-                                            <td>{{ row[5] }}</td>
+                                            <td>{{ row['lastseen'] }}</td>
                                             {% endif %}
-                                            {% if row[7]|length == 0 %}
+                                            {% if row['campaign']|length == 0 %}
                                             <td>-</td>
                                             {% else %}
-                                            <td>{{ row[7] }}</td>
+                                            <td>{{ row['campaign'] }}</td>
                                             {% endif %}
-                                            <td>{{ row[6] }}</td>
-                                            {% if row[9]|length == 0 %}
+                                            <td>{{ row['diamondmodel'] }}</td>
+                                            {% if row['comments']|length == 0 %}
                                             <td>-</td>
                                             {% else %}
-                                            <td>{{ row[9] }}</td>
+                                            <td>{{ row['comments'] }}</td>
                                             {% endif %}
                                     </tr>
                                     {% endfor %}
