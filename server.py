@@ -168,6 +168,20 @@ def campaigns():
     except Exception as e:
         return render_template('error.html', error=e)
 
+@app.route('/settings', methods=['GET'])
+def settings():
+    try:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from settings")
+            records = cur.fetchall()
+            records = records[0]
+        return render_template('settings.html', records=records)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
 @app.route('/campaign/<uid>/info', methods=['GET'])
 def campaignsummary(uid):
     try:
@@ -187,9 +201,9 @@ def campaignsummary(uid):
                 http['type']) == "Domain" or str(http['type']) == "Network":
             return redirect(url_for('objectsummary', uid=str(http['id'])))
         else:
-            return redirect(url_for('threatactorobject', uid=str(http['id']))
+            return redirect(url_for('threatactorobject', uid=str(http['id'])))
     except Exception as e:
-        return render_template('error.html', error=e)
+       return render_template('error.html', error=e)
 
 @app.route('/newobject', methods=['GET'])
 def newobj():
@@ -230,15 +244,17 @@ def newobject():
                                                    inputcampaign=newdict['inputcampaign'],
                                                    comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
                         else:
-                            newdata = {"object": newobject.strip(), "firstseen": newdict['inputfirstseen'],
-                                       "lastseen": newdict['inputlastseen'], "confidence": newdict['confidence'], "campaign": newdict['inputcampaign'],
-                                       "comments": newdict['comments'], "inputtype": newdict['inputtype'],
-                                       "diamondmodel": newdict['diamondmodel'], "favorite": "False"}
+                            con = lite.connect('threatnote.db')
                             cur = con.cursor()
-                            cur.execute("INSERT into indicators values (")
-                            network = mongo.db.network.find({
-                                "$or": [{"inputtype": "IPv4"}, {"inputtype": "Network"}, {"inputtype": "IPv6"},
-                                        {"inputtype": "Domain"}]})
+                            with con:
+                                for t in [(None, newobject.strip(), newdict['inputtype'],newdict['inputfirstseen'],newdict['inputlastseen'],newdict['diamondmodel'],newdict['inputcampaign'],newdict['confidence'],newdict['comments'])]:
+                                    cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?)', t)
+                            con = lite.connect('threatnote.db')
+                            con.row_factory = lite.Row
+                            with con:
+                                cur = con.cursor()
+                                cur.execute("SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
+                                network = cur.fetchall()
                 else:
                     errormessage = "Not a valid IP Address."
                     newobject = ', '.join(newdict['inputobject'])
@@ -247,35 +263,183 @@ def newobject():
                                            inputlastseen=newdict['inputlastseen'], confidence=newdict['confidence'],inputcampaign=newdict['inputcampaign'],
                                            comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
             else:
-                if mongo.db.network.find({"object": newobject}).count() > 0:
-                    errormessage = "Entry already exists in database."
-                    newobject = ', '.join(newdict['inputobject'])
-                    return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
-                                           inputobject=newobject, inputfirstseen=newdict['inputfirstseen'],
-                                           inputlastseen=newdict['inputlastseen'], confidence=newdict['confidence'], inputcampaign=newdict['inputcampaign'],
-                                           comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
-                else:
-                    # Runs when Indicators is New and ready to be added to DB.
-                    newdata = {"object": newobject.strip(), "firstseen": newdict['inputfirstseen'],
-                               "lastseen": newdict['inputlastseen'], "confidence": newdict['confidence'], "campaign": newdict['inputcampaign'],
-                               "comments": newdict['comments'], "inputtype": newdict['inputtype'],
-                               "diamondmodel": newdict['diamondmodel'], "favorite": "False"}
-                    mongo.db.network.insert(newdata)
-        if newdata['inputtype'] == "IPv4" or newdata['inputtype'] == "Domain" or newdata[
+                con = lite.connect('threatnote.db')
+                con.row_factory = lite.Row
+                with con:
+                    cur = con.cursor()
+                    cur.execute("SELECT * from indicators where object='"+newobject+"'")
+                    matches = cur.fetchall()
+                    if len(matches) > 0:
+                        errormessage = "Entry already exists in database."
+                        newobject = ', '.join(newdict['inputobject'])
+                        return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
+                                               inputobject=newobject, inputfirstseen=newdict['inputfirstseen'],
+                                               inputlastseen=newdict['inputlastseen'], confidence=newdict['confidence'], inputcampaign=newdict['inputcampaign'],
+                                               comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
+                    else:
+                        # Runs when Indicators is New and ready to be added to DB.
+                        con = lite.connect('threatnote.db')
+                        cur = con.cursor()
+                        with con:
+                            for t in [(None, newobject.strip(), newdict['inputtype'],newdict['inputfirstseen'],newdict['inputlastseen'],newdict['diamondmodel'],newdict['inputcampaign'],newdict['confidence'],newdict['comments'])]:
+                                cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?)', t)
+
+        if newdict['inputtype'] == "IPv4" or newdict['inputtype'] == "Domain" or newdata[
             'inputtype'] == "Network" or newdata['inputtype'] == "IPv6":
-            network = mongo.db.network.find({
-                "$or": [{"inputtype": "IPv4"}, {"inputtype": "Network"}, {"inputtype": "IPv6"},
-                        {"inputtype": "Domain"}]})
+            con = lite.connect('threatnote.db')
+            con.row_factory = lite.Row
+            with con:
+                cur = con.cursor()
+                cur.execute("SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
+                network = cur.fetchall()
             return render_template('networks.html', network=network)
 
         elif newdict['diamondmodel'] == "Victim":
-            victims = mongo.db.network.find({"diamondmodel": "Victim"})
+            con = lite.connect('threatnote.db')
+            con.row_factory = lite.Row
+            with con:
+                cur = con.cursor()
+                cur.execute("SELECT * FROM indicators where diamondmodel='Victim'")
+                victims = cur.fetchall()
             return render_template('victims.html', network=victims)
         else:
-            threatactors = mongo.db.network.find({"inputtype": "Threat Actor"})
+            con = lite.connect('threatnote.db')
+            con.row_factory = lite.Row
+            with con:
+                cur = con.cursor()
+                cur.execute("SELECT * FROM indicators where type='Threat Actor'")
+                threatactors = cur.fetchall()
             return render_template('threatactors.html', network=threatactors)
     except Exception as e:
         return render_template('error.html', error=e)
+
+@app.route('/edit/<uid>', methods=['POST', 'GET'])
+def editobject(uid):
+    try:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        newdict = {}
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from indicators where id='" + uid + "'")
+            http = cur.fetchall()
+            http = http[0]
+            names = [description[0] for description in cur.description]
+            for i in names:
+                newdict[i] = http[i]
+        return render_template('neweditobject.html', entry=newdict)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+@app.route('/delete/network/<uid>', methods=['GET'])
+def deletenetworkobject(uid):
+    try:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
+            cur = con.cursor()
+            cur.execute("SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
+            network = cur.fetchall()
+        return render_template('networks.html', network=network)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+@app.route('/delete/threatactor/<uid>', methods=['GET'])
+def deletethreatactorobject(uid):
+    try:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
+            cur = con.cursor()
+            cur.execute("SELECT * FROM indicators where type='Threat Actor'")
+            network = cur.fetchall()
+        return render_template('threatactors.html', network=threatactors)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+@app.route('/delete/victims/<uid>', methods=['GET'])
+def deletevictimobject(uid):
+    try:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
+            cur = con.cursor()
+            cur.execute("SELECT * FROM indicators where diamondmodel='victim'")
+            network = cur.fetchall()
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+
+@app.route('/update/settings/', methods=['POST'])
+def updatesettings():
+    try:
+        something = request.form
+        imd = ImmutableMultiDict(something)
+        records = libs.helpers.convert(imd)
+        newdict = {}
+        for i in records:
+            newdict[i] = records[i]
+        test = newdict
+        # Make sure we're updating the settings instead of overwriting them
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from settings")
+            setting = cur.fetchall()
+            if 'vtinfo' in newdict.keys():
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET vtinfo = 'on'")
+            else:
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET vtinfo = 'off'")
+            if 'whoisinfo' in newdict.keys():
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET whoisinfo = 'on'")
+            else:
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET whoisinfo = 'off'")
+            with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET apikey = '" + newdict['apikey'] + "'")
+            if 'odnsinfo' in newdict.keys():
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET odnsinfo = 'on'")
+            else:
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET odnsinfo = 'off'")
+            with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET odnskey = '" + newdict['odnskey'] + "'")
+            with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET httpproxy = '" + newdict['httpproxy'] + "'")
+            with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET httpsproxy = '" + newdict['httpsproxy'] + "'")
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from settings")
+            newrecords = cur.fetchall()
+            newrecords = newrecords[0]
+        return render_template('settings.html', records=newrecords, test=test)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8888, debug=True)
