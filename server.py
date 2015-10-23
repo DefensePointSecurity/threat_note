@@ -236,6 +236,10 @@ def newobject():
                         cur = con.cursor()
                         cur.execute("SELECT object from indicators WHERE object = '" + newobject + "'")
                         object = cur.fetchall()
+                        cur = con.cursor()
+                        cur.execute("SELECT * from indicators")
+                        names = [description[0] for description in cur.description]
+                        lennames = len(names) - int(9)
                         if len(object) > 0:
                             errormessage = "Entry already exists in database."
                             return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
@@ -246,9 +250,12 @@ def newobject():
                         else:
                             con = lite.connect('threatnote.db')
                             cur = con.cursor()
+                            first = [None, newobject.strip(), newdict['inputtype'],newdict['inputfirstseen'],newdict['inputlastseen'],newdict['diamondmodel'],newdict['inputcampaign'],newdict['confidence'],newdict['comments']]
+                            for t in range(0,lennames):
+                                first.append("")
                             with con:
-                                for t in [(None, newobject.strip(), newdict['inputtype'],newdict['inputfirstseen'],newdict['inputlastseen'],newdict['diamondmodel'],newdict['inputcampaign'],newdict['confidence'],newdict['comments'])]:
-                                    cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?)', t)
+                                for t in [(first)]:
+                                    cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?' + ",?"*int(lennames)+')',t)
                             con = lite.connect('threatnote.db')
                             con.row_factory = lite.Row
                             with con:
@@ -267,23 +274,34 @@ def newobject():
                 con.row_factory = lite.Row
                 with con:
                     cur = con.cursor()
-                    cur.execute("SELECT * from indicators where object='"+newobject+"'")
-                    matches = cur.fetchall()
-                    if len(matches) > 0:
+                    cur.execute("SELECT object from indicators WHERE object = '" + newobject + "'")
+                    object = cur.fetchall()
+                    cur = con.cursor()
+                    cur.execute("SELECT * from indicators")
+                    names = [description[0] for description in cur.description]
+                    lennames = len(names) - int(9)
+                    if len(object) > 0:
                         errormessage = "Entry already exists in database."
-                        newobject = ', '.join(newdict['inputobject'])
                         return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
                                                inputobject=newobject, inputfirstseen=newdict['inputfirstseen'],
-                                               inputlastseen=newdict['inputlastseen'], confidence=newdict['confidence'], inputcampaign=newdict['inputcampaign'],
+                                               inputlastseen=newdict['inputlastseen'],
+                                               inputcampaign=newdict['inputcampaign'],
                                                comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
                     else:
-                        # Runs when Indicators is New and ready to be added to DB.
                         con = lite.connect('threatnote.db')
                         cur = con.cursor()
+                        first = [None, newobject.strip(), newdict['inputtype'],newdict['inputfirstseen'],newdict['inputlastseen'],newdict['diamondmodel'],newdict['inputcampaign'],newdict['confidence'],newdict['comments']]
+                        for t in range(0,lennames):
+                            first.append("")
                         with con:
-                            for t in [(None, newobject.strip(), newdict['inputtype'],newdict['inputfirstseen'],newdict['inputlastseen'],newdict['diamondmodel'],newdict['inputcampaign'],newdict['confidence'],newdict['comments'])]:
-                                cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?)', t)
-
+                            for t in [(first)]:
+                                cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?' + ",?"*int(lennames)+')',t)
+                        con = lite.connect('threatnote.db')
+                        con.row_factory = lite.Row
+                        with con:
+                            cur = con.cursor()
+                            cur.execute("SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
+                            network = cur.fetchall()
         if newdict['inputtype'] == "IPv4" or newdict['inputtype'] == "Domain" or newdata[
             'inputtype'] == "Network" or newdata['inputtype'] == "IPv6":
             con = lite.connect('threatnote.db')
@@ -326,7 +344,10 @@ def editobject(uid):
             http = http[0]
             names = [description[0] for description in cur.description]
             for i in names:
-                newdict[i] = http[i]
+                if i == None:
+                    newdict[i] == ""
+                else:
+                    newdict[i] = http[i]
         return render_template('neweditobject.html', entry=newdict)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -439,6 +460,86 @@ def updatesettings():
         return render_template('settings.html', records=newrecords, test=test)
     except Exception as e:
         return render_template('error.html', error=e)
+
+@app.route('/update/object/', methods=['POST'])
+def updateobject():
+    try:
+        # Updates entry information
+        something = request.form
+        imd = ImmutableMultiDict(something)
+        records = libs.helpers.convert(imd)
+        newdict = {}
+        tempdict = {}
+        for i in records:
+            newdict[i] = records[i]
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            for t in newdict:
+                if t == "id":
+                    pass
+                else:
+                    try:
+                        cur = con.cursor()
+                        cur.execute("UPDATE indicators SET " + t + "= '" + newdict[t] + "' WHERE id = '" + newdict['id'] + "'")
+                    except:
+                        cur = con.cursor()
+                        cur.execute("ALTER TABLE indicators ADD COLUMN " + t + " TEXT DEFAULT ''")
+                        cur.execute("UPDATE indicators SET " + t + "= '" + newdict[t] + "' WHERE id = '" + newdict['id'] + "'")
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from indicators where id='" + newdict['id'] + "'")
+            http = cur.fetchall()
+            http = http[0]
+            names = [description[0] for description in cur.description]
+            for i in names:
+                tempdict[i] = http[i]
+            cur.execute("SELECT * from settings")
+            settingsvars = cur.fetchall()
+            settingsvars = settingsvars[0]
+        # Returns object information with updated values
+        jsonvt = ""
+        whoisdata = ""
+        if newdict['type'] == "IPv4" or newdict['type'] == "IPv6":
+            if settingsvars['whoisinfo'] == "on":
+                whoisdata = libs.whoisinfo.ipwhois(str(tempdict['object']))
+            if settingsvars['vtinfo'] == "on":
+                jsonvt = libs.virustotal.vt_ipv4_lookup(tempdict['object'])
+        elif newdict['type'] == "Domain":
+            if settingsvars['whoisinfo'] == "on":
+                whoisdata = libs.whoisinfo.domainwhois(str(tempdict['object']))
+            if settingsvars['vtinfo'] == "on":
+                jsonvt = libs.virustotal.vt_domain_lookup(str(tempdict['object']))
+        if newdict['type'] == "Threat Actor":
+            return render_template('threatactorobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
+                                   settingsvars=settingsvars)
+        elif newdict['diamondmodel'] == "Victim":
+            return render_template('victimobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
+                                   settingsvars=settingsvars)
+        else:
+            return render_template('networkobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
+                                   settingsvars=settingsvars)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+@app.route('/insert/newfield/', methods=['POST'])
+def insertnewfield():
+    try:
+        something = request.form
+        imd = ImmutableMultiDict(something)
+        records = libs.helpers.convert(imd)
+        newdict = {}
+        for i in records:
+            if i == "inputnewfieldname":
+                newdict[records[i]] = records['inputnewfieldvalue']
+            elif i == "inputnewfieldvalue":
+                pass
+            else:
+                newdict[i] = records[i]
+        return render_template('neweditobject.html', entry=newdict)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
 
 
 if __name__ == '__main__':

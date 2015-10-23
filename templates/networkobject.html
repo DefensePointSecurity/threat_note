@@ -111,7 +111,7 @@
                      <div class="content">
                      This page contains information on {{ records['object'] }} that was manually entered, as well as 3rd party supplemental information that can aide an analyst in research. 3rd party sources can include VirusTotal, PassiveTotal, Whois, geolocational data, and more. You can enable these 3rd party integrations in the <a href="/settings">settings</a> menu.
         </p>
-        On this page, you can also edit the entry to add new fields or change any attributes previously entered. You can also delete the entry if it's no longer needed. 
+        On this page, you can also edit the entry to add new fields or change any attributes previously entered. You can also delete the entry if it's no longer needed.
         </br>
         </br>
         </div>
@@ -129,70 +129,84 @@
                                         <th>Value</th>
                                     </thead>
                                     <tbody>
-                                       {% for key in records %}
-                                        {% if key == "_id" %}
-                                        <div></div>
-                                        {% elif key == "object" %}
-                                          <div></div>
-                                          {% elif key == "favorite" %}
-                                          <div></div>
-                                          {% elif key == "confidence" %}
-                                          {% if records[key] == "Low" %}
+                                         <tr>
+                                          <td><span class="text-capitalize">Object Type</span></td>
+                                          <td>{{ records['type'] }}</td>
+                                          </tr>
                                           <tr>
-                                          <td><span class="text-capitalize">{{ key }}</span></td>
-                                          <td><i class="fa fa-circle text-warning"></i> {{ records[key] }}</td>
+                                          <td><span class="text-capitalize">Campaign</span></td>
+                                          <td>{{ records['campaign'] }}</td>
                                           </tr>
-                                          {% elif records[key] == "Medium" %}
-                                         <tr>
-                                          <td><span class="text-capitalize">{{ key }}</span></td>
-                                          <td><i class="fa fa-circle text-info"></i> {{ records[key] }}</td>
+                                          {% if records['confidence'] == "Low" %}
+                                          <tr>
+                                          <td><span class="text-capitalize">Confidence</span></td>
+                                          <td><i class="fa fa-circle text-warning"></i> {{ records['confidence'] }}</td>
                                           </tr>
-                                           {% elif records[key] == "High" %}
+                                          {% elif records['confidence'] == "Medium" %}
                                          <tr>
-                                          <td><span class="text-capitalize">{{ key }}</span></td>
-                                          <td><i class="fa fa-circle text-danger"></i> {{ records[key] }}</td>
+                                          <td><span class="text-capitalize">Confidence</span></td>
+                                          <td><i class="fa fa-circle text-info"></i> {{ records['confidence'] }}</td>
+                                          </tr>
+                                           {% elif records['confidence'] == "High" %}
+                                         <tr>
+                                          <td><span class="text-capitalize">Confidence</span></td>
+                                          <td><i class="fa fa-circle text-danger"></i> {{ records['confidence'] }}</td>
                                           </tr>
                                           {% endif %}
-                                        {% else %}
-                                          {% if records[key]|length == 0 %}
                                           <tr>
-                                            <td><span class="text-capitalize">{{key}}</span></td>
-                                            <td>-</td>
+                                          <td><span class="text-capitalize">Diamond Model</span></td>
+                                          <td>{{ records['diamondmodel'] }}</td>
                                           </tr>
+                                          <tr>
+                                          <td><span class="text-capitalize">First Seen</span></td>
+                                          <td>{{ records['firstseen'] }}</td>
+                                          </tr>
+                                          <tr>
+                                          <td><span class="text-capitalize">Last Seen</span></td>
+                                          <td>{{ records['lastseen'] }}</td>
+                                          </tr>
+                                          <tr>
+                                          <td><span class="text-capitalize">Comments</span></td>
+                                          <td>{{ records['comments'] }}</td>
+                                          </tr>
+                                       {% for key in records %}
+                                        {% if key == "id" or key == "type" or key == "campaign" or key == "confidence" or key == "Firstseen" or key == "Lastseen" or key == "comments" or key == "diamondmodel" or key == "object" or key == "firstseen" or key == "lastseen"%}
+                                        <div></div>
+                                        {% else %}
+                                          {% if records[key] == "" %}
+                                          <div></div>
                                           {% else %}
                                           <tr>
-                                            <td><span class="text-capitalize">{{key}}</span></td>
+                                            <td><span class="text-capitalize">{{ key }}</span></td>
                                             <td>{{ records[key] }}</td>
                                           </tr>
                                         {% endif %}
                                         {% endif %}
                                       {% endfor %}
-                 {% if records['inputtype'] == "IPv4" %}
-                   
-                  
+                 {% if records['type'] == "IPv4" %}
                     {% if settingsvars['whoisinfo'] == "on" %}
                        <tr>
-                <td><strong>Whois Data</strong></td>
-                <td class="text-left">
-                   {% for line in whoisdata %}
-                    {% if line == "raw" or line == "raw_referral" or line == "referral" %}
-                      <div></div>
-                     {% elif line == "nets" %}
-                      {% for i in whoisdata['nets'][0] %}
-                      <span class="text-uppercase"><b> {{ i }}</b></span> : {{ whoisdata['nets'][0][i] }} 
+                      <td><strong>Whois Data</strong></td>
+                      <td class="text-left">
+                         {% for line in whoisdata %}
+                          {% if line == "raw" or line == "raw_referral" or line == "referral" %}
+                            <div></div>
+                           {% elif line == "nets" %}
+                            {% for i in whoisdata['nets'][0] %}
+                            <span class="text-uppercase"><b> {{ i }}</b></span> : {{ whoisdata['nets'][0][i] }} 
+                            </br>
+                            {% endfor %}
+                          {% elif line == "asn" %}
+                            <span class="text-uppercase"><b>{{ line }}</b></span>: {{ whoisdata[line] }}
+                          {% else %}
+                          <span class="text-uppercase"><b>{{ line }}</b></span>: {{ whoisdata[line] }}
+                          </br>
+                          {% endif %}
+                        {% endfor %}
                       </br>
-                      {% endfor %}
-                    {% elif line == "asn" %}
-                      <span class="text-uppercase"><b>{{ line }}</b></span>: {{ whoisdata[line] }}
-                    {% else %}
-                    <span class="text-uppercase"><b>{{ line }}</b></span>: {{ whoisdata[line] }}
-                    </br>
-                    {% endif %}
-                  {% endfor %}
-                </br>
-                </td>
-                </tr>
-                  {% endif %}
+                      </td>
+                      </tr>
+                        {% endif %}
 
                     {% if settingsvars['vtinfo'] == "on" %}
                 <tr>
@@ -219,7 +233,7 @@
                     {% endif %}
 
 
-            {% elif records['inputtype'] == "Domain" %}
+            {% elif records['type'] == "Domain" %}
                
                   {% if settingsvars['whoisinfo'] == "on" %}
                  <tr>

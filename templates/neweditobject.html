@@ -196,41 +196,41 @@
 
                                         <div class="form-group">
                                                 <label>Object Type</label>
-                                                <select class="form-control" name="inputtype">
+                                                <select class="form-control" name="type">
                                                   {% if entry['type'] == "IPv4" %}
                                                     <option value="IPv4" selected="true">IPv4</option>
                                                     <option value="IPv6">IPv6</option>
                                                     <option value="Domain">Domain</option>
                                                      <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Entity">Enitiy</option>
+                                                    <option value="Entity">Entity</option>
                                                      <option value="Network">Network</option>
                                                   {% elif entry['type'] == "IPv6" %}
                                                     <option value="IPv4">IPv4</option>
                                                     <option value="IPv6" selected="true">IPv6</option>
                                                     <option value="Domain">Domain</option>
                                                      <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Entity">Enitiy</option>
+                                                    <option value="Entity">Entity</option>
                                                      <option value="Network">Network</option>
                                                   {% elif entry['type'] == "Domain" %}
                                                     <option value="IPv4">IPv4</option>
                                                     <option value="IPv6">IPv6</option>
                                                      <option value="Domain" selected="true">Domain</option>
                                                      <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Entity">Enitiy</option>
+                                                    <option value="Entity">Entity</option>
                                                      <option value="Network">Network</option>
                                                   {% elif entry['type'] == "Threat Actor" %}
                                                       <option value="IPv4">IPv4</option>
                                                     <option value="IPv6">IPv6</option>
                                                      <option value="Domain">Domain</option>
                                                      <option value="Threat Actor" selected="true">Threat Actor</option>
-                                                    <option value="Entity">Enitiy</option>
+                                                    <option value="Entity">Entity</option>
                                                      <option value="Network">Network</option>
                                                   {% elif entry['type'] == "Network" %}
                                                        <option value="IPv4">IPv4</option>
                                                     <option value="IPv6">IPv6</option>
                                                      <option value="Domain">Domain</option>
                                                      <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Entity">Enitiy</option>
+                                                    <option value="Entity">Entity</option>
                                                      <option value="Network"  selected="true">Network</option>
                                                    {% elif entry['type'] == "Entity" %}
                                                        <option value="IPv4">IPv4</option>
@@ -244,7 +244,7 @@
                                                     <option value="IPv6">IPv6</option>
                                                      <option value="Domain">Domain</option>
                                                      <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Entity">Enitiy</option>
+                                                    <option value="Entity">Entity</option>
                                                      <option value="Network" >Network</option>
                                                     {% endif %}
                                                 </select>
@@ -321,13 +321,14 @@
                                              <div></div>
                                            
                                             {% else %}
-                                            {% if entry[i]|length > 1 %}
-                                            <div class="form-group">
-                                                <label>{{ i }}</label>
-                                                <input type="text" class="form-control" name="{{ i }}" value="{{ entry[i] }}">
-                                            </div>
-                                            {% else %}
-                                            <div></div>
+                                                {% if entry[i] == "" %}
+                                                <div></div>
+                                                {% else %}
+                                                <div class="form-group">
+                                                    <label>{{ i }}</label>
+                                                    <input type="text" class="form-control" name="{{ i }}" value="{{ entry[i] }}">
+                                                </div>
+                                               
 
                                             {% endif %}
                                             {% endif %}
@@ -339,7 +340,7 @@
                                     </div>
 
 
-                                    <input type="hidden" class="form-control" name="_id" value="{{ entry['_id'] }}">
+                                    <input type="hidden" class="form-control" name="id" value="{{ entry['id'] }}">
 
                                     <div style="float: right;">
                                     {% if entry['type'] == "Threat Actor" %}
