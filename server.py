@@ -4,18 +4,16 @@
 # threat_note v3.0                                      #
 # Developed By: Brian Warehime                          #
 # Defense Point Security (defpoint.com)                 #
-# October 13, 2015                                      #
+# October 26, 2015                                      #
 #########################################################
 
 ###########
 # Imports #
 ###########
-from flask import Flask, jsonify, make_response, render_template, request, url_for, redirect
+from flask import Flask, jsonify, make_response, render_template, request, url_for, redirect, abort, flash
 from werkzeug.datastructures import ImmutableMultiDict
-import bson
 import re
 import ast
-from bson.son import SON
 import csv
 import io
 import sqlite3 as lite
@@ -189,13 +187,9 @@ def campaignsummary(uid):
         con.row_factory = lite.Row
         with con:
             cur = con.cursor()
-            cur.execute("SELECT * from indicators where id='" + uid + "'")
+            cur.execute("SELECT * from indicators where object='" + str(uid) + "'")
             http = cur.fetchall()
             http = http[0]
-            cur.execute("SELECT * from settings")
-            settingsvars = cur.fetchall()
-        jsonvt = ""
-        whoisdata = ""
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http['type']) == "IPv4" or str(http['type']) == "IPv6" or str(
                 http['type']) == "Domain" or str(http['type']) == "Network":
@@ -224,7 +218,6 @@ def newobject():
             newdict[i] = records[i]
         # Makes sure if you submit an IPv4 indicator, it's an actual IP address.
         ipregex = re.match(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', newdict['inputobject'])
-
        # Convert the inputobject of IP or Domain to a list for Bulk Add functionality.
         newdict['inputobject'] = newdict['inputobject'].split(',')
         for newobject in newdict['inputobject']:
@@ -302,8 +295,8 @@ def newobject():
                             cur = con.cursor()
                             cur.execute("SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
                             network = cur.fetchall()
-        if newdict['inputtype'] == "IPv4" or newdict['inputtype'] == "Domain" or newdata[
-            'inputtype'] == "Network" or newdata['inputtype'] == "IPv6":
+        if newdict['inputtype'] == "IPv4" or newdict['inputtype'] == "Domain" or newdict[
+            'inputtype'] == "Network" or newdict['inputtype'] == "IPv6":
             con = lite.connect('threatnote.db')
             con.row_factory = lite.Row
             with con:
@@ -539,6 +532,161 @@ def insertnewfield():
         return render_template('neweditobject.html', entry=newdict)
     except Exception as e:
         return render_template('error.html', error=e)
+
+@app.route('/network/<uid>/info', methods=['GET'])
+def objectsummary(uid):
+    try:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        newdict = {}
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from indicators where id='" + uid + "'")
+            http = cur.fetchall()
+            http = http[0]
+            names = [description[0] for description in cur.description]
+            for i in names:
+                if i == None:
+                    newdict[i] == ""
+                else:
+                    newdict[i] = str(http[i])
+            cur.execute("SELECT * from settings")
+            settingsvars = cur.fetchall()
+            settingsvars = settingsvars[0]
+        jsonvt = ""
+        whoisdata = ""
+        odnsdata = ""
+        # Run ipwhois or domainwhois based on the type of indicator
+        if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
+            if settingsvars['vtinfo'] == "on":
+                jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
+            if settingsvars['whoisinfo'] == "on":
+                whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
+            if settingsvars['odnsinfo'] == "on":
+                odnsdata = libs.investigate.ip_query(str(http['object']))
+        elif str(http['type']) == "Domain":
+            if settingsvars['whoisinfo'] == "on":
+                whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
+            if settingsvars['vtinfo'] == "on":
+                jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
+            if settingsvars['odnsinfo'] == "on":
+                odnsdata = libs.investigate.domain_categories(str(http['object']))
+        if settingsvars['whoisinfo'] == "on":
+            if str(http['type']) == "Domain":
+                address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
+            else:
+                address = str(whoisdata['nets'][0]['city']) + ", " + str(whoisdata['nets'][0]['country'])
+        else:
+            address = "Information about " + str(http['object'])
+        return render_template('networkobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
+                               odnsdata=odnsdata, settingsvars=settingsvars, address=address)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+@app.route('/threatactors/<uid>/info', methods=['GET'])
+def threatactorobject(uid):
+    try:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        newdict = {}
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from indicators where id='" + uid + "'")
+            http = cur.fetchall()
+            http = http[0]
+        return render_template('threatactorobject.html', records=http)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        if request.form['username'] != 'admin' or request.form['password'] != 'admin':
+            error = 'Invalid Credentials. Please try again.'
+        else:
+            return redirect(url_for('home'))
+    return render_template('login.html', error=error)
+
+
+@app.route('/victims/<uid>/info', methods=['GET'])
+def victimobject(uid):
+    try:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        newdict = {}
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from indicators where id='" + uid + "'")
+            http = cur.fetchall()
+            http = http[0]
+            cur.execute("SELECT * from settings")
+            settingsvars = cur.fetchall()
+            settingsvars = settingsvars[0]
+        jsonvt = ""
+        whoisdata = ""
+        odnsdata = ""
+        # Run ipwhois or domainwhois based on the type of indicator
+        if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
+            if settingsvars['vtinfo'] == "on":
+                jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
+            if settingsvars['whoisinfo'] == "on":
+                whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
+            if settingsvars['odnsinfo'] == "on":
+                odnsdata = libs.investigate.ip_query(str(http['object']))
+        elif str(http['type']) == "Domain":
+            if settingsvars['whoisinfo'] == "on":
+                whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
+            if settingsvars['vtinfo'] == "on":
+                jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
+            if settingsvars['odnsinfo'] == "on":
+                odnsdata = libs.investigate.domain_categories(str(http['object']))
+        if settingsvars['whoisinfo'] == "on":
+            if str(http['type']) == "Domain":
+                address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
+            else:
+                address = str(whoisdata['nets'][0]['city']) + ", " + str(whoisdata['nets'][0]['country'])
+        else:
+            address = "Information about " + str(http['object'])
+        return render_template('victimobject.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,
+                               odnsdata=odnsdata, settingsvars=settingsvars, address=address)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+@app.route('/download/<uid>', methods=['GET'])
+def download(uid):
+    if uid == 'unknown':
+        uid = ""
+    file = io.BytesIO()
+    fieldnames = ['id','object','type','firstseen','lastseen','diamondmodel','campaign','confidence','comments']
+    con = lite.connect('threatnote.db')
+    con.row_factory = lite.Row
+    indlist = []
+    with con:
+        cur = con.cursor()
+        cur.execute("SELECT * FROM indicators WHERE campaign = '" + str(uid) + "'")
+        http = cur.fetchall()
+
+    for i in http:
+        indicators = []
+        for item in i:
+            if item == None or item == "":
+                pass
+            else:
+                indicators.append(str(item))
+        indlist.append(indicators)
+
+    w = csv.writer(file)
+    try:
+        w.writerow(fieldnames)
+        w.writerows(indlist)
+        response = make_response(file.getvalue())
+        response.headers["Content-Disposition"] = "attachment; filename=" + uid + "-campaign.csv"
+        response.headers["Content-type"] = "text/csv"
+        return response
+    except Exception as e:
+        print str(e)
+        pass
 
 
 

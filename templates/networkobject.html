@@ -133,10 +133,17 @@
                                           <td><span class="text-capitalize">Object Type</span></td>
                                           <td>{{ records['type'] }}</td>
                                           </tr>
+                                           {% if records['campaign']|length == 0 %}
+                                          <tr>
+                                          <td><span class="text-capitalize">Campaign</span></td>
+                                          <td>-</td>
+                                          </tr>
+                                          {% else %}
                                           <tr>
                                           <td><span class="text-capitalize">Campaign</span></td>
                                           <td>{{ records['campaign'] }}</td>
                                           </tr>
+                                          {% endif %}
                                           {% if records['confidence'] == "Low" %}
                                           <tr>
                                           <td><span class="text-capitalize">Confidence</span></td>
@@ -157,23 +164,44 @@
                                           <td><span class="text-capitalize">Diamond Model</span></td>
                                           <td>{{ records['diamondmodel'] }}</td>
                                           </tr>
+                                          {% if records['firstseen']|length == 0 %}
+                                          <tr>
+                                          <td><span class="text-capitalize">First Seen</span></td>
+                                          <td>-</td>
+                                          </tr>
+                                          {% else %}
                                           <tr>
                                           <td><span class="text-capitalize">First Seen</span></td>
                                           <td>{{ records['firstseen'] }}</td>
                                           </tr>
+                                          {% endif %}
+                                           {% if records['lastseen']|length == 0 %}
+                                          <tr>
+                                          <td><span class="text-capitalize">Last Seen</span></td>
+                                          <td>-</td>
+                                          </tr>
+                                          {% else %}
                                           <tr>
                                           <td><span class="text-capitalize">Last Seen</span></td>
                                           <td>{{ records['lastseen'] }}</td>
                                           </tr>
+                                          {% endif %}
+                                           {% if records['comments']|length == 0 %}
+                                          <tr>
+                                          <td><span class="text-capitalize">Comments</span></td>
+                                          <td>-</td>
+                                          </tr>
+                                          {% else %}
                                           <tr>
                                           <td><span class="text-capitalize">Comments</span></td>
                                           <td>{{ records['comments'] }}</td>
                                           </tr>
+                                          {% endif %}
                                        {% for key in records %}
                                         {% if key == "id" or key == "type" or key == "campaign" or key == "confidence" or key == "Firstseen" or key == "Lastseen" or key == "comments" or key == "diamondmodel" or key == "object" or key == "firstseen" or key == "lastseen"%}
                                         <div></div>
                                         {% else %}
-                                          {% if records[key] == "" %}
+                                          {% if records[i] == "None" or records[i] == "" or records[i]|length == 0 %}
                                           <div></div>
                                           {% else %}
                                           <tr>

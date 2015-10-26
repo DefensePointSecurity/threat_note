@@ -128,46 +128,90 @@
                                         <th>Attribute</th>
                                         <th>Value</th>
                                     </thead>
-                                    <tbody>
-                                       {% for key in records %}
-                                        {% if key == "_id" %}
-                                         <div></div>
-                                         {% elif key == "object" %}
-                                         <div></div>
-                                          {% elif key == "favorite" %}
-                                          <div></div>
-                                           {% elif key == "confidence" %}
-                                          {% if records[key] == "Low" %}
-                                          <tr>
-                                          <td><span class="text-capitalize">{{ key }}</span></td>
-                                          <td><i class="fa fa-circle text-warning"></i> {{ records[key] }}</td>
-                                          </tr>
-                                          {% elif records[key] == "Medium" %}
+                                     <tbody>
                                          <tr>
-                                          <td><span class="text-capitalize">{{ key }}</span></td>
-                                          <td><i class="fa fa-circle text-info"></i> {{ records[key] }}</td>
+                                          <td><span class="text-capitalize">Object Type</span></td>
+                                          <td>{{ records['type'] }}</td>
                                           </tr>
-                                           {% elif records[key] == "High" %}
-                                         <tr>
-                                          <td><span class="text-capitalize">{{ key }}</span></td>
-                                          <td><i class="fa fa-circle text-danger"></i> {{ records[key] }}</td>
-                                          </tr>
-                                          {% endif %}
-                                        {% else %}
-                                          {% if records[key]|length == 0 %}
+                                           {% if records['campaign']|length == 0 %}
                                           <tr>
-                                            <td><span class="text-capitalize">{{key}}</span></td>
-                                            <td>-</td>
+                                          <td><span class="text-capitalize">Campaign</span></td>
+                                          <td>-</td>
                                           </tr>
                                           {% else %}
                                           <tr>
-                                            <td><span class="text-capitalize">{{key}}</span></td>
+                                          <td><span class="text-capitalize">Campaign</span></td>
+                                          <td>{{ records['campaign'] }}</td>
+                                          </tr>
+                                          {% endif %}
+                                          {% if records['confidence'] == "Low" %}
+                                          <tr>
+                                          <td><span class="text-capitalize">Confidence</span></td>
+                                          <td><i class="fa fa-circle text-warning"></i> {{ records['confidence'] }}</td>
+                                          </tr>
+                                          {% elif records['confidence'] == "Medium" %}
+                                         <tr>
+                                          <td><span class="text-capitalize">Confidence</span></td>
+                                          <td><i class="fa fa-circle text-info"></i> {{ records['confidence'] }}</td>
+                                          </tr>
+                                           {% elif records['confidence'] == "High" %}
+                                         <tr>
+                                          <td><span class="text-capitalize">Confidence</span></td>
+                                          <td><i class="fa fa-circle text-danger"></i> {{ records['confidence'] }}</td>
+                                          </tr>
+                                          {% endif %}
+                                          <tr>
+                                          <td><span class="text-capitalize">Diamond Model</span></td>
+                                          <td>{{ records['diamondmodel'] }}</td>
+                                          </tr>
+                                          {% if records['firstseen']|length == 0 %}
+                                          <tr>
+                                          <td><span class="text-capitalize">First Seen</span></td>
+                                          <td>-</td>
+                                          </tr>
+                                          {% else %}
+                                          <tr>
+                                          <td><span class="text-capitalize">First Seen</span></td>
+                                          <td>{{ records['firstseen'] }}</td>
+                                          </tr>
+                                          {% endif %}
+                                           {% if records['lastseen']|length == 0 %}
+                                          <tr>
+                                          <td><span class="text-capitalize">Last Seen</span></td>
+                                          <td>-</td>
+                                          </tr>
+                                          {% else %}
+                                          <tr>
+                                          <td><span class="text-capitalize">Last Seen</span></td>
+                                          <td>{{ records['lastseen'] }}</td>
+                                          </tr>
+                                          {% endif %}
+                                           {% if records['comments']|length == 0 %}
+                                          <tr>
+                                          <td><span class="text-capitalize">Comments</span></td>
+                                          <td>-</td>
+                                          </tr>
+                                          {% else %}
+                                          <tr>
+                                          <td><span class="text-capitalize">Comments</span></td>
+                                          <td>{{ records['comments'] }}</td>
+                                          </tr>
+                                          {% endif %}
+                                       {% for key in records %}
+                                        {% if key == "id" or key == "type" or key == "campaign" or key == "confidence" or key == "Firstseen" or key == "Lastseen" or key == "comments" or key == "diamondmodel" or key == "object" or key == "firstseen" or key == "lastseen"%}
+                                        <div></div>
+                                        {% else %}
+                                          {% if records[i] == "None" or records[i] == "" or records[i]|length == 0 %}
+                                          <div></div>
+                                          {% else %}
+                                          <tr>
+                                            <td><span class="text-capitalize">{{ key }}</span></td>
                                             <td>{{ records[key] }}</td>
                                           </tr>
                                         {% endif %}
                                         {% endif %}
                                       {% endfor %}
-                                    </tbody>
+                                      </tbody>
                                 </table>                
                             </div>
                         </div>
