@@ -142,6 +142,9 @@ body,
 a {
   color: #1DC7EA;
 }
+a.capitalize {
+    text-transform: capitalize;
+}
 a:hover, a:focus {
   color: #42d0ed;
   text-decoration: none;

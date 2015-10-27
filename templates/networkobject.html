@@ -71,18 +71,7 @@
                         <p>Campaigns</p>
                     </a>        
                 </li>
-                <li>
-                    <a href="/settings">
-                        <i class="pe-7s-config"></i> 
-                        <p>Settings</p>
-                    </a>        
-                </li>
-                <li>
-                    <a href="/about">
-                        <i class="pe-7s-info"></i> 
-                        <p>About</p>
-                    </a>        
-                </li>
+               
             </ul> 
         </div>
     </div>
@@ -98,6 +87,22 @@
                         <span class="icon-bar"></span>
                     </button>
                     <a class="navbar-brand" href="#">{{ records['object'] }}</a>
+                </div>
+                <div class="collapse navbar-collapse">       
+                   <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown">
+                              <a href="/profile" class="dropdown-toggle capitalize" data-toggle="dropdown">
+                                    {{ current_user.user }}
+                                    <b class="caret"></b>
+                              </a>
+                              <ul class="dropdown-menu">
+                                <li><a href="/profile">Edit Profile</a></li>
+                                <li><a href="/settings">Edit Settings</a></li>
+                                <li class="divider"></li>
+                                <li><a href="/logout">Logout</a></li>
+                              </ul>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </nav>
@@ -198,17 +203,14 @@
                                           </tr>
                                           {% endif %}
                                        {% for key in records %}
-                                        {% if key == "id" or key == "type" or key == "campaign" or key == "confidence" or key == "Firstseen" or key == "Lastseen" or key == "comments" or key == "diamondmodel" or key == "object" or key == "firstseen" or key == "lastseen"%}
+                                        {% if key == "id" or key == "type" or key == "campaign" or key == "confidence" or key == "Firstseen" or key == "Lastseen" or key == "comments" or key == "diamondmodel" or key == "object" or key == "firstseen" or key == "lastseen" or records[key] == "None" or records[key] == "" %}
                                         <div></div>
-                                        {% else %}
-                                          {% if records[i] == "None" or records[i] == "" or records[i]|length == 0 %}
-                                          <div></div>
                                           {% else %}
                                           <tr>
                                             <td><span class="text-capitalize">{{ key }}</span></td>
                                             <td>{{ records[key] }}</td>
                                           </tr>
-                                        {% endif %}
+                                       
                                         {% endif %}
                                       {% endfor %}
                  {% if records['type'] == "IPv4" %}
@@ -309,6 +311,20 @@
         
         <footer class="footer">
             <div class="container-fluid">
+                 <nav class="pull-left">
+                    <ul>
+                        <li>
+                            <a href="/about">
+                                About
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/credits">
+                                Credits
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
                 
                 <p class="copyright pull-right">
                     &copy; 2015 <a href="https://defpoint.com/">Defense Point Security</a>

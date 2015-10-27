@@ -43,18 +43,7 @@
                         <p>Campaigns</p>
                     </a>
                 </li>
-                <li class="active">
-                    <a href="/settings">
-                        <i class="pe-7s-config"></i> 
-                        <p>Settings</p>
-                    </a>        
-                </li>
-                <li>
-                    <a href="/about">
-                        <i class="pe-7s-info"></i> 
-                        <p>About</p>
-                    </a>        
-                </li>
+               
             </ul> 
         </div>
     </div>
@@ -71,6 +60,22 @@
                     </button>
                     <a class="navbar-brand" href="#">Settings</a>
                 </div>
+                <div class="collapse navbar-collapse">       
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown">
+                              <a href="/profile" class="dropdown-toggle capitalize" data-toggle="dropdown">
+                                    {{ current_user.user }}
+                                    <b class="caret"></b>
+                              </a>
+                              <ul class="dropdown-menu">
+                                <li><a href="/profile">Edit Profile</a></li>
+                                <li><a href="/settings">Edit Settings</a></li>
+                                <li class="divider"></li>
+                                <li><a href="/logout">Logout</a></li>
+                              </ul>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </nav>
                      
@@ -84,7 +89,7 @@
                                 <h4 class="title">Settings</h4>
                             </div>
                                 <div class="content">
-                                    On this page you can configure any 3rd party integrations, such as turning on/off VirusTotal PassiveDNS information or Whois information. You can also delete your threat_note database if you choose to.</p>
+                                    On this page you can turn on any available 3rd party integrations as well as add your API keys for applicable services. You can also configure proxy settings if you need proxy support to reach certain integrations.</p>
                                 </div>
                         </div>
                         </div>
@@ -92,24 +97,9 @@
 
               <div class="row">
                     <div class="col-md-6">
-                        <div class="card ">
-                            <div class="header">
-                                <h4 class="title">Database Settings</h4>
-                                <p class="category">Mongo Configuration Settings</p>
-                            </div>
-                            <div class="content">                               
-                              <div class="row">
-                              <div class="col-md-4">     
-                               <a href="/delete" onclick="return confirm('Are you sure you want to delete the database?');" class="btn btn-danger btn-fill"><i class="fa fa-trash-o"></i> Delete Database</a>
-                              </div>
-                           <div class="col-md-8">
-                    If you wish to delete the Mongo database that stores all the entries you've created, press the button to the left. <strong>This will destroy the database and you will not have any entries, proceed with caution!</strong></p>
-                            </div>
-                            </div>
+        
+                        
 
-
-                              </div>
-                            </div>
                         <div class="card ">
                         <form class="form-horizontal" action="/update/settings/" enctype="application/x-www-form-urlencoded" method="POST">
                             <div class="header">
@@ -207,7 +197,20 @@
 
         <footer class="footer">
             <div class="container-fluid">
-                
+                 <nav class="pull-left">
+                    <ul>
+                        <li>
+                            <a href="/about">
+                                About
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/credits">
+                                Credits
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
                 <p class="copyright pull-right">
                     &copy; 2015 <a href="https://defpoint.com/">Defense Point Security</a>
                 </p>

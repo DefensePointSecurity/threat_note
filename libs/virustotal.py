@@ -19,8 +19,8 @@ def vt_ipv4_lookup(ipv4):
         j = json.loads(r.text)
         j['resolutions'] = sorted(j['resolutions'], key=lambda k: k['last_resolved'], reverse=True)
         return j
-    except Exception as e:
-        return e
+    except:
+        pass
 
 
 # Domain VirusTotal function for passive DNS
@@ -38,6 +38,9 @@ def vt_domain_lookup(domain):
         r = requests.get(url, params=params, verify=False, proxies=libs.helpers.get_proxy())
         j = json.loads(r.text)
         j['resolutions'] = sorted(j['resolutions'], key=lambda k: k['last_resolved'], reverse=True)
-        return j
+        if len(j) < 20:
+            pass
+        else:
+            return j
     except:
         pass
