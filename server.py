@@ -30,7 +30,7 @@ import hashlib
 # Configuration #
 #################
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'flask-login-simple-example'
+app.config['SECRET_KEY'] = 'yek_terces'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///threatnote.db'
 
 lm = LoginManager()
