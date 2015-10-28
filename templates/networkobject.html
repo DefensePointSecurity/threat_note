@@ -121,22 +121,25 @@
         </br>
         </div>
         </div>
+
+         <div class="row">
+                    
                         <div class="card">
-                            <div class="header">
+                          <div class="header">
                             {% if records['type'] == "IPv4" %}
                             <div style="float: right;">
                                <a href="https://www.threatcrowd.org/ip.php?ip={{ records['object'] }}" target="_blank" class="btn btn-info btn-fill"><i class="fa fa-arrow-up"></i> Pivot to ThreatCrowd</a>
                               </div>
+                               <h4 class="title"><i class="pe-7s-global"></i><span style="padding-left:10px"></span>{{ records['object'] }}</h4>
                             {% elif records['type'] == "Domain" %}
                                 <div style="float: right;">
                                <a href="https://www.threatcrowd.org/domain.php?domain={{ records['object'] }}" target="_blank" class="btn btn-info btn-fill"><i class="fa fa-arrow-up"></i> Pivot to ThreatCrowd</a>
                               </div>
+                               <h4 class="title"><i class="pe-7s-global"></i><span style="padding-left:10px"></span>{{ records['object'] }}</h4>
                               {% endif %}
+                            <p class="category">{{ address }}</p>
+                              </div>
 
-                                <h4 class="title"><i class="pe-7s-global"></i><span style="padding-left:10px"></span>{{ records['object'] }}</h4>
-                                <p class="category">{{ address }}</p>
-                          
-                            </div>
 
                             <div class="content table-responsive table-full-width">
                                 <table class="table table-hover table-striped">
@@ -317,6 +320,7 @@
                         </div>
                     </div>                   
                 </div>                    
+            </div>
             </div>
         </div>
         
