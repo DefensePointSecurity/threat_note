@@ -811,7 +811,7 @@ def download(uid):
     if uid == 'unknown':
         uid = ""
     file = io.BytesIO()
-    fieldnames = ['id','object','type','firstseen','lastseen','diamondmodel','campaign','confidence','comments']
+    #fieldnames = ['id','object','type','firstseen','lastseen','diamondmodel','campaign','confidence','comments']
     con = lite.connect('threatnote.db')
     con.row_factory = lite.Row
     indlist = []
@@ -819,12 +819,14 @@ def download(uid):
         cur = con.cursor()
         cur.execute("SELECT * FROM indicators WHERE campaign = '" + str(uid) + "'")
         http = cur.fetchall()
+        cur.execute("SELECT * from indicators")
+        fieldnames = [description[0] for description in cur.description]
 
     for i in http:
         indicators = []
         for item in i:
             if item == None or item == "":
-                pass
+                indicators.append("-")
             else:
                 indicators.append(str(item))
         indlist.append(indicators)
