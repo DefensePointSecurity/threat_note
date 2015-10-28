@@ -93,7 +93,7 @@ def register():
 
             login_user(user)
 
-    if current_user.is_authenticated and not current_user.is_anonymous:
+    if current_user.is_authenticated:
         return redirect( url_for('home') )
 
     return render_template('register.html', form=form, title='Register')
