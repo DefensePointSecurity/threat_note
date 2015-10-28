@@ -101,7 +101,7 @@
                         
 
                         <div class="card ">
-                        <form class="form-horizontal" action="/update/settings/" enctype="application/x-www-form-urlencoded" method="POST">
+                        <form class="form-horizontal" action="/profile" enctype="application/x-www-form-urlencoded" method="POST">
                             <div class="header">
                                 <h4 class="title">Change Password</h4>
                                 
@@ -111,11 +111,11 @@
                               <div class="col-md-12">
                                 <fieldset>
                                 <label>Current Password</label>
-                                <input type="text" class="form-control" name="currentpw" value="" placeholder="*******"></br>
+                                <input type="password" class="form-control" name="currentpw" value="" placeholder="*******"></br>
                                 <label>New Password</label>
-                                <input type="text" class="form-control" name="newpw" value="" placeholder="*******"></br>
+                                <input type="password" class="form-control" name="newpw" value="" placeholder="*******"></br>
                                 <label>Re-enter Password</label>
-                                <input type="text" class="form-control" name="newpwvalidation" value="" placeholder="*******"></br>
+                                <input type="password" class="form-control" name="newpwvalidation" value="" placeholder="*******"></br>
                                 </fieldset>
                               </div>
                             </div>
@@ -204,4 +204,24 @@
 
     
 </html>
+
+
+{% if errormessage %}
+    <script type="text/javascript">
+        new $(document).ready(function(){
+            
+            demo.initChartist();
+            
+            $.notify({
+                icon: 'pe-7s-info',
+                message: "<b>Info - {{ errormessage }}"
+                
+            },{
+                type: 'info',
+                timer: 4000
+            });
+            
+        });
+    </script>
+    {% endif %}
 {% endblock %}

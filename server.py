@@ -18,7 +18,6 @@ import csv
 import io
 import sqlite3 as lite
 import sys
-#
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
 from flask.ext.wtf import Form
@@ -508,7 +507,6 @@ def updatesettings():
         newdict = {}
         for i in records:
             newdict[i] = records[i]
-        test = newdict
         # Make sure we're updating the settings instead of overwriting them
         con = lite.connect('threatnote.db')
         con.row_factory = lite.Row
@@ -559,7 +557,7 @@ def updatesettings():
             cur.execute("SELECT * from settings")
             newrecords = cur.fetchall()
             newrecords = newrecords[0]
-        return render_template('settings.html', records=newrecords, test=test)
+        return render_template('settings.html', records=newrecords)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -711,10 +709,47 @@ def threatactorobject(uid):
     except Exception as e:
         return render_template('error.html', error=e)
 
-@app.route('/profile', methods=['GET'])
+@app.route('/profile', methods=['GET','POST'])
 @login_required
 def profile():
     try:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            tempdict = {}
+            cur = con.cursor()
+            cur.execute("SELECT key from users where user='" + str(current_user.user).lower() + "'")
+            http = cur.fetchall()
+            http = http[0]
+            names = [description[0] for description in cur.description]
+            for i in names:
+                if i == None:
+                    tempdict[i] == ""
+                else:
+                    tempdict[i] = http[i]
+        something = request.form
+        imd = ImmutableMultiDict(something)
+        records = libs.helpers.convert(imd)
+        newdict = {}
+        for i in records:
+            newdict[i] = records[i]
+        if 'currentpw' in newdict:
+            if hashlib.md5(newdict['currentpw'].encode('utf-8')).hexdigest() == tempdict['key']:
+                if newdict['newpw'] == newdict['newpwvalidation']:
+                    with con:
+                        try:
+                            cur = con.cursor()
+                            cur.execute("UPDATE users SET key='" + hashlib.md5(newdict['newpw'].encode('utf-8')).hexdigest() + "' WHERE user='" + str(current_user.user).lower() + "'")
+                            errormessage = "Password updated successfully."
+                            return render_template('profile.html',errormessage=errormessage)
+                        except sqlite3.Error as er:
+                            print 'er:', er.__dict__
+                else:
+                    errormessage = "New passwords don't match."
+                    return render_template('profile.html',errormessage=errormessage)
+            else:
+                errormessage = "Current password is incorrect."
+                return render_template('profile.html',errormessage=errormessage)
         return render_template('profile.html')
     except Exception as e:
         return render_template('error.html', error=e)
