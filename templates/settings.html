@@ -132,6 +132,7 @@
                                 <fieldset>
                                     <table class="table">
                                         <tbody>
+
                                             <tr>
                                                 <td>
                                             {% if records['whoisinfo'] == "on" %}
@@ -146,6 +147,21 @@
                                             {% endif %}
                                                 </td>
                                                 <td>Whois Information</td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                            {% if records['threatcrowd'] == "on" %}
+                                            
+                                             <label class="checkbox">
+                                              <input type="checkbox" class="form-control" name="threatcrowd" checked data-toggle="checkbox">
+                                         
+                                            {% else %}
+                                         
+                                              <label class="checkbox">
+                                                <input type="checkbox" class="form-control" name="threatcrowd" data-toggle="checkbox">
+                                            {% endif %}
+                                                </td>
+                                                <td>ThreatCrowd Visualizations</td>
                                             </tr>
                                             <tr>
                                                 <td>

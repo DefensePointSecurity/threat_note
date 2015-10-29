@@ -24,6 +24,7 @@ from flask.ext.wtf import Form
 from wtforms import TextField, PasswordField
 from wtforms.validators import Required
 import hashlib
+import time
 
 #################
 # Configuration #
@@ -304,10 +305,10 @@ def campaignsummary(uid):
 @login_required
 def newobj():
     try:
-        return render_template('newobject.html')
+        currentdate = time.strftime("%Y-%m-%d")
+        return render_template('newobject.html', currentdate=currentdate)
     except Exception as e:
         return render_template('error.html', error=e)
-
 
 @app.route('/insert/object/', methods=['POST'])
 @login_required
@@ -514,6 +515,14 @@ def updatesettings():
             cur = con.cursor()
             cur.execute("SELECT * from settings")
             setting = cur.fetchall()
+            if 'threatcrowd' in newdict.keys():
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET threatcrowd = 'on'")
+            else:
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET threatcrowd = 'off'")
             if 'vtinfo' in newdict.keys():
                 with con:
                     cur = con.cursor()

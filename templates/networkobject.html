@@ -121,22 +121,10 @@
         </br>
         </div>
         </div>
-
-         <div class="row">
-                    
+                         <div class="row">
                         <div class="card">
                           <div class="header">
-                            {% if records['type'] == "IPv4" %}
-                            <div style="float: right;">
-                               <a href="https://www.threatcrowd.org/ip.php?ip={{ records['object'] }}" target="_blank" class="btn btn-info btn-fill"><i class="fa fa-arrow-up"></i> Pivot to ThreatCrowd</a>
-                              </div>
                                <h4 class="title"><i class="pe-7s-global"></i><span style="padding-left:10px"></span>{{ records['object'] }}</h4>
-                            {% elif records['type'] == "Domain" %}
-                                <div style="float: right;">
-                               <a href="https://www.threatcrowd.org/domain.php?domain={{ records['object'] }}" target="_blank" class="btn btn-info btn-fill"><i class="fa fa-arrow-up"></i> Pivot to ThreatCrowd</a>
-                              </div>
-                               <h4 class="title"><i class="pe-7s-global"></i><span style="padding-left:10px"></span>{{ records['object'] }}</h4>
-                              {% endif %}
                             <p class="category">{{ address }}</p>
                               </div>
 
@@ -277,6 +265,7 @@
                     {% endif %}
 
 
+
             {% elif records['type'] == "Domain" %}
                
                   {% if settingsvars['whoisinfo'] == "on" %}
@@ -316,13 +305,42 @@
               {% endif %}
                                     </tbody>
                                 </table>                
-                            </div>
-                        </div>
-                    </div>                   
-                </div>                    
-            </div>
-            </div>
-        </div>
+                               {% if settingsvars['threatcrowd'] == "on" %}
+                               </div>
+                               </div>
+                                     {% if records['type'] == "IPv4" %}
+                                           <div class="row">
+                                          <div class="col-lg-12">
+                                          <div class="card">
+                                          <div class="header">
+                                          <h4 class="title">ThreatCrowd Visualization</h4>
+                                          <p class="category">More information can be found at <a href="https://www.threatcrowd.org/ip.php?ip={{ records['object'] }}" target="_blank">ThreatCrowd</a></p>
+                                          </div>
+                                          <div class="content">
+                                          <iframe src='https://www.threatcrowd.org/graphHtml.php?ip={{ records['object'] }}'  frameborder='0' scrolling='no' width="100%" height="500px"></iframe>
+                                          </div>
+                                          </div>
+                                    {% elif records['type'] == "Domain" %}
+                                          <div class="row">
+                                          <div class="col-lg-12">
+                                          <div class="card">
+                                          <div class="header">
+                                          <h4 class="title">ThreatCrowd Visualization</h4>
+                                          <p class="category">More information can be found at <a href="https://www.threatcrowd.org/domain.php?domain={{ records['object'] }}" target="_blank">ThreatCrowd</a></p>
+                                          </div>
+                                          <div class="content">
+                                          <iframe src='https://www.threatcrowd.org/graphHtml.php?domain={{ records['object'] }}'  frameborder='0' scrolling='no' width="100%" height="500px"></iframe>
+                                          </div>
+                                          </div>
+                                  {% endif %}
+                              {% endif %}  
+                      </div>
+                       </div>
+                       </div>
+                       </div>                  
+                    </div>
+                    </div>
+                </div>
         
         <footer class="footer">
             <div class="container-fluid">
