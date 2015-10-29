@@ -5,6 +5,18 @@
 
 Please note threat_note is in beta at the moment, and you may experience issues with this app. This was tested on Yosemite 10.10.4 running Google Chrome, other browsers or OS'es may experience issues with the rendering, please identify any issues or possible fixes to the issues page.
 
+### Version 3 Release Notes
+
+Major changes include:
+
+- Switched back-end database to SQLite
+- Removed Vagrant machine needed for Mongo
+- Added ThreatCrowd Visualization Integration
+- Added basic authentication system (user can register/login)
+- Settings and Profile pages moved to user account dropdown
+
+...and many minor bug fixes
+
 ### About
 
 threat_note is a web application built by [Defense Point Security](http://www.defpoint.com) to allow security researchers the ability to add and retrieve indicators related to their research. As of right now this includes the ability to add IP Addresses, Domains and Threat Actors, with more types being added in the future.
@@ -20,18 +32,15 @@ Other applications built for storing indicators and research have some shortcomi
 
 ### Installation
 
-As this tool tries to be lightweight and easy to setup, we tried to make the setup as easy as possible. To get started, you'll need to install [Vagrant](https://www.vagrantup.com/) along with a provider (Using VirtualBox is recommended since it's free and available on all platforms and already built into Vagrant.)
-
-That's it! By using Vagrant it'll save you the time and hassle of configuring your own server and database. This Vagrant machine sets up the Mongo database you'll need in order for threat_note to store your indicators as well as sets up the Flask Python app that runs the web server.
-
-So, if you have Vagrant installed on your machine, simply run the following:
+Now that we are using SQLite, there's no need for a pesky Vagrant machine. All we need to do is install some requirements via pip and fire up the server:
 
 ```
-cd threat_note/vagrant
-vagrant up
+cd threat_note
+pip install -r requirements.txt
+python server.py
 ```
 
-If you don't get any errors, you can just browse to http://localhost:7777 and you'll have yourself a brand new threat_note server to start populating.
+Once the server is running, you can browse to http://localhost:8888 and register a new account to use to login into threat_note with.
 
 ### Usage
 
