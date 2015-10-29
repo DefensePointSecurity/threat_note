@@ -43,18 +43,7 @@
                         <p>Campaigns</p>
                     </a>        
                 </li>
-                <li>
-                    <a href="/settings">
-                        <i class="pe-7s-config"></i> 
-                        <p>Settings</p>
-                    </a>        
-                </li>
-                <li>
-                    <a href="/about">
-                        <i class="pe-7s-info"></i> 
-                        <p>About</p>
-                    </a>        
-                </li>
+               
             </ul> 
         </div>
     </div>
@@ -70,6 +59,22 @@
                         <span class="icon-bar"></span>
                     </button>
                     <a class="navbar-brand" href="#">Victims</a>
+                </div>
+                <div class="collapse navbar-collapse">       
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown">
+                              <a href="/profile" class="dropdown-toggle capitalize" data-toggle="dropdown">
+                                    {{ current_user.user }}
+                                    <b class="caret"></b>
+                              </a>
+                              <ul class="dropdown-menu">
+                                <li><a href="/profile">Edit Profile</a></li>
+                                <li><a href="/settings">Edit Settings</a></li>
+                                <li class="divider"></li>
+                                <li><a href="/logout">Logout</a></li>
+                              </ul>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </nav>
@@ -106,8 +111,8 @@
                                     <tbody>
                                            {% for p in network %}
                                                 <tr> 
-                                                <td><a href="/victims/{{ p['_id'] }}/info">{{ p['object'] }}</td>
-                                                    <td>{{ p['inputtype'] }}</td>
+                                                <td><a href="/victims/{{ p['id'] }}/info">{{ p['object'] }}</td>
+                                                    <td>{{ p['type'] }}</td>
                                                     {% if p['firstseen']|length == 0 %}
                                                     <td>-</td>
                                                     {% else %}
@@ -137,10 +142,10 @@
                                                     <td>{{ p['comments'] }}</td>
                                                     {% endif %}
                                                      <td class="td-actions text-right">
-                                                    <a href="/edit/{{ p['_id'] }}" role="button" rel="tooltip" title="Edit Indicator" class="btn btn-info btn-simple btn-xs">
+                                                    <a href="/edit/{{ p['id'] }}" role="button" rel="tooltip" title="Edit Indicator" class="btn btn-info btn-simple btn-xs">
                                                         <i class="fa fa-pencil"></i>
                                                     </a>
-                                                    <a href="/delete/victims/{{ p['_id'] }}" role="button" rel="tooltip" title="Remove" class="btn btn-danger btn-simple btn-xs">
+                                                    <a href="/delete/victims/{{ p['id'] }}" role="button" rel="tooltip" title="Remove" class="btn btn-danger btn-simple btn-xs">
                                                         <i class="fa fa-times"></i>
                                                     </a>
                                                 </td>     
@@ -157,6 +162,20 @@
         
        <footer class="footer">
             <div class="container-fluid">
+                 <nav class="pull-left">
+                    <ul>
+                        <li>
+                            <a href="/about">
+                                About
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/credits">
+                                Credits
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
                 
                 <p class="copyright pull-right">
                     &copy; 2015 <a href="https://defpoint.com/">Defense Point Security</a>

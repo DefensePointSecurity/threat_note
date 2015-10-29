@@ -1,38 +1,125 @@
 #!/usr/bin/env python
 
 # #######################################################
-# threat_note v2.0                                     #
-# Developed By: Brian Warehime                         #
-# Defense Point Security (defpoint.com)                #
-# August 24, 2015                                      #
-########################################################
+# threat_note v3.0                                      #
+# Developed By: Brian Warehime                          #
+# Defense Point Security (defpoint.com)                 #
+# October 26, 2015                                      #
+#########################################################
 
 ###########
 # Imports #
 ###########
-from flask.ext.pymongo import PyMongo
-from flask import Flask, jsonify, make_response, render_template, request, url_for, redirect
+from flask import Flask, jsonify, make_response, render_template, request, url_for, redirect, abort, flash
 from werkzeug.datastructures import ImmutableMultiDict
-import bson
-import pymongo
 import re
 import ast
-from bson.son import SON
 import csv
 import io
-
+import sqlite3 as lite
+import sys
+from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
+from flask.ext.wtf import Form
+from wtforms import TextField, PasswordField
+from wtforms.validators import Required
+import hashlib
+import time
 
 #################
 # Configuration #
 #################
 app = Flask(__name__)
-app.config['MONGO_HOST'] = 'localhost'
-app.config['MONGO_PORT'] = 27017
-app.config['MONGO_DBNAME'] = 'threatnote'
+app.config['SECRET_KEY'] = 'yek_terces'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///threatnote.db'
 
-mongo = PyMongo(app, config_prefix='MONGO')
+lm = LoginManager()
+lm.init_app(app)
+lm.login_view = 'login'
 
-# Need to import libs after mongo is declared
+db = SQLAlchemy(app)
+
+class User(db.Model):
+    __tablename__ = 'users'
+    _id = db.Column('_id', db.Integer, primary_key=True, autoincrement=True)
+    user = db.Column('user', db.String)
+    email = db.Column('email', db.String)
+    key = db.Column('key', db.String)
+
+    def __init__(self, user, key, email):
+        self.user = user.lower()
+        self.key = hashlib.md5(key.encode('utf-8')).hexdigest()
+        self.email = email
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self._id
+
+class LoginForm(Form):
+    user = TextField('user', validators=[Required()])
+    key = PasswordField('key', validators=[Required()])
+
+    def get_user(self):
+        return db.session.query(User).filter_by(user=self.user.data.lower(), key=hashlib.md5(self.key.data.encode('utf-8')).hexdigest()).first()
+
+class RegisterForm(Form):
+    user = TextField('user', validators=[Required()])
+    key = PasswordField('key', validators=[Required()])
+    email = TextField('email')
+
+@lm.user_loader
+def load_user(id):
+    return db.session.query(User).filter_by(_id=id).first()
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegisterForm()
+    if form.validate_on_submit():
+        user = db.session.query(User).filter_by(user=form.user.data.lower()).first()
+        if user:
+            flash('User exists.')
+        else:
+            user = User(form.user.data.lower(), form.key.data, form.email.data)
+            db.session.add(user)
+            db.session.commit()
+
+            login_user(user)
+
+    if current_user.is_authenticated:
+        return redirect( url_for('home') )
+
+    return render_template('register.html', form=form, title='Register')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = form.get_user()
+        if not user:
+            flash('Invalid User or Key.')
+        else:
+            login_user(user)
+
+    if current_user.is_authenticated:
+        return redirect( url_for('home') )
+
+    return render_template('login.html', form=form, title='Login')
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect( url_for('login') )
+
+# Importing libraries
+
 import libs.investigate
 import libs.helpers
 import libs.whoisinfo
@@ -43,119 +130,188 @@ import libs.virustotal
 ###################
 
 @app.route('/', methods=['GET'])
+@login_required
 def home():
     try:
-        networks = libs.helpers.convert(mongo.db.network.distinct("campaign"))
-        dictcount = {}
-        dictlist = []
-        counts = float(mongo.db.network.count())
-        network = mongo.db.network.find({}).sort('_id', pymongo.DESCENDING).limit(5)
-        favs = mongo.db.network.find({"favorite": "True"}).sort('_id', pymongo.DESCENDING)
-        for i in networks:
-            x = mongo.db.network.find({"campaign": i}).count()
-            if i == "":
-                dictcount["category"] = "Unknown"
-                tempx = x / counts
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT count(DISTINCT id) AS number FROM indicators")
+            counts = cur.fetchall()
+            cur.execute("SELECT type, COUNT(*) AS `num` FROM indicators GROUP BY type")
+            types = cur.fetchall()
+            cur.execute("SELECT * FROM indicators ORDER BY id desc LIMIT 5")
+            network = cur.fetchall()
+            cur.execute("SELECT DISTINCT campaign FROM indicators")
+            networks = cur.fetchall()
+            cur.execute("SELECT count(DISTINCT id) AS number FROM indicators")
+            counts = cur.fetchall()
+            counts = counts[0][0]
+            dictcount = {}
+            dictlist = []
+            typecount = {}
+            typelist = []
+            for i in networks:
+                cur = con.cursor()
+                cur.execute("select count(id) FROM indicators WHERE campaign = '" + str(i[0]) + "'")
+                campcount = cur.fetchall()
+                campcount = campcount[0][0]
+                if i[0] == '':
+                    dictcount["category"] = "Unknown"
+                    tempx = float(campcount) / float(counts)
+                    newtemp = tempx * 100
+                    dictcount["value"] = round(newtemp, 2)
+                else:
+                    dictcount["category"] = i[0]
+                    tempx = float(campcount) / float(counts)
+                    newtemp = tempx * 100
+                    dictcount["value"] = round(newtemp,2)
+                dictlist.append(dictcount.copy())
+            for i in types:
+                typecount["category"] = str(i[0])
+                tempx = float(i[1]) / float(counts)
                 newtemp = tempx * 100
-                dictcount["value"] = round(newtemp, 2)
-            else:
-                dictcount["category"] = i
-                tempx = x / counts
-                newtemp = tempx * 100
-                dictcount["value"] = round(newtemp, 2)
-            dictlist.append(dictcount.copy())
-        types = libs.helpers.convert(mongo.db.network.distinct("inputtype"))
-        typedict = {}
-        typelist = []
-        for i in types:
-            x = mongo.db.network.find({"inputtype": i}).count()
-            typedict["category"] = i
-            tempx = x / counts
-            newtemp = tempx * 100
-            typedict["value"] = x
-            typelist.append(typedict.copy())
+                typecount["value"] = round(newtemp,2)
+                typelist.append(typecount.copy())
+            favs = []
         return render_template('dashboard.html', networks=dictlist, network=network, favs=favs, typelist=typelist)
     except Exception as e:
         return render_template('error.html', error=e)
 
-
 @app.route('/about', methods=['GET'])
+@login_required
 def about():
     return render_template('about.html')
 
-
 @app.route('/networks', methods=['GET'])
+@login_required
 def networks():
     try:
         # Grab only network indicators
-        network = mongo.db.network.find(
-            {"$or": [{"inputtype": "IPv4"}, {"inputtype": "Network"}, {"inputtype": "IPv6"}, {"inputtype": "Domain"}]})
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
+            network = cur.fetchall()
         return render_template('networks.html', network=network)
     except Exception as e:
         return render_template('error.html', error=e)
 
-
 @app.route('/threatactors', methods=['GET'])
+@login_required
 def threatactors():
     try:
         # Grab threat actors
-        threatactors = mongo.db.network.find({"inputtype": "Threat Actor"})
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * FROM indicators where type='Threat Actor'")
+            threatactors = cur.fetchall()
         return render_template('threatactors.html', network=threatactors)
     except Exception as e:
         return render_template('error.html', error=e)
 
-
 @app.route('/victims', methods=['GET'])
+@login_required
 def victims():
     try:
-        victims = mongo.db.network.find({"diamondmodel": "Victim"})
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * FROM indicators where diamondmodel='Victim'")
+            victims = cur.fetchall()
         return render_template('victims.html', network=victims)
     except Exception as e:
         return render_template('error.html', error=e)
 
-
 @app.route('/campaigns', methods=['GET'])
+@login_required
 def campaigns():
     try:
-        campaigns = mongo.db.network.distinct("campaign")
-        # Convert campaigns into Python dictionary
-        campaigns = libs.helpers.convert(campaigns)
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        camplist= []
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT DISTINCT campaign FROM indicators")
+            campaigns = cur.fetchall()
+            for i in campaigns:
+                if i[0] == "":
+                    camplist.append("Unknown")
+                else:
+                    camplist.append(str(i[0]))
         campaignents = {}
         for camp in campaigns:
-            camprec = mongo.db.network.find({"campaign": camp}).distinct("object")
-            campaignents[camp] = camprec
-        campaignents = libs.helpers.convert(campaignents)
+            if camp[0] == "":
+                entlist = []
+                cur = con.cursor()
+                cur.execute("SELECT DISTINCT object FROM indicators WHERE length(campaign) < 1")
+                camps = cur.fetchall()
+                for ent in camps:
+                    entlist.append(str(ent[0]))
+                campaignents["Unknown"] = entlist
+            else:       
+                entlist = []
+                cur = con.cursor()
+                cur.execute("SELECT DISTINCT object FROM indicators WHERE campaign = '" + str(camp[0]) + "'")
+                camps = cur.fetchall()
+                for ent in camps:
+                    entlist.append(str(ent[0]))
+                campaignents[str(camp[0])] = entlist
         return render_template('campaigns.html', network=campaigns, campaignents=campaignents)
     except Exception as e:
         return render_template('error.html', error=e)
 
+@app.route('/settings', methods=['GET'])
+@login_required
+def settings():
+    try:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from settings")
+            records = cur.fetchall()
+            records = records[0]
+        return render_template('settings.html', records=records)
+    except Exception as e:
+        return render_template('error.html', error=e)
 
 @app.route('/campaign/<uid>/info', methods=['GET'])
+@login_required
 def campaignsummary(uid):
     try:
-        http = mongo.db.network.find_one({"object": uid})
-        jsonvt = ""
-        whoisdata = ""
-        settingsvars = mongo.db.settings.find()
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from indicators where object='" + str(uid) + "'")
+            http = cur.fetchall()
+            http = http[0]
         # Run ipwhois or domainwhois based on the type of indicator
-        if str(http['inputtype']) == "IPv4" or str(http['inputtype']) == "IPv6" or str(
-                http['inputtype']) == "Domain" or str(http['inputtype']) == "Network":
-            return redirect(url_for('objectsummary', uid=http['_id']))
+        if str(http['type']) == "IPv4" or str(http['type']) == "IPv6" or str(
+                http['type']) == "Domain" or str(http['type']) == "Network":
+            return redirect(url_for('objectsummary', uid=str(http['id'])))
         else:
-            return redirect(url_for('threatactorobject', uid=http['_id']))
+            return redirect(url_for('threatactorobject', uid=str(http['id'])))
     except Exception as e:
-        return render_template('error.html', error=e)
-
+       return render_template('error.html', error=e)
 
 @app.route('/newobject', methods=['GET'])
+@login_required
 def newobj():
     try:
-        return render_template('newobject.html')
+        currentdate = time.strftime("%Y-%m-%d")
+        return render_template('newobject.html', currentdate=currentdate)
     except Exception as e:
         return render_template('error.html', error=e)
 
-
 @app.route('/insert/object/', methods=['POST'])
+@login_required
 def newobject():
     try:
         something = request.form
@@ -166,28 +322,43 @@ def newobject():
             newdict[i] = records[i]
         # Makes sure if you submit an IPv4 indicator, it's an actual IP address.
         ipregex = re.match(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', newdict['inputobject'])
-
-       # Convert the inputobject of IP or Domain to a list for Bulk Add functionality.
+        # Convert the inputobject of IP or Domain to a list for Bulk Add functionality.
         newdict['inputobject'] = newdict['inputobject'].split(',')
         for newobject in newdict['inputobject']:
             if newdict['inputtype'] == "IPv4":
                 if ipregex:
-                    if mongo.db.network.find({"object": newobject}).count() > 0:
-                        errormessage = "Entry already exists in database."
-                        return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
-                                               inputobject=newobject, inputfirstseen=newdict['inputfirstseen'],
-                                               inputlastseen=newdict['inputlastseen'],
-                                               inputcampaign=newdict['inputcampaign'],
-                                               comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
-                    else:
-                        newdata = {"object": newobject.strip(), "firstseen": newdict['inputfirstseen'],
-                                   "lastseen": newdict['inputlastseen'], "confidence": newdict['confidence'], "campaign": newdict['inputcampaign'],
-                                   "comments": newdict['comments'], "inputtype": newdict['inputtype'],
-                                   "diamondmodel": newdict['diamondmodel'], "favorite": "False"}
-                        mongo.db.network.insert(newdata)
-                        network = mongo.db.network.find({
-                            "$or": [{"inputtype": "IPv4"}, {"inputtype": "Network"}, {"inputtype": "IPv6"},
-                                    {"inputtype": "Domain"}]})
+                    con = lite.connect('threatnote.db')
+                    con.row_factory = lite.Row
+                    with con:
+                        cur = con.cursor()
+                        cur.execute("SELECT object from indicators WHERE object = '" + newobject + "'")
+                        object = cur.fetchall()
+                        cur = con.cursor()
+                        cur.execute("SELECT * from indicators")
+                        names = [description[0] for description in cur.description]
+                        lennames = len(names) - int(9)
+                        if len(object) > 0:
+                            errormessage = "Entry already exists in database."
+                            return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
+                                                   inputobject=newobject, inputfirstseen=newdict['inputfirstseen'],
+                                                   inputlastseen=newdict['inputlastseen'],
+                                                   inputcampaign=newdict['inputcampaign'],
+                                                   comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
+                        else:
+                            con = lite.connect('threatnote.db')
+                            cur = con.cursor()
+                            first = [None, newobject.strip(), newdict['inputtype'],newdict['inputfirstseen'],newdict['inputlastseen'],newdict['diamondmodel'],newdict['inputcampaign'],newdict['confidence'],newdict['comments']]
+                            for t in range(0,lennames):
+                                first.append("")
+                            with con:
+                                for t in [(first)]:
+                                    cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?' + ",?"*int(lennames)+')',t)
+                            con = lite.connect('threatnote.db')
+                            con.row_factory = lite.Row
+                            with con:
+                                cur = con.cursor()
+                                cur.execute("SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
+                                network = cur.fetchall()
                 else:
                     errormessage = "Not a valid IP Address."
                     newobject = ', '.join(newdict['inputobject'])
@@ -196,78 +367,139 @@ def newobject():
                                            inputlastseen=newdict['inputlastseen'], confidence=newdict['confidence'],inputcampaign=newdict['inputcampaign'],
                                            comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
             else:
-                if mongo.db.network.find({"object": newobject}).count() > 0:
-                    errormessage = "Entry already exists in database."
-                    newobject = ', '.join(newdict['inputobject'])
-                    return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
-                                           inputobject=newobject, inputfirstseen=newdict['inputfirstseen'],
-                                           inputlastseen=newdict['inputlastseen'], confidence=newdict['confidence'], inputcampaign=newdict['inputcampaign'],
-                                           comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
-                else:
-                    # Runs when Indicators is New and ready to be added to DB.
-                    newdata = {"object": newobject.strip(), "firstseen": newdict['inputfirstseen'],
-                               "lastseen": newdict['inputlastseen'], "confidence": newdict['confidence'], "campaign": newdict['inputcampaign'],
-                               "comments": newdict['comments'], "inputtype": newdict['inputtype'],
-                               "diamondmodel": newdict['diamondmodel'], "favorite": "False"}
-                    mongo.db.network.insert(newdata)
-        if newdata['inputtype'] == "IPv4" or newdata['inputtype'] == "Domain" or newdata[
-            'inputtype'] == "Network" or newdata['inputtype'] == "IPv6":
-            network = mongo.db.network.find({
-                "$or": [{"inputtype": "IPv4"}, {"inputtype": "Network"}, {"inputtype": "IPv6"},
-                        {"inputtype": "Domain"}]})
+                con = lite.connect('threatnote.db')
+                con.row_factory = lite.Row
+                with con:
+                    cur = con.cursor()
+                    cur.execute("SELECT object from indicators WHERE object = '" + newobject + "'")
+                    object = cur.fetchall()
+                    cur = con.cursor()
+                    cur.execute("SELECT * from indicators")
+                    names = [description[0] for description in cur.description]
+                    lennames = len(names) - int(9)
+                    if len(object) > 0:
+                        errormessage = "Entry already exists in database."
+                        return render_template('newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
+                                               inputobject=newobject, inputfirstseen=newdict['inputfirstseen'],
+                                               inputlastseen=newdict['inputlastseen'],
+                                               inputcampaign=newdict['inputcampaign'],
+                                               comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
+                    else:
+                        con = lite.connect('threatnote.db')
+                        cur = con.cursor()
+                        first = [None, newobject.strip(), newdict['inputtype'],newdict['inputfirstseen'],newdict['inputlastseen'],newdict['diamondmodel'],newdict['inputcampaign'],newdict['confidence'],newdict['comments']]
+                        for t in range(0,lennames):
+                            first.append("")
+                        with con:
+                            for t in [(first)]:
+                                cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?' + ",?"*int(lennames)+')',t)
+                        con = lite.connect('threatnote.db')
+                        con.row_factory = lite.Row
+                        with con:
+                            cur = con.cursor()
+                            cur.execute("SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
+                            network = cur.fetchall()
+
+        if newdict['inputtype'] == "IPv4" or newdict['inputtype'] == "Domain" or newdict[
+            'inputtype'] == "Network" or newdict['inputtype'] == "IPv6":
+            con = lite.connect('threatnote.db')
+            con.row_factory = lite.Row
+            with con:
+                cur = con.cursor()
+                cur.execute("SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
+                network = cur.fetchall()
             return render_template('networks.html', network=network)
 
         elif newdict['diamondmodel'] == "Victim":
-            victims = mongo.db.network.find({"diamondmodel": "Victim"})
+            con = lite.connect('threatnote.db')
+            con.row_factory = lite.Row
+            with con:
+                cur = con.cursor()
+                cur.execute("SELECT * FROM indicators where diamondmodel='Victim'")
+                victims = cur.fetchall()
             return render_template('victims.html', network=victims)
         else:
-            threatactors = mongo.db.network.find({"inputtype": "Threat Actor"})
+            con = lite.connect('threatnote.db')
+            con.row_factory = lite.Row
+            with con:
+                cur = con.cursor()
+                cur.execute("SELECT * FROM indicators where type='Threat Actor'")
+                threatactors = cur.fetchall()
             return render_template('threatactors.html', network=threatactors)
     except Exception as e:
         return render_template('error.html', error=e)
 
-
 @app.route('/edit/<uid>', methods=['POST', 'GET'])
+@login_required
 def editobject(uid):
     try:
-        http = mongo.db.network.find_one({'_id': bson.ObjectId(oid=str(uid))})
-        return render_template('neweditobject.html', entry=http)
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        newdict = {}
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from indicators where id='" + uid + "'")
+            http = cur.fetchall()
+            http = http[0]
+            names = [description[0] for description in cur.description]
+            for i in names:
+                if i == None:
+                    newdict[i] == ""
+                else:
+                    newdict[i] = http[i]
+        return render_template('neweditobject.html', entry=newdict)
     except Exception as e:
         return render_template('error.html', error=e)
 
-
 @app.route('/delete/network/<uid>', methods=['GET'])
+@login_required
 def deletenetworkobject(uid):
     try:
-        mongo.db.network.remove({'_id': bson.ObjectId(oid=str(uid))})
-        network = mongo.db.network.find(
-            {"$or": [{"inputtype": "IPv4"}, {"inputtype": "Network"}, {"inputtype": "IPv6"}, {"inputtype": "Domain"}]})
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
+            cur = con.cursor()
+            cur.execute("SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
+            network = cur.fetchall()
         return render_template('networks.html', network=network)
     except Exception as e:
         return render_template('error.html', error=e)
 
-
 @app.route('/delete/threatactor/<uid>', methods=['GET'])
+@login_required
 def deletethreatactorobject(uid):
     try:
-        mongo.db.network.remove({'_id': bson.ObjectId(oid=str(uid))})
-        threatactors = mongo.db.network.find({"inputtype": "Threat Actor"})
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
+            cur = con.cursor()
+            cur.execute("SELECT * FROM indicators where type='Threat Actor'")
+            network = cur.fetchall()
         return render_template('threatactors.html', network=threatactors)
     except Exception as e:
         return render_template('error.html', error=e)
 
-
 @app.route('/delete/victims/<uid>', methods=['GET'])
+@login_required
 def deletevictimobject(uid):
     try:
-        mongo.db.network.remove({'_id': bson.ObjectId(oid=str(uid))})
-        victims = mongo.db.network.find({"diamondmodel": "Victim"})
-        return render_template('victims.html', network=victims)
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
+            cur = con.cursor()
+            cur.execute("SELECT * FROM indicators where diamondmodel='victim'")
+            network = cur.fetchall()
     except Exception as e:
         return render_template('error.html', error=e)
 
-
 @app.route('/update/settings/', methods=['POST'])
+@login_required
 def updatesettings():
     try:
         something = request.form
@@ -277,35 +509,69 @@ def updatesettings():
         for i in records:
             newdict[i] = records[i]
         # Make sure we're updating the settings instead of overwriting them
-        if len(libs.helpers.convert(mongo.db.settings.distinct("apikey"))) > 0:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from settings")
+            setting = cur.fetchall()
+            if 'threatcrowd' in newdict.keys():
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET threatcrowd = 'on'")
+            else:
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET threatcrowd = 'off'")
             if 'vtinfo' in newdict.keys():
-                mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {"vtinfo": "on"}})
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET vtinfo = 'on'")
             else:
-                mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {"vtinfo": "off"}})
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET vtinfo = 'off'")
             if 'whoisinfo' in newdict.keys():
-                mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {"whoisinfo": "on"}})
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET whoisinfo = 'on'")
             else:
-                mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {"whoisinfo": "off"}})
-            mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {'apikey': newdict['apikey']}})
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET whoisinfo = 'off'")
+            with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET apikey = '" + newdict['apikey'] + "'")
             if 'odnsinfo' in newdict.keys():
-                mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {"odnsinfo": "on"}})
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET odnsinfo = 'on'")
             else:
-                mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {"odnsinfo": "off"}})
-            mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {'odnskey': newdict['odnskey']}})
-        else:
-            mongo.db.settings.insert(newdict)
-
-        if newdict['httpproxy'] != '' or newdict['httpsproxy']:
-            mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {"httpproxy": newdict['httpproxy']}})
-            mongo.db.settings.update({'_id': {'$exists': True}}, {'$set': {"httpsproxy": newdict['httpsproxy']}})
-
-        newrecords = mongo.db.settings.find_one()
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET odnsinfo = 'off'")
+            with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET odnskey = '" + newdict['odnskey'] + "'")
+            with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET httpproxy = '" + newdict['httpproxy'] + "'")
+            with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET httpsproxy = '" + newdict['httpsproxy'] + "'")
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from settings")
+            newrecords = cur.fetchall()
+            newrecords = newrecords[0]
         return render_template('settings.html', records=newrecords)
     except Exception as e:
         return render_template('error.html', error=e)
 
-
 @app.route('/update/object/', methods=['POST'])
+@login_required
 def updateobject():
     try:
         # Updates entry information
@@ -313,48 +579,67 @@ def updateobject():
         imd = ImmutableMultiDict(something)
         records = libs.helpers.convert(imd)
         newdict = {}
+        tempdict = {}
         for i in records:
-            if i == "_id":
-                pass
-            else:
-                newdict[i] = records[i]
-        mongo.db.network.update({'_id': bson.ObjectId(oid=str(records['_id']))}, {'$set': newdict})
+            newdict[i] = records[i]
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            for t in newdict:
+                if t == "id":
+                    pass
+                else:
+                    try:
+                        cur = con.cursor()
+                        cur.execute("UPDATE indicators SET " + t + "= '" + newdict[t] + "' WHERE id = '" + newdict['id'] + "'")
+                    except:
+                        cur = con.cursor()
+                        cur.execute("ALTER TABLE indicators ADD COLUMN " + t + " TEXT DEFAULT ''")
+                        cur.execute("UPDATE indicators SET " + t + "= '" + newdict[t] + "' WHERE id = '" + newdict['id'] + "'")
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from indicators where id='" + newdict['id'] + "'")
+            http = cur.fetchall()
+            http = http[0]
+            names = [description[0] for description in cur.description]
+            for i in names:
+                tempdict[i] = http[i]
+            cur.execute("SELECT * from settings")
+            settingsvars = cur.fetchall()
+            settingsvars = settingsvars[0]
         # Returns object information with updated values
-        http = mongo.db.network.find_one({'_id': bson.ObjectId(oid=str(records['_id']))})
         jsonvt = ""
         whoisdata = ""
-        settingsvars = mongo.db.settings.find_one()
-        if newdict['inputtype'] == "IPv4" or newdict['inputtype'] == "IPv6":
+        if newdict['type'] == "IPv4" or newdict['type'] == "IPv6":
             if settingsvars['whoisinfo'] == "on":
-                whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
+                whoisdata = libs.whoisinfo.ipwhois(str(tempdict['object']))
             if settingsvars['vtinfo'] == "on":
-                jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
-        elif newdict['inputtype'] == "Domain":
+                jsonvt = libs.virustotal.vt_ipv4_lookup(tempdict['object'])
+        elif newdict['type'] == "Domain":
             if settingsvars['whoisinfo'] == "on":
-                whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
+                whoisdata = libs.whoisinfo.domainwhois(str(tempdict['object']))
             if settingsvars['vtinfo'] == "on":
-                jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
-        if newdict['inputtype'] == "Threat Actor":
-            return render_template('threatactorobject.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,
+                jsonvt = libs.virustotal.vt_domain_lookup(str(tempdict['object']))
+        if newdict['type'] == "Threat Actor":
+            return render_template('threatactorobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
                                    settingsvars=settingsvars)
         elif newdict['diamondmodel'] == "Victim":
-            return render_template('victimobject.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,
+            return render_template('victimobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
                                    settingsvars=settingsvars)
         else:
-            return render_template('networkobject.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,
+            return render_template('networkobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
                                    settingsvars=settingsvars)
     except Exception as e:
         return render_template('error.html', error=e)
 
-
 @app.route('/insert/newfield/', methods=['POST'])
+@login_required
 def insertnewfield():
     try:
         something = request.form
         imd = ImmutableMultiDict(something)
         records = libs.helpers.convert(imd)
         newdict = {}
-        #dictlist = []
         for i in records:
             if i == "inputnewfieldname":
                 newdict[records[i]] = records['inputnewfieldvalue']
@@ -362,29 +647,155 @@ def insertnewfield():
                 pass
             else:
                 newdict[i] = records[i]
-        #dictlist.append(newdict)
         return render_template('neweditobject.html', entry=newdict)
     except Exception as e:
         return render_template('error.html', error=e)
 
-
 @app.route('/network/<uid>/info', methods=['GET'])
+@login_required
 def objectsummary(uid):
     try:
-        http = mongo.db.network.find_one({'_id': bson.ObjectId(oid=str(uid))})
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        newdict = {}
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from indicators where id='" + uid + "'")
+            http = cur.fetchall()
+            http = http[0]
+            names = [description[0] for description in cur.description]
+            for i in names:
+                if i == None:
+                    newdict[i] == ""
+                else:
+                    newdict[i] = str(http[i])
+            cur.execute("SELECT * from settings")
+            settingsvars = cur.fetchall()
+            settingsvars = settingsvars[0]
         jsonvt = ""
         whoisdata = ""
         odnsdata = ""
-        settingsvars = mongo.db.settings.find_one()
         # Run ipwhois or domainwhois based on the type of indicator
-        if str(http['inputtype']) == "IPv4" or str(http['inputtype']) == "IPv6":
+        if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
             if settingsvars['vtinfo'] == "on":
                 jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
             if settingsvars['whoisinfo'] == "on":
                 whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
             if settingsvars['odnsinfo'] == "on":
                 odnsdata = libs.investigate.ip_query(str(http['object']))
-        elif str(http['inputtype']) == "Domain":
+        elif str(http['type']) == "Domain":
+            if settingsvars['whoisinfo'] == "on":
+                whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
+            if settingsvars['vtinfo'] == "on":
+               jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
+            if settingsvars['odnsinfo'] == "on":
+                odnsdata = libs.investigate.domain_categories(str(http['object']))
+        if settingsvars['whoisinfo'] == "on":
+            if str(http['type']) == "Domain":
+                address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
+            else:
+                address = str(whoisdata['nets'][0]['city']) + ", " + str(whoisdata['nets'][0]['country'])
+        else:
+            address = "Information about " + str(http['object'])
+        return render_template('networkobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
+                               odnsdata=odnsdata, settingsvars=settingsvars, address=address)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+@app.route('/threatactors/<uid>/info', methods=['GET'])
+@login_required
+def threatactorobject(uid):
+    try:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        newdict = {}
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from indicators where id='" + uid + "'")
+            http = cur.fetchall()
+            http = http[0]
+        return render_template('threatactorobject.html', records=http)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+@app.route('/profile', methods=['GET','POST'])
+@login_required
+def profile():
+    try:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            tempdict = {}
+            cur = con.cursor()
+            cur.execute("SELECT key from users where user='" + str(current_user.user).lower() + "'")
+            http = cur.fetchall()
+            http = http[0]
+            names = [description[0] for description in cur.description]
+            for i in names:
+                if i == None:
+                    tempdict[i] == ""
+                else:
+                    tempdict[i] = http[i]
+        something = request.form
+        imd = ImmutableMultiDict(something)
+        records = libs.helpers.convert(imd)
+        newdict = {}
+        for i in records:
+            newdict[i] = records[i]
+        if 'currentpw' in newdict:
+            if hashlib.md5(newdict['currentpw'].encode('utf-8')).hexdigest() == tempdict['key']:
+                if newdict['newpw'] == newdict['newpwvalidation']:
+                    with con:
+                        try:
+                            cur = con.cursor()
+                            cur.execute("UPDATE users SET key='" + hashlib.md5(newdict['newpw'].encode('utf-8')).hexdigest() + "' WHERE user='" + str(current_user.user).lower() + "'")
+                            errormessage = "Password updated successfully."
+                            return render_template('profile.html',errormessage=errormessage)
+                        except sqlite3.Error as er:
+                            print 'er:', er.__dict__
+                else:
+                    errormessage = "New passwords don't match."
+                    return render_template('profile.html',errormessage=errormessage)
+            else:
+                errormessage = "Current password is incorrect."
+                return render_template('profile.html',errormessage=errormessage)
+        return render_template('profile.html')
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+@app.route('/victims/<uid>/info', methods=['GET'])
+@login_required
+def victimobject(uid):
+    try:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        newdict = {}
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from indicators where id='" + uid + "'")
+            http = cur.fetchall()
+            http = http[0]
+            names = [description[0] for description in cur.description]
+            for i in names:
+                if i == None:
+                    newdict[i] == ""
+                else:
+                    newdict[i] = str(http[i])
+            cur.execute("SELECT * from settings")
+            settingsvars = cur.fetchall()
+            settingsvars = settingsvars[0]
+        jsonvt = ""
+        whoisdata = ""
+        odnsdata = ""
+        # Run ipwhois or domainwhois based on the type of indicator
+        if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
+            if settingsvars['vtinfo'] == "on":
+                jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
+            if settingsvars['whoisinfo'] == "on":
+                whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
+            if settingsvars['odnsinfo'] == "on":
+                odnsdata = libs.investigate.ip_query(str(http['object']))
+        elif str(http['type']) == "Domain":
             if settingsvars['whoisinfo'] == "on":
                 whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
             if settingsvars['vtinfo'] == "on":
@@ -392,109 +803,47 @@ def objectsummary(uid):
             if settingsvars['odnsinfo'] == "on":
                 odnsdata = libs.investigate.domain_categories(str(http['object']))
         if settingsvars['whoisinfo'] == "on":
-            if str(http['inputtype']) == "Domain":
+            if str(http['type']) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
             else:
                 address = str(whoisdata['nets'][0]['city']) + ", " + str(whoisdata['nets'][0]['country'])
         else:
             address = "Information about " + str(http['object'])
-        return render_template('networkobject.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,
+        return render_template('victimobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
                                odnsdata=odnsdata, settingsvars=settingsvars, address=address)
     except Exception as e:
         return render_template('error.html', error=e)
 
-
-@app.route('/threatactors/<uid>/info', methods=['GET'])
-def threatactorobject(uid):
-    try:
-        http = mongo.db.network.find_one({'_id': bson.ObjectId(oid=str(uid))})
-        return render_template('threatactorobject.html', records=http)
-    except Exception as e:
-        return render_template('error.html', error=e)
-
-
-@app.route('/victims/<uid>/info', methods=['GET'])
-def victimobject(uid):
-    try:
-        http = mongo.db.network.find_one({'_id': bson.ObjectId(oid=str(uid))})
-        return render_template('victimobject.html', records=http)
-    except Exception as e:
-        return render_template('error.html', error=e)
-
-
-@app.route('/favorite/<uid>', methods=['GET'])
-def favorite(uid):
-    try:
-        mongo.db.network.update({'_id': bson.ObjectId(oid=str(uid))}, {'$set': {"favorite": "True"}})
-        http = mongo.db.network.find_one({'_id': bson.ObjectId(oid=str(uid))})
-        jsonvt = ""
-        whoisdata = ""
-        settingsvars = mongo.db.settings.find()
-        if str(http['inputtype']) == "IPv4" or str(http['inputtype']) == "IPv6":
-            jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
-            whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
-        elif str(http['inputtype']) == "Domain":
-            whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
-            jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
-        return render_template('object.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,
-                               settingsvars=settingsvars)
-    except Exception as e:
-        return render_template('error.html', error=e)
-
-
-@app.route('/unfavorite/<uid>', methods=['GET'])
-def unfavorite(uid):
-    try:
-        mongo.db.network.update({'_id': bson.ObjectId(oid=str(uid))}, {'$set': {"favorite": "False"}})
-        http = mongo.db.network.find_one({'_id': bson.ObjectId(oid=str(uid))})
-        jsonvt = ""
-        whoisdata = ""
-        settingsvars = mongo.db.settings.find()
-        if str(http['inputtype']) == "IPv4" or str(http['inputtype']) == "IPv6":
-            jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
-            whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
-        elif str(http['inputtype']) == "Domain":
-            whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
-            jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
-        return render_template('object.html', records=http, jsonvt=jsonvt, whoisdata=whoisdata,
-                               settingsvars=settingsvars)
-    except Exception as e:
-        return render_template('error.html', error=e)
-
-
-@app.route('/settings', methods=['GET'])
-def settings():
-    try:
-        records = mongo.db.settings.find_one()
-        return render_template('settings.html', records=records)
-    except Exception as e:
-        return render_template('error.html', error=e)
-
-
-@app.route('/delete', methods=['GET'])
-def delete():
-    try:
-        collection = mongo.db['network']
-        collection.drop()
-        message = "Database deleted successfully."
-        return render_template('settings.html', message=message)
-    except Exception as e:
-        return render_template('error.html', error=e)
-
-
 @app.route('/download/<uid>', methods=['GET'])
+@login_required
 def download(uid):
     if uid == 'unknown':
         uid = ""
     file = io.BytesIO()
-    indicators = mongo.db.network.find({'campaign': str(uid)})
-    fieldnames = ['confidence', 'campaign', 'object', 'favorite', 'comments', 'diamondmodel', 'lastseen', '_id', 'inputtype', 'firstseen']
+    #fieldnames = ['id','object','type','firstseen','lastseen','diamondmodel','campaign','confidence','comments']
+    con = lite.connect('threatnote.db')
+    con.row_factory = lite.Row
+    indlist = []
+    with con:
+        cur = con.cursor()
+        cur.execute("SELECT * FROM indicators WHERE campaign = '" + str(uid) + "'")
+        http = cur.fetchall()
+        cur.execute("SELECT * from indicators")
+        fieldnames = [description[0] for description in cur.description]
 
-    w = csv.DictWriter(file, fieldnames=fieldnames)
+    for i in http:
+        indicators = []
+        for item in i:
+            if item == None or item == "":
+                indicators.append("-")
+            else:
+                indicators.append(str(item))
+        indlist.append(indicators)
+
+    w = csv.writer(file)
     try:
-        w.writeheader()
-        for i in indicators:
-            w.writerow(i)
+        w.writerow(fieldnames)
+        w.writerows(indlist)
         response = make_response(file.getvalue())
         response.headers["Content-Disposition"] = "attachment; filename=" + uid + "-campaign.csv"
         response.headers["Content-type"] = "text/csv"
@@ -503,50 +852,5 @@ def download(uid):
         print str(e)
         pass
 
-@app.errorhandler(404)
-def not_found(error):
-    e = 'Whoops, page not found!!!..try again'
-    return render_template('error.html', error=e)
-
-
-# Initialize the Settings database
-@app.before_first_request
-def _run_on_start():
-    if len(libs.helpers.convert(mongo.db.settings.distinct("apikey"))) > 0:
-        pass
-    else:
-        mongo.db.settings.insert(
-            {'apikey': '', 'vtinfo': '', 'whoisinfo': '','odnsinfo':'', 'odnskey': '', 'httpsproxy': '', 'httpproxy': ''})
-
-
-####################
-# Global Variables #
-####################
-
-# Total Indicator Count
-@app.context_processor
-def totalcount():
-    return dict(totalcount=mongo.db.network.count())
-
-
-# Total Network Indicators
-@app.context_processor
-def networkcount():
-    return dict(networkcount=mongo.db.network.find({
-        "$or": [{"inputtype": "IPv4"}, {"inputtype": "IPv6"}, {"inputtype": "Network"}, {"inputtype": "Domain"}]}).count())
-
-
-# Total Threat Actor Indicators
-@app.context_processor
-def threatactorcount():
-    return dict(threatactorcount=mongo.db.network.find({"inputtype": "Threat Actor"}).count())
-
-
-@app.context_processor
-def campaigncount():
-    return dict(campaigncount=len(libs.helpers.convert(mongo.db.network.distinct("campaign"))))
-
-
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=7777, debug=True)
+    app.run(host='0.0.0.0', port=8888, debug=True)

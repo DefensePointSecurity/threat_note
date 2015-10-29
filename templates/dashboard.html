@@ -43,18 +43,6 @@
                         <p>Campaigns</p>
                     </a>        
                 </li>
-                <li>
-                    <a href="/settings">
-                        <i class="pe-7s-config"></i> 
-                        <p>Settings</p>
-                    </a>        
-                </li>
-                <li>
-                    <a href="/about">
-                        <i class="pe-7s-info"></i> 
-                        <p>About</p>
-                    </a>        
-                </li>
             </ul> 
         </div>
     </div>
@@ -70,6 +58,22 @@
                         <span class="icon-bar"></span>
                     </button>
                     <a class="navbar-brand" href="#">Dashboard</a>
+                </div>
+                <div class="collapse navbar-collapse">       
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown">
+                              <a href="/profile" class="dropdown-toggle capitalize" data-toggle="dropdown">
+                                    {{ current_user.user }}
+                                    <b class="caret"></b>
+                              </a>
+                              <ul class="dropdown-menu">
+                                <li><a href="/profile">Edit Profile</a></li>
+                                <li><a href="/settings">Edit Settings</a></li>
+                                <li class="divider"></li>
+                                <li><a href="/logout">Logout</a></li>
+                              </ul>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </nav>
@@ -96,7 +100,6 @@
                                 <h4 class="title">Latest Indicators</h4>
                                 <p class="category">This table shows you the latest indicators entered into threat_note.</p>
                             </div>
-
                             <div class="content table-responsive table-full-width">
                                 <table class="table table-hover table-striped">
                                     <thead>
@@ -109,34 +112,34 @@
                                         <th>Comments</th>
                                     </thead>
                                     <tbody>
-                                        {% for p in network %}
+                                        {% for row in network %}
                                         <tr>
-                                            {% if p['inputtype'] == "Threat Actor" %}
-                                            <td><a href="/threatactors/{{ p['_id'] }}/info">{{ p['object'] }}</a></td>
+                                            {% if row['type'] == "Threat Actor" %}
+                                            <td><a href="/threatactors/{{ row['id'] }}/info">{{ row['object'] }}</a></td>
                                             {% else %}
-                                            <td><a href="/network/{{ p['_id'] }}/info">{{ p['object'] }}</a></td>
+                                            <td><a href="/network/{{ row['id'] }}/info">{{ row['object'] }}</a></td>
                                             {% endif %}
-                                           <td>{{ p['inputtype'] }}</td>
-                                            {% if p['firstseen']|length == 0 %}
+                                           <td>{{ row['type'] }}</td>
+                                            {% if row['firstseen']|length == 0 %}
                                             <td>-</td>
                                             {% else %}
-                                            <td>{{ p['firstseen'] }}</td>
+                                            <td>{{ row['firstseen'] }}</td>
                                             {% endif %}
-                                            {% if p['lastseen']|length == 0 %}
+                                            {% if row['lastseen']|length == 0 %}
                                             <td>-</td>
                                             {% else %}
-                                            <td>{{ p['lastseen'] }}</td>
+                                            <td>{{ row['lastseen'] }}</td>
                                             {% endif %}
-                                            {% if p['campaign']|length == 0 %}
+                                            {% if row['campaign']|length == 0 %}
                                             <td>-</td>
                                             {% else %}
-                                            <td>{{ p['campaign'] }}</td>
+                                            <td>{{ row['campaign'] }}</td>
                                             {% endif %}
-                                            <td>{{ p['diamondmodel'] }}</td>
-                                            {% if p['comments']|length == 0 %}
+                                            <td>{{ row['diamondmodel'] }}</td>
+                                            {% if row['comments']|length == 0 %}
                                             <td>-</td>
                                             {% else %}
-                                            <td>{{ p['comments'] }}</td>
+                                            <td>{{ row['comments'] }}</td>
                                             {% endif %}
                                     </tr>
                                     {% endfor %}
@@ -147,60 +150,7 @@
                     </div>                   
                 </div>
 
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="header">
-                                <h4 class="title">Latest Starred Indicators</h4>
-                                <p class="category">This table shows you the latest indicators that have been starred.</p>
-                            </div>
-
-                            <div class="content table-responsive table-full-width">
-                                <table class="table table-hover table-striped">
-                                    <thead>
-                                        <th>Object</th>
-                                        <th>Object Type</th>
-                                        <th>First Seen</th>
-                                        <th>Last Seen</th>
-                                        <th>Campaign</th>
-                                        <th>Diamond Model</th>
-                                        <th>Comments</th>
-                                    </thead>
-                                    <tbody>
-                                        {% for p in favs %}
-                                        <tr>
-                                            <td><a href="/network/{{ p['_id'] }}/info">{{ p['object'] }}</a></td>
-                                           <td>{{ p['inputtype'] }}</td>
-                                            {% if p['firstseen']|length == 0 %}
-                                            <td>-</td>
-                                            {% else %}
-                                            <td>{{ p['firstseen'] }}</td>
-                                            {% endif %}
-                                            {% if p['lastseen']|length == 0 %}
-                                            <td>-</td>
-                                            {% else %}
-                                            <td>{{ p['lastseen'] }}</td>
-                                            {% endif %}
-                                            {% if p['campaign']|length == 0 %}
-                                            <td>-</td>
-                                            {% else %}
-                                            <td>{{ p['campaign'] }}</td>
-                                            {% endif %}
-                                            <td>{{ p['diamondmodel'] }}</td>
-                                            {% if p['comments']|length == 0 %}
-                                            <td>-</td>
-                                            {% else %}
-                                            <td>{{ p['comments'] }}</td>
-                                            {% endif %}
-                                    </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>                
-                            </div>
-                        </div>
-                    </div>                   
-                </div>                   
-
+               
            
                 <div class="row">
                     <div class="col-md-6">
@@ -247,6 +197,20 @@
                     
         <footer class="footer">
             <div class="container-fluid">
+               <nav class="pull-left">
+                    <ul>
+                        <li>
+                            <a href="/about">
+                                About
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/credits">
+                                Credits
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
                 
                 <p class="copyright pull-right">
                     &copy; 2015 <a href="https://defpoint.com/">Defense Point Security</a>

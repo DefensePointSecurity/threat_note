@@ -1,11 +1,10 @@
-from server import mongo
 import libs.helpers
 import requests
 
 
 def domain_security(enity):
     api_url = 'https://investigate.api.opendns.com/'
-    api_key = mongo.db.settings.distinct("odnskey")[0]
+    #api_key = mongo.db.settings.distinct("odnskey")[0]
     headers = {'Authorization': 'Bearer ' + api_key}
     domain = enity
     endpoint = 'security/name/{}.json'
@@ -24,7 +23,7 @@ def domain_security(enity):
 
 def domain_tag(enity):
     api_url = 'https://investigate.api.opendns.com/'
-    api_key = mongo.db.settings.distinct("odnskey")[0]
+    #api_key = mongo.db.settings.distinct("odnskey")[0]
     headers = {'Authorization': 'Bearer ' + api_key}
     domain = enity
     endpoint = 'domains/{}/latest_tags'
@@ -48,7 +47,7 @@ def domain_tag(enity):
 
 def domain_categories(enity):
     api_url = 'https://investigate.api.opendns.com/'
-    api_key = mongo.db.settings.distinct("odnskey")[0]
+    #api_key = mongo.db.settings.distinct("odnskey")[0]
     headers = {'Authorization': 'Bearer ' + api_key}
     endpoint = 'domains/categorization/'
     labels = '?showLabels'
@@ -70,7 +69,7 @@ def domain_categories(enity):
 def ip_query(entity):
     try:
         api_url = 'https://investigate.api.opendns.com/'
-        api_key = mongo.db.settings.distinct("odnskey")[0]
+        #api_key = mongo.db.settings.distinct("odnskey")[0]
         headers = {'Authorization': 'Bearer ' + api_key}
         mal_domains = []
         ip = entity.strip()

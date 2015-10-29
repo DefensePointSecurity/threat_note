@@ -11,7 +11,7 @@
                     threat_note
                 </a>
             </div>
-                    {% if entry['inputtype'] == "Threat Actor" %}
+                    {% if entry['type'] == "Threat Actor" %}
                                         <ul class="nav">
                 <li>
                     <a href="/">
@@ -43,20 +43,9 @@
                         <p>Campaigns</p>
                     </a>        
                 </li>
-                <li>
-                    <a href="/settings">
-                        <i class="pe-7s-config"></i> 
-                        <p>Settings</p>
-                    </a>        
-                </li>
-                <li>
-                    <a href="/about">
-                        <i class="pe-7s-info"></i> 
-                        <p>About</p>
-                    </a>        
-                </li>
+               
             </ul>
-                {% elif entry['inputtype'] == "Entity" %}
+                {% elif entry['type'] == "Entity" %}
             <ul class="nav">
                 <li>
                     <a href="/">
@@ -88,18 +77,7 @@
                         <p>Campaigns</p>
                     </a>
                 </li>
-                <li>
-                    <a href="/settings">
-                        <i class="pe-7s-config"></i>
-                        <p>Settings</p>
-                    </a>
-                </li>
-                <li>
-                    <a href="/about">
-                        <i class="pe-7s-info"></i>
-                        <p>About</p>
-                    </a>
-                </li>
+                
             </ul>
                                     {% else %}
                                      <ul class="nav">
@@ -133,18 +111,7 @@
                         <p>Campaigns</p>
                     </a>
                 </li>
-                <li>
-                    <a href="/settings">
-                        <i class="pe-7s-config"></i>
-                        <p>Settings</p>
-                    </a>
-                </li>
-                <li>
-                    <a href="/about">
-                        <i class="pe-7s-info"></i>
-                        <p>About</p>
-                    </a>
-                </li>
+               
             </ul>
                                      {% endif %}    
            
@@ -162,6 +129,22 @@
                         <span class="icon-bar"></span>
                     </button>
                     <a class="navbar-brand" href="#">Edit Indicator</a>
+                </div>
+                <div class="collapse navbar-collapse">       
+                   <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown">
+                              <a href="/profile" class="dropdown-toggle capitalize" data-toggle="dropdown">
+                                    {{ current_user.user }}
+                                    <b class="caret"></b>
+                              </a>
+                              <ul class="dropdown-menu">
+                                <li><a href="/profile">Edit Profile</a></li>
+                                <li><a href="/settings">Edit Settings</a></li>
+                                <li class="divider"></li>
+                                <li><a href="/logout">Logout</a></li>
+                              </ul>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </nav>
@@ -189,48 +172,50 @@
                                         <div class="col-md-12">
                                         
                                         <fieldset>
+                                         <div class="form-group">
+                                                <label>Object</label>
+                                                <input type="text" class="form-control" name="{{ entry['object'] }}" value="{{ entry['object'] }}" disabled placeholder="09-01-2015">
+                                        </div>
 
-                                        {% for i in entry %}
-                                            {% if i == "inputtype" %}
-                                                <div class="form-group">
+                                        <div class="form-group">
                                                 <label>Object Type</label>
-                                                <select class="form-control" name="inputtype">
-                                                  {% if entry['inputtype'] == "IPv4" %}
+                                                <select class="form-control" name="type">
+                                                  {% if entry['type'] == "IPv4" %}
                                                     <option value="IPv4" selected="true">IPv4</option>
                                                     <option value="IPv6">IPv6</option>
                                                     <option value="Domain">Domain</option>
                                                      <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Entity">Enitiy</option>
+                                                    <option value="Entity">Entity</option>
                                                      <option value="Network">Network</option>
-                                                  {% elif entry['inputtype'] == "IPv6" %}
+                                                  {% elif entry['type'] == "IPv6" %}
                                                     <option value="IPv4">IPv4</option>
                                                     <option value="IPv6" selected="true">IPv6</option>
                                                     <option value="Domain">Domain</option>
                                                      <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Entity">Enitiy</option>
+                                                    <option value="Entity">Entity</option>
                                                      <option value="Network">Network</option>
-                                                  {% elif entry['inputtype'] == "Domain" %}
+                                                  {% elif entry['type'] == "Domain" %}
                                                     <option value="IPv4">IPv4</option>
                                                     <option value="IPv6">IPv6</option>
                                                      <option value="Domain" selected="true">Domain</option>
                                                      <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Entity">Enitiy</option>
+                                                    <option value="Entity">Entity</option>
                                                      <option value="Network">Network</option>
-                                                  {% elif entry['inputtype'] == "Threat Actor" %}
+                                                  {% elif entry['type'] == "Threat Actor" %}
                                                       <option value="IPv4">IPv4</option>
                                                     <option value="IPv6">IPv6</option>
                                                      <option value="Domain">Domain</option>
                                                      <option value="Threat Actor" selected="true">Threat Actor</option>
-                                                    <option value="Entity">Enitiy</option>
+                                                    <option value="Entity">Entity</option>
                                                      <option value="Network">Network</option>
-                                                  {% elif entry['inputtype'] == "Network" %}
+                                                  {% elif entry['type'] == "Network" %}
                                                        <option value="IPv4">IPv4</option>
                                                     <option value="IPv6">IPv6</option>
                                                      <option value="Domain">Domain</option>
                                                      <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Entity">Enitiy</option>
+                                                    <option value="Entity">Entity</option>
                                                      <option value="Network"  selected="true">Network</option>
-                                                   {% elif entry['inputtype'] == "Entity" %}
+                                                   {% elif entry['type'] == "Entity" %}
                                                        <option value="IPv4">IPv4</option>
                                                     <option value="IPv6">IPv6</option>
                                                      <option value="Domain">Domain</option>
@@ -242,31 +227,17 @@
                                                     <option value="IPv6">IPv6</option>
                                                      <option value="Domain">Domain</option>
                                                      <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Entity">Enitiy</option>
+                                                    <option value="Entity">Entity</option>
                                                      <option value="Network" >Network</option>
                                                     {% endif %}
                                                 </select>
-                                            </div>    
-                                            {% elif i == "diamondmodel" %}
-                                            <div class="form-group">
-                                                <label>Diamond Model</label>
-                                                 <select class="form-control" name="diamondmodel">
-                                                   {% if entry['diamondmodel'] == "Adversary" %}
-                                                    <option value="Adversary" selected="true">Adversary</option>
-                                                    <option value="Infrastructure">Infrastructure</option>
-                                                    <option value="Victim">Victim</option>
-                                                  {% elif entry['diamondmodel'] == "Infrastructure" %}
-                                                    <option value="Adversary">Adversary</option>
-                                                    <option value="Infrastructure" selected="true">Infrastructure</option>
-                                                    <option value="Victim">Victim</option>
-                                                  {% elif entry['diamondmodel'] == "Victim" %}
-                                                    <option value="Adversary">Adversary</option>
-                                                    <option value="Infrastructure">Infrastructure</option>
-                                                    <option value="Victim" selected="true">Victim</option>
-                                                  {% endif %}
-                                                </select>
-                                            </div> 
-                                            {% elif i == "confidence" %}
+                                            </div>   
+
+                                             <div class="form-group">
+                                                <label>Campaign</label>
+                                                <input type="text" class="form-control" name="{{ i }}" value="{{ entry[i] }}" placeholder="LASER PANDA">
+                                            </div>  
+
                                             <div class="form-group">
                                                 <label>Confidence</label>
                                                  <select class="form-control" name="confidence">
@@ -290,60 +261,72 @@
                                                 </select>
                                             </div>        
 
-                                            {% elif i == "favorite" %}
-                                            <div></div>
-
-                                            {% elif i == "_id" %}
-                                             <div></div>
-
-                                             {% elif i == "object" %}
-                                             <div class="form-group">
-                                                <label>{{ i }}</label>
-                                                <input type="text" class="form-control" name="{{ i }}" value="{{ entry[i] }}" disabled placeholder="09-01-2015">
+                                         <div class="form-group">
+                                                <label>First Seen</label>
+                                                <input type="text" class="form-control" name="{{ i }}" value="{{ entry['firstseen'] }}" placeholder="09-01-2015">
                                             </div>
 
-                                            {% elif i == "firstseen" %}
-                                              <div class="form-group">
-                                                <label>{{ i }}</label>
-                                                <input type="text" class="form-control" name="{{ i }}" value="{{ entry[i] }}" placeholder="09-01-2015">
-                                            </div>
-
-                                            {% elif i == "lastseen" %}
+                                          
                                              <div class="form-group">
-                                                <label>{{ i }}</label>
-                                                <input type="text" class="form-control" name="{{ i }}" value="{{ entry[i] }}" placeholder="09-15-2015">
+                                                <label>Last Seen</label>
+                                                <input type="text" class="form-control" name="{{ i }}" value="{{ entry['lastseen'] }}" placeholder="09-15-2015">
                                             </div>    
 
-                                             {% elif i == "campaign" %}
-                                             <div class="form-group">
-                                                <label>{{ i }}</label>
-                                                <input type="text" class="form-control" name="{{ i }}" value="{{ entry[i] }}" placeholder="LASER PANDA">
-                                            </div>   
-                                            {% elif i == "comments" %}
                                             <div class="form-group">
-                                                <label>{{ i }}</label>
-                                                 <textarea class="form-control" rows="3" name="comments" value="{{ entry[i] }}">{{ entry[i] }}</textarea>
-                                            </div>   
-                                           
+                                                <label>Diamond Model</label>
+                                                 <select class="form-control" name="diamondmodel">
+                                                   {% if entry['diamondmodel'] == "Adversary" %}
+                                                    <option value="Adversary" selected="true">Adversary</option>
+                                                    <option value="Infrastructure">Infrastructure</option>
+                                                    <option value="Victim">Victim</option>
+                                                  {% elif entry['diamondmodel'] == "Infrastructure" %}
+                                                    <option value="Adversary">Adversary</option>
+                                                    <option value="Infrastructure" selected="true">Infrastructure</option>
+                                                    <option value="Victim">Victim</option>
+                                                  {% elif entry['diamondmodel'] == "Victim" %}
+                                                    <option value="Adversary">Adversary</option>
+                                                    <option value="Infrastructure">Infrastructure</option>
+                                                    <option value="Victim" selected="true">Victim</option>
+                                                  {% endif %}
+                                                </select>
+                                            </div> 
 
-                                            {% else %}
                                             <div class="form-group">
-                                                <label>{{ i }}</label>
-                                                <input type="text" class="form-control" name="{{ i }}" value="{{ entry[i] }}">
-                                            </div>      
+                                                <label>Comments</label>
+                                                 <textarea class="form-control" rows="3" name="comments" value="{{ entry['comments'] }}">{{ entry['comments'] }}</textarea>
+                                            </div>   
+
+
+
+                                        {% for i in entry %}
+                                           
+                                           {% if i == "comments" or i == "type" or i == "campaign" or i == "type" or i == "firstseen" or i == "lastseen" or i == "id" or i == "confidence" or i == "object" or i == "diamondmodel" %}
+                                             <div></div>
+                                           
+                                            {% else %}
+                                                {% if entry[i] == None or entry[i] == ""%}
+                                                <div></div>
+                                                {% else %}
+                                                <div class="form-group">
+                                                    <label>{{ i }}</label>
+                                                    <input type="text" class="form-control" name="{{ i }}" value="{{ entry[i] }}">
+                                                </div>
+                                               
 
                                             {% endif %}
+                                            {% endif %}
                                              {% endfor %}
+                                            
 
 
                                         </div>
                                     </div>
 
 
-                                    <input type="hidden" class="form-control" name="_id" value="{{ entry['_id'] }}">
+                                    <input type="hidden" class="form-control" name="id" value="{{ entry['id'] }}">
 
                                     <div style="float: right;">
-                                    {% if entry['inputtype'] == "Threat Actor" %}
+                                    {% if entry['type'] == "Threat Actor" %}
                                         <a href="/threatactors" class="btn btn-info btn-fill">Cancel</a>
                                     {% else %}
                                      <a href="/networks" class="btn btn-info btn-fill">Cancel</a>
@@ -369,7 +352,20 @@
 
         <footer class="footer">
             <div class="container-fluid">
-                
+                 <nav class="pull-left">
+                    <ul>
+                        <li>
+                            <a href="/about">
+                                About
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/credits">
+                                Credits
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
                 <p class="copyright pull-right">
                     &copy; 2015 <a href="https://defpoint.com/">Defense Point Security</a>
                 </p>
@@ -413,7 +409,11 @@
     </div>
               
 {% for item in entry %}
+{% if entry[item] == None %}
+<div></div>
+{% else %}
       <input type="hidden" class="form-control" name="{{ item }}" value="{{ entry[item] }}">
+      {% endif %}
 {% endfor %}
 
     </div>
