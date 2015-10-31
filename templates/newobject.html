@@ -1,338 +1,338 @@
-{% include "banners/newheader.html" %}
-{% block content %}
-<body> 
+{% include "banners/newheader.html" %} {% block content %}
 
-<div class="wrapper">
-    <div class="sidebar" data-color="azure">    
+<body>
 
- <div class="sidebar-wrapper">
-            <div class="logo">
-                <a href="/" class="simple-text">
+  <div class="wrapper">
+    <div class="sidebar" data-color="azure">
+
+      <div class="sidebar-wrapper">
+        <div class="logo">
+          <a href="/" class="simple-text">
                     threat_note
                 </a>
-            </div>
-
-            <ul class="nav">
-                <li>
-                    <a href="/">
-                        <i class="pe-7s-graph2"></i>
-                        <p>Dashboard</p>
-                    </a>
-                </li>
-                <li>
-                    <a href="/networks">
-                        <i class="pe-7s-global"></i>
-                        <p>Network Indicators</p>
-                    </a>
-                </li>
-                <li>
-                    <a href="/threatactors">
-                        <i class="pe-7s-users"></i>
-                        <p>Threat Actors</p>
-                    </a>
-                </li>
-               <li>
-                    <a href="/victims">
-                        <i class="pe-7s-target"></i>
-                        <p>Victims</p>
-                    </a>
-                </li>
-                    <li>
-                    <a href="/campaigns">
-                        <i class="pe-7s-shield"></i> 
-                        <p>Campaigns</p>
-                    </a>        
-                </li>
-               
-            </ul> 
         </div>
+
+        <ul class="nav">
+          <li>
+            <a href="/">
+              <i class="pe-7s-graph2"></i>
+              <p>Dashboard</p>
+            </a>
+          </li>
+          <li>
+            <a href="/networks">
+              <i class="pe-7s-global"></i>
+              <p>Network Indicators</p>
+            </a>
+          </li>
+          <li>
+            <a href="/threatactors">
+              <i class="pe-7s-users"></i>
+              <p>Threat Actors</p>
+            </a>
+          </li>
+          <li>
+            <a href="/victims">
+              <i class="pe-7s-target"></i>
+              <p>Victims</p>
+            </a>
+          </li>
+          <li>
+            <a href="/campaigns">
+              <i class="pe-7s-shield"></i>
+              <p>Campaigns</p>
+            </a>
+          </li>
+
+        </ul>
+      </div>
     </div>
-    
+
     <div class="main-panel">
-        <nav class="navbar navbar-default navbar-fixed">
-            <div class="container-fluid">    
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navigation-example-2">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand" href="#">New Indicator</a>
-                </div>
-                <div class="collapse navbar-collapse">       
-                     <ul class="nav navbar-nav navbar-right">
-                        <li class="dropdown">
-                              <a href="/profile" class="dropdown-toggle capitalize" data-toggle="dropdown">
+      <nav class="navbar navbar-default navbar-fixed">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navigation-example-2">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">New Indicator</a>
+          </div>
+          <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav navbar-right">
+              <li class="dropdown">
+                <a href="/profile" class="dropdown-toggle capitalize" data-toggle="dropdown">
                                     {{ current_user.user }}
                                     <b class="caret"></b>
                               </a>
-                              <ul class="dropdown-menu">
-                                <li><a href="/profile">Edit Profile</a></li>
-                                <li><a href="/settings">Edit Settings</a></li>
-                                <li class="divider"></li>
-                                <li><a href="/logout">Logout</a></li>
-                              </ul>
-                        </li>
-                    </ul>
+                <ul class="dropdown-menu">
+                  <li><a href="/profile">Edit Profile</a></li>
+                  <li><a href="/settings">Edit Settings</a></li>
+                  <li class="divider"></li>
+                  <li><a href="/logout">Logout</a></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+
+      <div class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+              <div class="card">
+                <div class="header">
+                  <div>
+                    <h4 class="title">New Indicator</h4>
+                  </div>
                 </div>
-            </div>
-        </nav>
-                     
-                     
-       <div class="content">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-6 col-md-offset-3">
-                        <div class="card">
-                            <div class="header">
-                                <div><h4 class="title">New Indicator</h4></div>
-                            </div>
-                            <div class="content">
-                                <form action="/insert/object/" enctype="application/x-www-form-urlencoded" method="POST">
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                        
-                                        <fieldset>
-                                            <div class="form-group">
-                                                <label>Object</label>
-                                                <input type="text" class="form-control" name="inputobject" placeholder="8.8.8.8 or www.google.com or Zero Cool" value="{{ inputobject }}">
-                                            </div>        
-                                        </div>
-                                    </div>
+                <div class="content">
+                  <form action="/insert/object/" enctype="application/x-www-form-urlencoded" method="POST">
+                    <div class="row">
+                      <div class="col-md-12">
 
-                                      <div class="row">
-                                        <div class="col-md-12">
-                                            <div class="form-group">
-                                                <label>Object Type</label>
-                                                <select class="form-control" name="inputtype">
-                                                  {% if inputtype == "IPv4" %}
-                                                    <option value="IPv4" selected="true">IPv4</option>
-                                                    <option value="IPv6">IPv6</option>
-                                                    <option value="Domain">Domain</option>
-                                                     <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Enity">Entity</option>
-                                                     <option value="Network">Network</option>
-                                                  {% elif inputtype == "IPv6" %}
-                                                    <option value="IPv4">IPv4</option>
-                                                    <option value="IPv6" selected="true">IPv6</option>
-                                                    <option value="Domain">Domain</option>
-                                                     <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Enity">Entity</option>
-                                                     <option value="Network">Network</option>
-                                                  {% elif inputtype == "Domain" %}
-                                                    <option value="IPv4">IPv4</option>
-                                                    <option value="IPv6">IPv6</option>
-                                                     <option value="Domain" selected="true">Domain</option>
-                                                     <option value="Threat Actor">Threat Actor</option>
-                                                    <option value="Enity">Entity</option>
-                                                     <option value="Network">Network</option>
-                                                  {% elif inputtype == "Threat Actor" %}
-                                                      <option value="IPv4">IPv4</option>
-                                                    <option value="IPv6">IPv6</option>
-                                                     <option value="Domain">Domain</option>
-                                                     <option value="Threat Actor" selected="true">Threat Actor</option>
-                                                    <option value="Enity">Entity</option>
-                                                     <option value="Network">Network</option>
-                                                  {% elif inputtype == "Network" %}
-                                                       <option value="IPv4">IPv4</option>
-                                                    <option value="IPv6">IPv6</option>
-                                                     <option value="Domain">Domain</option>
-                                                     <option value="Threat Actor">Threat Actor
-                                                    <option value="Enity">Entity</option>
-                                                     <option value="Network"  selected="true">Network</option>
-                                                   {% else %}
-                                                      <option value="IPv4"  selected="true">IPv4</option>
-                                                    <option value="IPv6">IPv6</option>
-                                                     <option value="Domain">Domain</option>
-                                                     <option value="Threat Actor">Threat Actor</option>
-                                                     <option value="Enity">Entity</option>
-                                                     <option value="Network" >Network</option>
-                                                    {% endif %}
-                                                </select>
-                                            </div>        
-                                        </div>
-                                    </div>
-                                    
-                                       <div class="row">
-                                        <div class="col-md-12">
-                                            <div class="form-group">
-                                                <label>First Seen</label>
-                                                <input type="text" class="form-control" name="inputfirstseen" placeholder="YYYY-MM-DD" value="{{ inputfirstseen }}">
-                                            </div>        
-                                        </div>
-                                    </div>
+                        <fieldset>
+                          <div class="form-group">
+                            <label>Object</label>
+                            <input type="text" class="form-control" name="inputobject" placeholder="8.8.8.8 or www.google.com or Zero Cool" value="{{ inputobject }}">
+                          </div>
+                      </div>
+                    </div>
 
-                                     <div class="row">
-                                        <div class="col-md-12">
-                                            <div class="form-group">
-                                                <label>Last Seen</label>
-                                                <input type="text" class="form-control" name="inputlastseen" placeholder={{ currentdate }} value="{{ inputlastseen }}">
-                                            </div>        
-                                        </div>
-                                    </div>
-
-                                      <div class="row">
-                                        <div class="col-md-12">
-                                            <div class="form-group">
-                                                <label>Diamond Model</label>
-                                                 <select class="form-control" name="diamondmodel">
-                                                  {% if diamondmodel == "Adversary" %}
-                                                    <option value="Adversary" selected="true">Adversary</option>
-                                                    <option value="Infrastructure">Infrastructure</option>
-                                                    <option value="Victim">Victim</option>
-                                                  {% elif diamondmodel == "Infrastructure" %}
-                                                    <option value="Adversary">Adversary</option>
-                                                    <option value="Infrastructure" selected="true">Infrastructure</option>
-                                                    <option value="Victim">Victim</option>
-                                                  {% elif diamondmodel == "Victim" %}
-                                                    <option value="Adversary">Adversary</option>
-                                                    <option value="Infrastructure">Infrastructure</option>
-                                                    <option value="Victim" selected="true">Victim</option>
-                                                    {% else %}
-                                                     <option value="Adversary" selected="true">Adversary</option>
-                                                    <option value="Infrastructure">Infrastructure</option>
-                                                    <option value="Victim">Victim</option>
-                                                  {% endif %}
-                                                </select>
-                                            </div>        
-                                        </div>
-                                    </div>
-
-
-                                        <div class="row">
-                                        <div class="col-md-12">
-                                            <div class="form-group">
-                                                <label>Campaign</label>
-                                                <input type="text" class="form-control" name="inputcampaign" value="{{ inputcampaign }}" placeholder="LASER PANDA">
-                                            </div>        
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <div class="form-group">
-                                                <label>Confidence</label>
-                                                 <select class="form-control" name="confidence">
-                                                  {% if confidence == "Low" %}
-                                                    <option value="Low" selected="true">Low</option>
-                                                    <option value="Medium">Medium</option>
-                                                    <option value="High">High</option>
-                                                  {% elif confidence == "Medium" %}
-                                                    <option value="Low">Low</option>
-                                                    <option value="Medium" selected="true">Medium</option>
-                                                    <option value="High">High</option>
-                                                  {% elif confidence == "High" %}
-                                                    <option value="Low">Low</option>
-                                                    <option value="Medium">Medium</option>
-                                                    <option value="High" selected="true">High</option>
-                                                  {% else %}
-                                                     <option value="Low" selected="true">Low</option>
-                                                    <option value="Medium">Medium</option>
-                                                    <option value="High">High</option>
-                                                  {% endif %}
-                                                </select>
-                                            </div>        
-                                        </div>
-                                    </div>
-                                      
-
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <div class="form-group">
-                                                <label>Comments</label>
-                                                <textarea class="form-control" rows="3" name="comments" value="{{ comments }}">{{ comments }}</textarea>
-                                            </div>        
-                                        </div>
-                                    </div>
-
-                                    <div style="float: right;">
-                                   <a href="/" class="btn btn-info btn-fill">Cancel</a>
-                                    <button type="submit" class="btn btn-info btn-fill">Submit</button>
-                                    </div>
-                                    <div class="clearfix"></div>
-                                </fieldset>
-                                </form>
-                            </div>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label>Object Type</label>
+                          <select class="form-control" name="inputtype">
+                            {% if inputtype == "IPv4" %}
+                            <option value="IPv4" selected="true">IPv4</option>
+                            <option value="IPv6">IPv6</option>
+                            <option value="Domain">Domain</option>
+                            <option value="Threat Actor">Threat Actor</option>
+                            <option value="Enity">Entity</option>
+                            <option value="Network">Network</option>
+                            {% elif inputtype == "IPv6" %}
+                            <option value="IPv4">IPv4</option>
+                            <option value="IPv6" selected="true">IPv6</option>
+                            <option value="Domain">Domain</option>
+                            <option value="Threat Actor">Threat Actor</option>
+                            <option value="Enity">Entity</option>
+                            <option value="Network">Network</option>
+                            {% elif inputtype == "Domain" %}
+                            <option value="IPv4">IPv4</option>
+                            <option value="IPv6">IPv6</option>
+                            <option value="Domain" selected="true">Domain</option>
+                            <option value="Threat Actor">Threat Actor</option>
+                            <option value="Enity">Entity</option>
+                            <option value="Network">Network</option>
+                            {% elif inputtype == "Threat Actor" %}
+                            <option value="IPv4">IPv4</option>
+                            <option value="IPv6">IPv6</option>
+                            <option value="Domain">Domain</option>
+                            <option value="Threat Actor" selected="true">Threat Actor</option>
+                            <option value="Enity">Entity</option>
+                            <option value="Network">Network</option>
+                            {% elif inputtype == "Network" %}
+                            <option value="IPv4">IPv4</option>
+                            <option value="IPv6">IPv6</option>
+                            <option value="Domain">Domain</option>
+                            <option value="Threat Actor">Threat Actor
+                              <option value="Enity">Entity</option>
+                              <option value="Network" selected="true">Network</option>
+                              {% else %}
+                              <option value="IPv4" selected="true">IPv4</option>
+                              <option value="IPv6">IPv6</option>
+                              <option value="Domain">Domain</option>
+                              <option value="Threat Actor">Threat Actor</option>
+                              <option value="Enity">Entity</option>
+                              <option value="Network">Network</option>
+                              {% endif %}
+                          </select>
                         </div>
+                      </div>
                     </div>
+
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label>First Seen</label>
+                          <input type="text" class="form-control" name="inputfirstseen" placeholder="YYYY-MM-DD" value="{{ inputfirstseen }}">
+                        </div>
+                      </div>
                     </div>
+
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label>Last Seen</label>
+                          <input type="text" class="form-control" name="inputlastseen" placeholder={{ currentdate }} value="{{ inputlastseen }}">
+                        </div>
+                      </div>
                     </div>
+
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label>Diamond Model</label>
+                          <select class="form-control" name="diamondmodel">
+                            {% if diamondmodel == "Adversary" %}
+                            <option value="Adversary" selected="true">Adversary</option>
+                            <option value="Infrastructure">Infrastructure</option>
+                            <option value="Victim">Victim</option>
+                            {% elif diamondmodel == "Infrastructure" %}
+                            <option value="Adversary">Adversary</option>
+                            <option value="Infrastructure" selected="true">Infrastructure</option>
+                            <option value="Victim">Victim</option>
+                            {% elif diamondmodel == "Victim" %}
+                            <option value="Adversary">Adversary</option>
+                            <option value="Infrastructure">Infrastructure</option>
+                            <option value="Victim" selected="true">Victim</option>
+                            {% else %}
+                            <option value="Adversary" selected="true">Adversary</option>
+                            <option value="Infrastructure">Infrastructure</option>
+                            <option value="Victim">Victim</option>
+                            {% endif %}
+                          </select>
+                        </div>
+                      </div>
                     </div>
-                 
 
 
-             
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label>Campaign</label>
+                          <input type="text" class="form-control" name="inputcampaign" value="{{ inputcampaign }}" placeholder="LASER PANDA">
+                        </div>
+                      </div>
+                    </div>
 
-        <footer class="footer">
-            <div class="container-fluid">
-                 <nav class="pull-left">
-                    <ul>
-                        <li>
-                            <a href="/about">
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label>Confidence</label>
+                          <select class="form-control" name="confidence">
+                            {% if confidence == "Low" %}
+                            <option value="Low" selected="true">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                            {% elif confidence == "Medium" %}
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected="true">Medium</option>
+                            <option value="High">High</option>
+                            {% elif confidence == "High" %}
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High" selected="true">High</option>
+                            {% else %}
+                            <option value="Low" selected="true">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                            {% endif %}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label>Comments</label>
+                          <textarea class="form-control" rows="3" name="comments" value="{{ comments }}">{{ comments }}</textarea>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style="float: right;">
+                      <a href="/" class="btn btn-info btn-fill">Cancel</a>
+                      <button type="submit" class="btn btn-info btn-fill">Submit</button>
+                    </div>
+                    <div class="clearfix"></div>
+                    </fieldset>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+
+
+      <footer class="footer">
+        <div class="container-fluid">
+          <nav class="pull-left">
+            <ul>
+              <li>
+                <a href="/about">
                                 About
                             </a>
-                        </li>
-                        <li>
-                            <a href="/credits">
+              </li>
+              <li>
+                <a href="/credits">
                                 Credits
                             </a>
-                        </li>
-                    </ul>
-                </nav>
-                <p class="copyright pull-right">
-                    &copy; 2015 <a href="https://defpoint.com/">Defense Point Security</a>
-                </p>
-            </div>
-        </footer>
-    </div>   
-</div>
+              </li>
+            </ul>
+          </nav>
+          <p class="copyright pull-right">
+            &copy; 2015 <a href="https://defpoint.com/">Defense Point Security</a>
+          </p>
+        </div>
+      </footer>
+    </div>
+  </div>
 </body>
 
-    <!--   Core JS Files   -->
-    <script src="../../static/js/jquery-1.10.2.js" type="text/javascript"></script>
-    <script src="../../static/js/bootstrap.min.js" type="text/javascript"></script>
-    
-    <!--  Checkbox, Radio & Switch Plugins -->
-    <script src="../../static/js/bootstrap-checkbox-radio-switch.js"></script>
-    
-    <!--  Charts Plugin -->
-    <script src="../../static/js/chartist.min.js"></script>
+<!--   Core JS Files   -->
+<script src="../../static/js/jquery-1.10.2.js" type="text/javascript"></script>
+<script src="../../static/js/bootstrap.min.js" type="text/javascript"></script>
 
-    <!--  Notifications Plugin    -->
-    <script src="../../static/js/bootstrap-notify.js"></script>
-    
-    <!--  Google Maps Plugin    -->
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
-    
-    <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
-    <script src="../../static/js/light-bootstrap-dashboard.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.8.1/bootstrap-table-all.js"></script>
-    
-    <!-- Light Bootstrap Table DEMO methods, don't include it in your project! -->
-    <script src="../../static/js/demo.js"></script>
+<!--  Checkbox, Radio & Switch Plugins -->
+<script src="../../static/js/bootstrap-checkbox-radio-switch.js"></script>
 
-    
+<!--  Charts Plugin -->
+<script src="../../static/js/chartist.min.js"></script>
+
+<!--  Notifications Plugin    -->
+<script src="../../static/js/bootstrap-notify.js"></script>
+
+<!--  Google Maps Plugin    -->
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+
+<!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
+<script src="../../static/js/light-bootstrap-dashboard.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.8.1/bootstrap-table-all.js"></script>
+
+<!-- Light Bootstrap Table DEMO methods, don't include it in your project! -->
+<script src="../../static/js/demo.js"></script>
+
+
 </html>
 
 
 {% if errormessage %}
-    <script type="text/javascript">
-        new $(document).ready(function(){
-            
-            demo.initChartist();
-            
-            $.notify({
-                icon: 'pe-7s-info',
-                message: "<b>Error</b> - {{ errormessage }}"
-                
-            },{
-                type: 'info',
-                timer: 4000
-            });
-            
-        });
-    </script>
-    {% endif %}
+<script type="text/javascript">
+  new $(document).ready(function() {
 
-{% endblock %}
+    demo.initChartist();
+
+    $.notify({
+      icon: 'pe-7s-info',
+      message: "<b>Error</b> - {{ errormessage }}"
+
+    }, {
+      type: 'info',
+      timer: 4000
+    });
+
+  });
+</script>
+{% endif %} {% endblock %}
