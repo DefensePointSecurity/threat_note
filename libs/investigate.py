@@ -1,10 +1,22 @@
 import libs.helpers
 import requests
+import sqlite3 as lite
 
+
+def get_odns_apikey():
+    con = lite.connect('threatnote.db')
+    con.row_factory = lite.Row
+    with con:
+        cur = con.cursor()
+        cur.execute("SELECT odnskey from settings")
+        odnskey = cur.fetchall()
+        odnskey = str(odnskey[0][0])
+    return odnskey
 
 def domain_security(enity):
     api_url = 'https://investigate.api.opendns.com/'
     #api_key = mongo.db.settings.distinct("odnskey")[0]
+    api_key = get_odns_apikey()
     headers = {'Authorization': 'Bearer ' + api_key}
     domain = enity
     endpoint = 'security/name/{}.json'
@@ -24,6 +36,7 @@ def domain_security(enity):
 def domain_tag(enity):
     api_url = 'https://investigate.api.opendns.com/'
     #api_key = mongo.db.settings.distinct("odnskey")[0]
+    api_key = get_odns_apikey()
     headers = {'Authorization': 'Bearer ' + api_key}
     domain = enity
     endpoint = 'domains/{}/latest_tags'
@@ -48,6 +61,7 @@ def domain_tag(enity):
 def domain_categories(enity):
     api_url = 'https://investigate.api.opendns.com/'
     #api_key = mongo.db.settings.distinct("odnskey")[0]
+    api_key = get_odns_apikey()
     headers = {'Authorization': 'Bearer ' + api_key}
     endpoint = 'domains/categorization/'
     labels = '?showLabels'
@@ -70,6 +84,7 @@ def ip_query(entity):
     try:
         api_url = 'https://investigate.api.opendns.com/'
         #api_key = mongo.db.settings.distinct("odnskey")[0]
+        api_key = get_odns_apikey()
         headers = {'Authorization': 'Bearer ' + api_key}
         mal_domains = []
         ip = entity.strip()
