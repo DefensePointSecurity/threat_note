@@ -543,7 +543,7 @@ def deletethreatactorobject(uid):
             cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
             cur = con.cursor()
             cur.execute("SELECT * FROM indicators where type='Threat Actor'")
-            network = cur.fetchall()
+            threatactors = cur.fetchall()
         return render_template('threatactors.html', network=threatactors)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -560,7 +560,7 @@ def deletevictimobject(uid):
             cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
             cur = con.cursor()
             cur.execute("SELECT * FROM indicators where diamondmodel='victim'")
-            network = cur.fetchall()
+            cur.fetchall()
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -581,7 +581,7 @@ def updatesettings():
         with con:
             cur = con.cursor()
             cur.execute("SELECT * from settings")
-            setting = cur.fetchall()
+            cur.fetchall()
             if 'threatcrowd' in newdict.keys():
                 with con:
                     cur = con.cursor()
@@ -795,7 +795,6 @@ def threatactorobject(uid):
     try:
         con = lite.connect('threatnote.db')
         con.row_factory = lite.Row
-        newdict = {}
         with con:
             cur = con.cursor()
             cur.execute("SELECT * from indicators where id='" + uid + "'")
@@ -841,7 +840,7 @@ def profile():
                                 'utf-8')).hexdigest() + "' WHERE user='" + str(current_user.user).lower() + "'")
                             errormessage = "Password updated successfully."
                             return render_template('profile.html', errormessage=errormessage)
-                        except sqlite3.Error as er:
+                        except lite.Error as er:
                             print 'er:', er.__dict__
                 else:
                     errormessage = "New passwords don't match."
