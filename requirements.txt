@@ -1,5 +1,7 @@
 Flask
+Flask-PyMongo
 requests
+Werkzeug
 ipwhois
 python-whois
 Flask-SQLAlchemy
