@@ -244,63 +244,56 @@
 <script src="../../static/js/demo.js"></script>
 
 
-<script>
-  var data = {
-    labels: [{ %
-        for i in networks %
-      }
-      "{{ i['category'] }}", { % endfor %
-      }
-    ],
-    series: [{ %
-        for i in networks %
-      }
-      "{{ i['value'] }}", { % endfor %
-      }
-    ]
-  };
+ <script>
 
-  var options = {
+var data = {
+   labels: [
+          {% for i in networks %}
+          "{{ i['category'] }}",
+          {% endfor %}
+          ],
+          series: [
+          {% for i in networks %}
+          "{{ i['value'] }}",
+          {% endfor %}
+          ]
+};
+
+var options = {
+  labelInterpolationFnc: function(value) {
+    return value[0]
+  }
+};
+
+var responsiveOptions = [
+  ['screen and (min-width: 640px)', {
+    chartPadding: 5,
+    labelOffset: 10,
+    labelDirection: 'explode',
     labelInterpolationFnc: function(value) {
-      return value[0]
+      return value;
     }
-  };
+  }],
+  ['screen and (min-width: 400px)', {
+    labelOffset: 57,
+    chartPadding: 20
+  }]
+];
 
-  var responsiveOptions = [
-    ['screen and (min-width: 640px)', {
-      chartPadding: 5,
-      labelOffset: 10,
-      labelDirection: 'explode',
-      labelInterpolationFnc: function(value) {
-        return value;
-      }
-    }],
-    ['screen and (min-width: 400px)', {
-      labelOffset: 57,
-      chartPadding: 20
-    }]
-  ];
-
-  new Chartist.Pie('#chart1', data, options, responsiveOptions);
+new Chartist.Pie('#chart1', data, options, responsiveOptions);
 </script>
 
 <script>
-  new Chartist.Bar('#chartActivity', {
-    labels: [{ %
-        for i in typelist %
-      }
-      "{{ i['category'] }}", { % endfor %
-      }
-    ],
-    series: [{ %
-        for i in typelist %
-      }
-      "{{ i['value'] }}", { % endfor %
-      }
-    ]
-  }, {
-    distributeSeries: true
-  });
+new Chartist.Bar('#chartActivity', {
+  labels: [ {% for i in typelist %}
+          "{{ i['category'] }}",
+          {% endfor %}],
+  series: [{% for i in typelist %}
+          "{{ i['value'] }}",
+          {% endfor %}]
+}, {
+  distributeSeries: true
+});
 </script>
 
 </html>

@@ -173,26 +173,26 @@ def home():
             dictlist = []
             typecount = {}
             typelist = []
-            for i in networks:
+            for net in networks:
                 cur = con.cursor()
                 cur.execute(
-                    "select count(id) FROM indicators WHERE campaign = '" + str(i[0]) + "'")
+                    "select count(id) FROM indicators WHERE campaign = '" + str(net[0]) + "'")
                 campcount = cur.fetchall()
                 campcount = campcount[0][0]
-                if i[0] == '':
+                if net[0] == '':
                     dictcount["category"] = "Unknown"
                     tempx = float(campcount) / float(counts)
                     newtemp = tempx * 100
                     dictcount["value"] = round(newtemp, 2)
                 else:
-                    dictcount["category"] = i[0]
+                    dictcount["category"] = net[0]
                     tempx = float(campcount) / float(counts)
                     newtemp = tempx * 100
                     dictcount["value"] = round(newtemp, 2)
                 dictlist.append(dictcount.copy())
-            for i in types:
-                typecount["category"] = str(i[0])
-                tempx = float(i[1]) / float(counts)
+            for t in types:
+                typecount["category"] = str(t[0])
+                tempx = float(t[1]) / float(counts)
                 newtemp = tempx * 100
                 typecount["value"] = round(newtemp, 2)
                 typelist.append(typecount.copy())
