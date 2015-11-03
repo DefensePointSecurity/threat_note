@@ -686,17 +686,24 @@ def updateobject():
         # Returns object information with updated values
         jsonvt = ""
         whoisdata = ""
-        if newdict['type'] == "IPv4" or newdict['type'] == "IPv6":
-            if settingsvars['whoisinfo'] == "on":
-                whoisdata = libs.whoisinfo.ipwhois(str(tempdict['object']))
+        odnsdata = ""
+        # Run ipwhois or domainwhois based on the type of indicator
+        if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
             if settingsvars['vtinfo'] == "on":
-                jsonvt = libs.virustotal.vt_ipv4_lookup(tempdict['object'])
-        elif newdict['type'] == "Domain":
+                jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
             if settingsvars['whoisinfo'] == "on":
-                whoisdata = libs.whoisinfo.domainwhois(str(tempdict['object']))
+                whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
+            if settingsvars['odnsinfo'] == "on":
+                odnsdata = libs.investigate.ip_query(str(http['object']))
+        elif str(http['type']) == "Domain":
+            if settingsvars['whoisinfo'] == "on":
+                whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
             if settingsvars['vtinfo'] == "on":
-                jsonvt = libs.virustotal.vt_domain_lookup(
-                    str(tempdict['object']))
+                jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
+            if settingsvars['odnsinfo'] == "on":
+                odnsdata = libs.investigate.domain_categories(
+                    str(http['object']))
+
         if newdict['type'] == "Threat Actor":
             return render_template(
                 'threatactorobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
@@ -707,7 +714,7 @@ def updateobject():
                 settingsvars=settingsvars)
         else:
             return render_template(
-                'networkobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
+                'networkobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata, odnsdata=odnsdata,
                 settingsvars=settingsvars)
     except Exception as e:
         return render_template('error.html', error=e)
