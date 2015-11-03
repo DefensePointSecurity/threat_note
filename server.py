@@ -778,12 +778,10 @@ def objectsummary(uid):
             if settingsvars['vtinfo'] == "on":
                 jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
             if settingsvars['odnsinfo'] == "on":
-                odnsdata = libs.investigate.domain_categories(
-                    str(http['object']))
+                odnsdata = libs.investigate.domain_categories(str(http['object']))
         if settingsvars['whoisinfo'] == "on":
             if str(http['type']) == "Domain":
-                address = str(whoisdata['city']) + ", " + str(
-                    whoisdata['country'])
+                address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
             else:
                 address = str(whoisdata['nets'][0]['city']) + ", " + str(
                     whoisdata['nets'][0]['country'])
