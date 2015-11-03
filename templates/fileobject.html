@@ -49,7 +49,7 @@
               <p>Dashboard</p>
             </a>
           </li>
-          <li class="active">
+          <li>
             <a href="/networks">
               <i class="pe-7s-global"></i>
               <p>Network Indicators</p>
@@ -67,7 +67,7 @@
               <p>Victims</p>
             </a>
           </li>
-          <li>
+          <li class="active">
             <a href="/files">
               <i class="pe-7s-file"></i>
               <p>Files</p>
@@ -251,215 +251,7 @@
                         {% endif %} {% endfor %} 
                       </tbody>
                     </table>
-                    </div>
-                    </div>
-
-                    {% if settingsvars['whoisinfo'] == "on" %}
-                {% if records['type'] == "IPv4" %}
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="card">
-                      <div class="header">
-                        <h4 class="title">Whois Information</h4>
-                        <p class="category">More information can be found at <a href="https://who.is/whois-ip/ip-address/{{ records['object'] }}" target="_blank">who.is</a></p>
-                      </div>
-                      <div class="content">
-                        <table class="table table-hover table-striped">
-                      <thead>
-                        <th>Attribute</th>
-                        <th>Value</th>
-                      </thead>
-                      <tbody>
-                       {% for line in whoisdata %}
-                          {% if line == "raw" or line == "raw_referral" or line == "referral" %}
-                            <div></div>
-                            {% elif line == "nets" %}
-                              {% for i in whoisdata['nets'][0] %}
-                              <tr>
-                            <td><span class="text-capitalize">{{ i }}</span</td><td>{{ whoisdata['nets'][0][i] }}</td>
-                            </tr>
-                            {% endfor %}
-                            {% elif line == "asn" %}
-                            <tr>
-                            <td><span class="text-capitalize">{{ line }}</span></td>
-                            <td>{{ whoisdata[line] }}</td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                            <td><span class="text-capitalize">{{ line }}</span></td><td>{{ whoisdata[line] }}</td></tr>
-                            {% endif %}
-                            {% endfor %}
-                            </tbody>
-                            </table>
-                      </div>
-                    </div>
-                    </div>
-                    </div>
-                    {% elif records['type'] == "Domain" %}
-                    <div class="row">
-                  <div class="col-lg-12">
-                    <div class="card">
-                      <div class="header">
-                        <h4 class="title">Whois Information</h4>
-                        <p class="category">More information can be found at <a href="https://who.is/whois-ip/ip-address/{{ records['object'] }}" target="_blank">who.is</a></p>
-                      </div>
-                      <div class="content">
-                        <table class="table table-hover table-striped">
-                      <thead>
-                        <th>Attribute</th>
-                        <th>Value</th>
-                      </thead>
-                      <tbody>
-                      {% for line in whoisdata %}
-                            <tr>
-                            <td><span class="text-uppercase">{{ line }}</span></td>
-                            <td>{{ whoisdata[line] }}</td>
-                            </tr>
-                            {% endfor %}
-                            </tbody>
-                            </table>
-                      </div>
-                    </div>
-                    </div>
-                    </div>
-                        {% endif %} {% endif %}
-
-                        {% if settingsvars['vtinfo'] == "on" %}
-                {% if records['type'] == "IPv4" %}
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="card">
-                      <div class="header">
-                        <h4 class="title">VirusTotal Information</h4>
-                        <p class="category">More information can be found at <a href="https://www.virustotal.com" target="_blank">VirusTotal</a></p>
-                      </div>
-                      <div class="content">
-                       <table class="table table-hover table-striped">
-                      <thead>
-                        <th>Last Resolved</th>
-                        <th>Hostname</th>
-                      </thead>
-                      <tbody>
-                      {% for record in jsonvt['resolutions'] %}
-                            <tr>
-                            <td>{{ record['last_resolved'] }}</td>
-                            <td>{{ record['hostname'] }}</td>
-                            </tr>
-                            {% endfor %}
-                            </tbody>
-                            </table>
-                      </div>
-                    </div>
-                    </div>
-                    </div>
-                    {% elif records['type'] == "Domain" %}
-                    <div class="row">
-                  <div class="col-lg-12">
-                    <div class="card">
-                      <div class="header">
-                        <h4 class="title">VirusTotal Information</h4>
-                        <p class="category">More information can be found at <a href="https://www.virustotal.com" target="_blank">VirusTotal</a></p>
-                      </div>
-                      <div class="content">
-                       <table class="table table-hover table-striped">
-                      <thead>
-                        <th>Last Resolved</th>
-                        <th>IP Address</th>
-                      </thead>
-                      <tbody>
-                      {% for record in jsonvt['resolutions'] %}
-                            <tr>
-                            <td>{{ record['last_resolved'] }}</td>
-                            <td>{{ record['ip_address'] }}</td>
-                            </tr>
-                            {% endfor %}
-                            </tbody>
-                            </table>
-                      </div>
-                    </div>
-                    </div>
-                    </div>
-                        {% endif %} {% endif %}
-
-
-                        {% if settingsvars['odnsinfo'] == "on" %}
-                        {% if records['type'] == "IPv4" %}
-                        <div class="row">
-                  <div class="col-lg-12">
-                    <div class="card">
-                      <div class="header">
-                        <h4 class="title">OpenDNS Investigate Information</h4>
-                        <p class="category">More information can be found at <a href="https://sgraph.opendns.com/ip-view/{{ records['object'] }}" target="_blank">OpenDNS</a></p>
-                      </div>
-                      <div class="content">
-               <table class="table table-hover table-striped">
-                      <thead>
-                        <th>Last Malicious</th>
-
-                      </thead>
-                      <tbody>
-                      {% for record in odnsdata %}
-                            <tr>
-                            <td>{{ record }}</td>
-                            </tr>
-                            {% endfor %}
-                            </tbody>
-                            </table>
-                      </div>
-                    </div>
-                    {% elif records['type'] == "Domain" %}
-                    <div class="row">
-                  <div class="col-lg-12">
-                    <div class="card">
-                      <div class="header">
-                        <h4 class="title">OpenDNS Investigate Information</h4>
-                        <p class="category">More information can be found at <a href="https://sgraph.opendns.com/domain-view/name/{{ records['object'] }}/view" target="_blank">OpenDNS</a></p>
-                      </div>
-                      <div class="content">
-               <table class="table table-hover table-striped">
-                      <thead>
-                        <th>Key</th>
-                        <th>Value</th>
-                      </thead>
-                      <tbody>
-                      {% for k,v in odnsdata.iteritems()%}
-                            <tr>
-                            <td>{{ k }}</td>
-                            <td>{{ v }}</td>
-                            </tr>
-                            {% endfor %}
-                            </tbody>
-                            </table>
-                      </div>
-                    </div>
-                        {% endif %} {% endif %}
-
-                    {% if settingsvars['threatcrowd'] == "on" %}
-                {% if records['type'] == "IPv4" %}
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="card">
-                      <div class="header">
-                        <h4 class="title">ThreatCrowd Visualization</h4>
-                        <p class="category">More information can be found at <a href="https://www.threatcrowd.org/ip.php?ip={{ records['object'] }}" target="_blank">ThreatCrowd</a></p>
-                      </div>
-                      <div class="content">
-                        <iframe src='https://www.threatcrowd.org/graphHtml.php?ip={{ records['object'] }}' frameborder='0' scrolling='no' width="100%" height="500px"></iframe>
-                      </div>
-                    </div>
-                    {% elif records['type'] == "Domain" %}
-                    <div class="row">
-                      <div class="col-lg-12">
-                        <div class="card">
-                          <div class="header">
-                            <h4 class="title">ThreatCrowd Visualization</h4>
-                            <p class="category">More information can be found at <a href="https://www.threatcrowd.org/domain.php?domain={{ records['object'] }}" target="_blank">ThreatCrowd</a></p>
-                          </div>
-                          <div class="content">
-                            <iframe src='https://www.threatcrowd.org/graphHtml.php?domain={{ records['object'] }}' frameborder='0' scrolling='no' width="100%" height="500px"></iframe>
-                          </div>
-                        </div>
-                        {% endif %} {% endif %}
+                
                       </div>
                     </div>
                   </div>

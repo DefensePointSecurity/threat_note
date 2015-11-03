@@ -19,8 +19,7 @@ import libs.helpers
 import libs.investigate
 import libs.virustotal
 import libs.whoisinfo
-# Imports #
-#
+
 from flask import Flask
 from flask import flash
 from flask import make_response
@@ -35,7 +34,7 @@ from flask.ext.login import login_user
 from flask.ext.login import logout_user
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.wtf import Form
-#
+
 from werkzeug.datastructures import ImmutableMultiDict
 from wtforms import PasswordField
 from wtforms import TextField
@@ -252,6 +251,20 @@ def victims():
             cur.execute("SELECT * FROM indicators where diamondmodel='Victim'")
             victims = cur.fetchall()
         return render_template('victims.html', network=victims)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+@app.route('/files', methods=['GET'])
+@login_required
+def files():
+    try:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * FROM indicators where type='Hash'")
+            files = cur.fetchall()
+        return render_template('files.html', network=files)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -478,6 +491,15 @@ def newobject():
                     "SELECT * FROM indicators where diamondmodel='Victim'")
                 victims = cur.fetchall()
             return render_template('victims.html', network=victims)
+        elif newdict['type'] == "Hash":
+            con = lite.connect('threatnote.db')
+            con.row_factory = lite.Row
+            with con:
+                cur = con.cursor()
+                cur.execute(
+                    "SELECT * FROM indicators where type='Hash'")
+                files = cur.fetchall()
+            return render_template('files.html', network=files)
         else:
             con = lite.connect('threatnote.db')
             con.row_factory = lite.Row
@@ -564,6 +586,21 @@ def deletevictimobject(uid):
     except Exception as e:
         return render_template('error.html', error=e)
 
+
+@app.route('/delete/files/<uid>', methods=['GET'])
+@login_required
+def deletefilesobject(uid):
+    try:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
+            cur = con.cursor()
+            cur.execute("SELECT * FROM indicators where type='Hash'")
+            cur.fetchall()
+    except Exception as e:
+        return render_template('error.html', error=e)
 
 @app.route('/update/settings/', methods=['POST'])
 @login_required
@@ -703,7 +740,6 @@ def updateobject():
             if settingsvars['odnsinfo'] == "on":
                 odnsdata = libs.investigate.domain_categories(
                     str(http['object']))
-
         if newdict['type'] == "Threat Actor":
             return render_template(
                 'threatactorobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
@@ -712,6 +748,9 @@ def updateobject():
             return render_template(
                 'victimobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
                 settingsvars=settingsvars)
+        elif newdict['type'] == "Hash":
+            return render_template(
+                'fileobject.html', records=tempdict, settingsvars=settingsvars)
         else:
             return render_template(
                 'networkobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata, odnsdata=odnsdata,
@@ -910,6 +949,32 @@ def victimobject(uid):
         return render_template(
             'victimobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
             odnsdata=odnsdata, settingsvars=settingsvars, address=address)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+@app.route('/files/<uid>/info', methods=['GET'])
+@login_required
+def filesobject(uid):
+    try:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        newdict = {}
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from indicators where id='" + uid + "'")
+            http = cur.fetchall()
+            http = http[0]
+            names = [description[0] for description in cur.description]
+            for i in names:
+                if i is None:
+                    newdict[i] == ""
+                else:
+                    newdict[i] = str(http[i])
+            cur.execute("SELECT * from settings")
+            settingsvars = cur.fetchall()
+            settingsvars = settingsvars[0]
+            address = "Information about " + str(http['object'])
+        return render_template('fileobject.html', records=newdict, settingsvars=settingsvars, address=address)
     except Exception as e:
         return render_template('error.html', error=e)
 

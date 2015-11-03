@@ -26,7 +26,7 @@
               <p>Network Indicators</p>
             </a>
           </li>
-          <li class="active">
+          <li>
             <a href="/threatactors">
               <i class="pe-7s-users"></i>
               <p>Threat Actors</p>
@@ -38,7 +38,7 @@
               <p>Victims</p>
             </a>
           </li>
-          <li>
+          <li  class="active">
             <a href="/files">
               <i class="pe-7s-file"></i>
               <p>Files</p>
@@ -50,7 +50,9 @@
               <p>Campaigns</p>
             </a>
           </li>
-           
+            
+          
+
         </ul>
       </div>
     </div>
@@ -65,7 +67,7 @@
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">Threat Actors</a>
+            <a class="navbar-brand" href="#">Files</a>
           </div>
           <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav navbar-right">
@@ -91,14 +93,14 @@
         <div class="container-fluid">
           <div class="row">
             <div class="col-md-12">
-              This page contains all the threat actors in the threat_note database. Along with the threat actors, you'll also find key attributes and their values that have been entered.
+              This page contains all the files/hashes in the threat_note database. Along with the files and hashes, you'll also find key attributes and their values that have been entered.
               </br>
               </br>
               <div class="card">
                 <div class="header">
                   <div style="float: left;">
-                    <h4 class="title">Threat Actors</h4>
-                    <p class="category">This table shows you all of the threat actors.</p>
+                    <h4 class="title">Files and Hashes</h4>
+                    <p class="category">This table shows you all of the files and hashes</p>
                   </div>
                   <div style="float: right;">
                     <a href="/newobject" class="btn btn-info btn-fill"><i class="fa fa-plus"></i> New Indicator</a>
@@ -120,7 +122,7 @@
                     <tbody>
                       {% for p in network %}
                       <tr>
-                        <td><a href="/threatactors/{{ p['id'] }}/info">{{ p['object'] }}</td>
+                        <td><a href="/files/{{ p['id'] }}/info">{{ p['object'] }}</td>
                                                     <td>{{ p['type'] }}</td>
                                                     {% if p['firstseen']|length == 0 %}
                                                     <td>-</td>
@@ -154,7 +156,7 @@
                                                     <a href="/edit/{{ p['id'] }}" role="button" rel="tooltip" title="Edit Indicator" class="btn btn-info btn-simple btn-xs">
                                                         <i class="fa fa-pencil"></i>
                                                     </a>
-                          <a href="/delete/threatactor/{{ p['id'] }}" role="button" rel="tooltip" title="Remove" class="btn btn-danger btn-simple btn-xs">
+                          <a href="/delete/files/{{ p['id'] }}" role="button" rel="tooltip" title="Remove" class="btn btn-danger btn-simple btn-xs">
                             <i class="fa fa-times"></i>
                           </a>
                         </td>
@@ -185,6 +187,7 @@
               </li>
             </ul>
           </nav>
+
           <p class="copyright pull-right">
             &copy; 2015 <a href="https://defpoint.com/">Defense Point Security</a>
           </p>
