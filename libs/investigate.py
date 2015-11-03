@@ -11,6 +11,8 @@ def get_odns_apikey():
         cur.execute("SELECT odnskey from settings")
         odnskey = cur.fetchall()
         odnskey = str(odnskey[0][0])
+        if odnskey == '':
+            odnskey = None
     return odnskey
 
 def domain_security(enity):
@@ -62,29 +64,32 @@ def domain_categories(enity):
     api_url = 'https://investigate.api.opendns.com/'
     #api_key = mongo.db.settings.distinct("odnskey")[0]
     api_key = get_odns_apikey()
-    headers = {'Authorization': 'Bearer ' + api_key}
-    endpoint = 'domains/categorization/'
-    labels = '?showLabels'
-    response = requests.get(api_url + endpoint + enity + labels, headers=headers, proxies=libs.helpers.get_proxy()).json()
-    for domain, values in response.iteritems():
-        if values['status'] == -1: # -1 if domain is malicous
-            sec = domain_security(enity)
-            for row in domain_tag(enity):
-                c = row.copy()
-                c.update(sec)
-            return c
+    if api_key:
+        headers = {'Authorization': 'Bearer ' + api_key}
+        endpoint = 'domains/categorization/'
+        labels = '?showLabels'
+        response = requests.get(api_url + endpoint + enity + labels, headers=headers, proxies=libs.helpers.get_proxy()).json()
+        for domain, values in response.iteritems():
+            if values['status'] == -1: # -1 if domain is malicous
+                sec = domain_security(enity)
+                for row in domain_tag(enity):
+                    c = row.copy()
+                    c.update(sec)
+                return c
 
-        elif values['status'] == 0:
-            return {'Category': 'Unclassified'}
-        elif values['status'] == 1:
-            return {'Category': ', '.join(values['content_categories'])}
+            elif values['status'] == 0:
+                return {'Category': 'Unclassified'}
+            elif values['status'] == 1:
+                return {'Category': ', '.join(values['content_categories'])}
+    else:
+        return {}
 
 
 def ip_query(entity):
-    try:
-        api_url = 'https://investigate.api.opendns.com/'
-        #api_key = mongo.db.settings.distinct("odnskey")[0]
-        api_key = get_odns_apikey()
+    api_url = 'https://investigate.api.opendns.com/'
+    #api_key = mongo.db.settings.distinct("odnskey")[0]
+    api_key = get_odns_apikey()
+    if api_key:
         headers = {'Authorization': 'Bearer ' + api_key}
         mal_domains = []
         ip = entity.strip()
@@ -97,5 +102,5 @@ def ip_query(entity):
         else:
             mal_domains.append('None')
         return mal_domains
-    except:
-        pass
+    else:
+        return []
