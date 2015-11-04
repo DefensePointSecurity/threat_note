@@ -491,7 +491,7 @@ def newobject():
                     "SELECT * FROM indicators where diamondmodel='Victim'")
                 victims = cur.fetchall()
             return render_template('victims.html', network=victims)
-        elif newdict['type'] == "Hash":
+        elif newdict['inputtype'] == "Hash":
             con = lite.connect('threatnote.db')
             con.row_factory = lite.Row
             with con:
@@ -720,6 +720,22 @@ def updateobject():
             cur.execute("SELECT * from settings")
             settingsvars = cur.fetchall()
             settingsvars = settingsvars[0]
+            cur.execute("SELECT relationships from indicators where id='" + newdict['id'] + "'")
+            rels = cur.fetchall()
+            rels = rels[0][0]
+        rellist = rels.split(",")
+        temprel = {}
+        for rel in rellist:
+            try:
+                with con:
+                    cur = con.cursor()
+                    cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
+                    reltype = cur.fetchall()
+                    reltype = reltype[0]
+                    temprel[reltype['object']] = reltype['type'] 
+            except:
+                pass
+        reldata = len(temprel)
         # Returns object information with updated values
         jsonvt = ""
         whoisdata = ""
@@ -743,18 +759,18 @@ def updateobject():
         if newdict['type'] == "Threat Actor":
             return render_template(
                 'threatactorobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
-                settingsvars=settingsvars)
+                settingsvars=settingsvars,temprel=temprel, reldata=reldata)
         elif newdict['diamondmodel'] == "Victim":
             return render_template(
                 'victimobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
-                settingsvars=settingsvars)
+                settingsvars=settingsvars,temprel=temprel, reldata=reldata)
         elif newdict['type'] == "Hash":
             return render_template(
-                'fileobject.html', records=tempdict, settingsvars=settingsvars)
+                'fileobject.html', records=tempdict, settingsvars=settingsvars,temprel=temprel, reldata=reldata)
         else:
             return render_template(
                 'networkobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata, odnsdata=odnsdata,
-                settingsvars=settingsvars)
+                settingsvars=settingsvars,temprel=temprel, reldata=reldata)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -800,6 +816,22 @@ def objectsummary(uid):
             cur.execute("SELECT * from settings")
             settingsvars = cur.fetchall()
             settingsvars = settingsvars[0]
+            cur.execute("SELECT relationships from indicators where id='" + uid + "'")
+            rels = cur.fetchall()
+            rels = rels[0][0]
+        rellist = rels.split(",")
+        temprel = {}
+        for rel in rellist:
+            try:
+                with con:
+                    cur = con.cursor()
+                    cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
+                    reltype = cur.fetchall()
+                    reltype = reltype[0]
+                    temprel[reltype['object']] = reltype['type'] 
+            except:
+                pass
+        reldata = len(temprel)
         jsonvt = ""
         whoisdata = ""
         odnsdata = ""
@@ -828,7 +860,7 @@ def objectsummary(uid):
             address = "Information about " + str(http['object'])
         return render_template(
             'networkobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, settingsvars=settingsvars, address=address)
+            odnsdata=odnsdata, settingsvars=settingsvars, address=address, temprel=temprel, reldata=reldata)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -844,7 +876,84 @@ def threatactorobject(uid):
             cur.execute("SELECT * from indicators where id='" + uid + "'")
             http = cur.fetchall()
             http = http[0]
-        return render_template('threatactorobject.html', records=http)
+            cur.execute("SELECT relationships from indicators where id='" + uid + "'")
+            rels = cur.fetchall()
+            rels = rels[0][0]
+        rellist = rels.split(",")
+        temprel = {}
+        for rel in rellist:
+            try:
+                with con:
+                    cur = con.cursor()
+                    cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
+                    reltype = cur.fetchall()
+                    reltype = reltype[0]
+                    temprel[reltype['object']] = reltype['type'] 
+            except:
+                pass
+        reldata = len(temprel)
+        return render_template('threatactorobject.html', records=http, temprel=temprel, reldata=reldata)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+@app.route('/relationships/<uid>', methods=['GET'])
+@login_required
+def relationships(uid):
+    try:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * from indicators where id='" + uid + "'")
+            http = cur.fetchall()
+            http = http[0]
+            cur = con.cursor()
+            cur.execute("SELECT * from indicators")
+            indicators = cur.fetchall()
+            cur.execute("SELECT relationships from indicators where id='" + uid + "'")
+            rels = cur.fetchall()
+            rels = rels[0][0]
+        rellist = rels.split(",")
+        temprel = {}
+        for rel in rellist:
+            try:
+                with con:
+                    cur = con.cursor()
+                    cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
+                    reltype = cur.fetchall()
+                    reltype = reltype[0]
+                    temprel[reltype['object']] = reltype['type'] 
+            except:
+                pass
+        reldata = len(temprel)
+        return render_template('addrelationship.html', records=http, indicators=indicators)
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+
+@app.route('/addrelationship', methods=['GET','POST'])
+@login_required
+def addrelationship():
+    try:
+        something = request.form
+        imd = ImmutableMultiDict(something)
+        records = libs.helpers.convert(imd)
+        newdict = {}
+        for i in records:
+            newdict[i] = records[i]
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("UPDATE indicators SET relationships=relationships || '" + newdict['indicator'] + ",' WHERE id='" + newdict['id'] + "'")
+        if newdict['type'] == "IPv4" or newdict['type'] == "IPv6" or newdict['type'] == "Domain" or newdict['type'] == "Network":
+            return redirect(url_for('objectsummary', uid=str(newdict['id'])))
+        elif newdict['type'] ==  "Hash":
+            return redirect(url_for('filesobject', uid=str(newdict['id'])))
+        elif newdict['type'] == "Entity":
+            return redirect(url_for('victimobject', uid=str(newdict['id'])))
+        elif newdict['type'] == "Threat Actor":
+            return redirect(url_for('threatactorobject', uid=str(newdict['id'])))  
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -918,6 +1027,22 @@ def victimobject(uid):
             cur.execute("SELECT * from settings")
             settingsvars = cur.fetchall()
             settingsvars = settingsvars[0]
+            cur.execute("SELECT relationships from indicators where id='" + uid + "'")
+            rels = cur.fetchall()
+            rels = rels[0][0]
+        rellist = rels.split(",")
+        temprel = {}
+        for rel in rellist:
+            try:
+                with con:
+                    cur = con.cursor()
+                    cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
+                    reltype = cur.fetchall()
+                    reltype = reltype[0]
+                    temprel[reltype['object']] = reltype['type'] 
+            except:
+                pass
+        reldata = len(temprel)
         jsonvt = ""
         whoisdata = ""
         odnsdata = ""
@@ -948,7 +1073,7 @@ def victimobject(uid):
             address = "Information about " + str(http['object'])
         return render_template(
             'victimobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, settingsvars=settingsvars, address=address)
+            odnsdata=odnsdata, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -974,7 +1099,23 @@ def filesobject(uid):
             settingsvars = cur.fetchall()
             settingsvars = settingsvars[0]
             address = "Information about " + str(http['object'])
-        return render_template('fileobject.html', records=newdict, settingsvars=settingsvars, address=address)
+            cur.execute("SELECT relationships from indicators where id='" + uid + "'")
+            rels = cur.fetchall()
+            rels = rels[0][0]
+        rellist = rels.split(",")
+        temprel = {}
+        for rel in rellist:
+            try:
+                with con:
+                    cur = con.cursor()
+                    cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
+                    reltype = cur.fetchall()
+                    reltype = reltype[0]
+                    temprel[reltype['object']] = reltype['type'] 
+            except:
+                pass
+        reldata = len(temprel)
+        return render_template('fileobject.html', records=newdict, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata)
     except Exception as e:
         return render_template('error.html', error=e)
 

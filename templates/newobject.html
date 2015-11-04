@@ -121,7 +121,7 @@
                             <option value="IPv6">IPv6</option>
                             <option value="Domain">Domain</option>
                             <option value="Threat Actor">Threat Actor</option>
-                            <option value="Enity">Entity</option>
+                            <option value="Entity">Entity</option>
                             <option value="Network">Network</option>
                             <option value="Hash">Hash</option>
                             {% elif inputtype == "IPv6" %}
@@ -129,7 +129,15 @@
                             <option value="IPv6" selected="true">IPv6</option>
                             <option value="Domain">Domain</option>
                             <option value="Threat Actor">Threat Actor</option>
-                            <option value="Enity">Entity</option>
+                            <option value="Entity">Entity</option>
+                            <option value="Network">Network</option>
+                            <option value="Hash">Hash</option>
+                            {% elif inputtype == "Entity" %}
+                            <option value="IPv4">IPv4</option>
+                            <option value="IPv6">IPv6</option>
+                            <option value="Domain">Domain</option>
+                            <option value="Threat Actor">Threat Actor</option>
+                            <option value="Entity" selected="true">Entity</option>
                             <option value="Network">Network</option>
                             <option value="Hash">Hash</option>
                             {% elif inputtype == "Domain" %}
@@ -137,7 +145,7 @@
                             <option value="IPv6">IPv6</option>
                             <option value="Domain" selected="true">Domain</option>
                             <option value="Threat Actor">Threat Actor</option>
-                            <option value="Enity">Entity</option>
+                            <option value="Entity">Entity</option>
                             <option value="Network">Network</option>
                             <option value="Hash">Hash</option>
                             {% elif inputtype == "Threat Actor" %}
@@ -145,7 +153,7 @@
                             <option value="IPv6">IPv6</option>
                             <option value="Domain">Domain</option>
                             <option value="Threat Actor" selected="true">Threat Actor</option>
-                            <option value="Enity">Entity</option>
+                            <option value="Entity">Entity</option>
                             <option value="Network">Network</option>
                             <option value="Hash">Hash</option>
                             {% elif inputtype == "Network" %}
@@ -153,7 +161,7 @@
                             <option value="IPv6">IPv6</option>
                             <option value="Domain">Domain</option>
                             <option value="Threat Actor">Threat Actor
-                              <option value="Enity">Entity</option>
+                              <option value="Entity">Entity</option>
                               <option value="Network" selected="true">Network</option>
                               <option value="Hash">Hash</option>
                               {% elif inputtype == "Hash" %}
@@ -161,7 +169,7 @@
                             <option value="IPv6">IPv6</option>
                             <option value="Domain">Domain</option>
                             <option value="Threat Actor">Threat Actor
-                              <option value="Enity">Entity</option>
+                              <option value="Entity">Entity</option>
                               <option value="Network">Network</option>
                               <option value="Hash" selected="true">Hash</option>
                               {% else %}
@@ -169,7 +177,7 @@
                               <option value="IPv6">IPv6</option>
                               <option value="Domain">Domain</option>
                               <option value="Threat Actor">Threat Actor</option>
-                              <option value="Enity">Entity</option>
+                              <option value="Entity">Entity</option>
                               <option value="Network">Network</option>
                               <option value="Hash">Hash</option>
                               {% endif %}

@@ -126,7 +126,7 @@
                   This page contains information on {{ records['object'] }} that was manually entered, as well as 3rd party supplemental information that can aide an analyst in research. 3rd party sources can include VirusTotal, PassiveTotal, Whois, geolocational data,
                   and more. You can enable these 3rd party integrations in the <a href="/settings">settings</a> menu.
                   </p>
-                  On this page, you can also edit the entry to add new fields or change any attributes previously entered. You can also delete the entry if it's no longer needed.
+                  On this page, you can also edit the entry to add new fields or change any attributes previously entered. You can also delete the entry if it's no longer needed. 
                   </br>
                   </br>
                 </div>
@@ -237,7 +237,7 @@
                           </td>
                           <td>{{ records['comments'] }}</td>
                         </tr>
-                        {% endif %} {% for key in records %} {% if key == "id" or key == "type" or key == "campaign" or key == "confidence" or key == "Firstseen" or key == "Lastseen" or key == "comments" or key == "diamondmodel" or key == "object" or key == "firstseen" or key
+                        {% endif %} {% for key in records %} {% if key == "id" or key == "type" or key == "campaign" or key == "confidence" or key == "Firstseen" or key == "Lastseen" or key == "comments" or key == "diamondmodel" or key == "object" or key == "firstseen" or key == "relationships" or key
                         == "lastseen" or records[key] == "None" or records[key] == "" %}
                         <div></div>
                         {% else %}
@@ -253,6 +253,37 @@
                     </table>
                     </div>
                     </div>
+
+
+               {% if reldata > 0 %}
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="card">
+                      <div class="header">
+                        <h4 class="title">Relationships</h4>
+                        <p class="category">This table shows the indicators related to {{ records['object'] }}</p>
+                      </div>
+                      <div class="content">
+                        <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Attribute</th>
+                        <th>Value</th>
+                      </thead>
+                      <tbody>
+                      {% for rel in temprel %}
+                       <tr>
+                       <td>{{ rel }}</td>
+                       <td>{{ temprel[rel] }}</td>                     
+                       </tr>
+                       {% endfor %}
+                            </tbody>
+                            </table>
+                      </div>
+                    </div>
+                    </div>
+                    </div>
+                    {% endif %}
+              
 
                     {% if settingsvars['whoisinfo'] == "on" %}
                 {% if records['type'] == "IPv4" %}
@@ -460,8 +491,8 @@
                           </div>
                         </div>
                         {% endif %} {% endif %}
-                      </div>
-                    </div>
+                      
+               
                   </div>
                 </div>
               </div>

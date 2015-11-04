@@ -1,0 +1,230 @@
+{% include "banners/newheader.html" %}
+{% block content %}
+
+<body>
+
+  <div class="wrapper">
+    <div class="sidebar" data-color="azure">
+
+      <div class="sidebar-wrapper">
+        <div class="logo">
+          <a href="/" class="simple-text">
+                    threat_note
+                </a>
+        </div>
+        <ul class="nav">
+          <li>
+            <a href="/">
+              <i class="pe-7s-graph2"></i>
+              <p>Dashboard</p>
+            </a>
+          </li>
+          <li>
+            <a href="/networks">
+              <i class="pe-7s-global"></i>
+              <p>Network Indicators</p>
+            </a>
+          </li>
+          <li>
+            <a href="/threatactors">
+              <i class="pe-7s-users"></i>
+              <p>Threat Actors</p>
+            </a>
+            <li>
+              <a href="/victims">
+                <i class="pe-7s-target"></i>
+                <p>Victims</p>
+              </a>
+            </li>
+          </li>
+          <li>
+            <a href="/files">
+              <i class="pe-7s-file"></i>
+              <p>Files</p>
+            </a>
+          </li>
+          <li>
+            <a href="/campaigns">
+              <i class="pe-7s-shield"></i>
+              <p>Campaigns</p>
+            </a>
+          </li>
+  
+        </ul>
+
+      </div>
+    </div>
+
+    <div class="main-panel">
+      <nav class="navbar navbar-default navbar-fixed">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navigation-example-2">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Add Relationship</a>
+          </div>
+          <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav navbar-right">
+              <li class="dropdown">
+                <a href="/profile" class="dropdown-toggle capitalize" data-toggle="dropdown">
+                                    {{ current_user.user }}
+                                    <b class="caret"></b>
+                              </a>
+                <ul class="dropdown-menu">
+                  <li><a href="/profile">Edit Profile</a></li>
+                  <li><a href="/settings">Edit Settings</a></li>
+                  <li class="divider"></li>
+                  <li><a href="/logout">Logout</a></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+
+      <div class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+              <div class="card">
+                <div class="header">
+                  <h4 class="title">Add Relationship</h4>
+                </div>
+                <div class="content">
+                  <form action="/addrelationship" enctype="application/x-www-form-urlencoded" method="POST">
+                    <div class="row">
+                      <div class="col-md-12">
+
+                        <fieldset>
+                            <div class="form-group">
+                            <label>Indicator</label>
+                            <select class="form-control" name="indicator">
+                            {% for indicator in indicators %}
+                              <option value="{{ indicator['object'] }}">{{ indicator['object'] }}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                      </div>
+                    </div>
+
+                    <input type="hidden" class="form-control" name="id" value="{{ records['id'] }}">
+                      <input type="hidden" class="form-control" name="type" value="{{ records['type'] }}">
+                    <div style="float: right;">
+                     
+                      <a href="/networks" class="btn btn-info btn-fill">Cancel</a>
+
+                      <button type="submit" class="btn btn-info btn-fill">Submit</button>
+                     
+
+                    </div>
+                    <div class="clearfix"></div>
+                    </fieldset>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="footer">
+        <div class="container-fluid">
+          <nav class="pull-left">
+            <ul>
+              <li>
+                <a href="/about">
+                                About
+                            </a>
+              </li>
+              <li>
+                <a href="/credits">
+                                Credits
+                            </a>
+              </li>
+            </ul>
+          </nav>
+          <p class="copyright pull-right">
+            &copy; 2015 <a href="https://defpoint.com/">Defense Point Security</a>
+          </p>
+        </div>
+      </footer>
+    </div>
+  </div>
+</body>
+
+<!-- Creating popup for new field-->
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">New Field</h4>
+      </div>
+
+      <div class="modal-body">
+        <form class="form-horizontal" action="/insert/newfield/" enctype="application/x-www-form-urlencoded" method="POST">
+          <fieldset>
+
+            <div class="form-group">
+              <label for="inputnewfieldname" class="col-lg-2 control-label">Name</label>
+
+              <div class="col-lg-10">
+                <input type="text" class="form-control" name="inputnewfieldname" value="" placeholder="Registrar">
+              </div>
+
+            </div>
+
+            <div class="form-group">
+              <label for="inputnewfieldvalue" class="col-lg-2 control-label">Value</label>
+              <div class="col-lg-10">
+                <input type="text" class="form-control" name="inputnewfieldvalue" value="" placeholder="GoDaddy">
+              </div>
+            </div>
+
+            {% for item in entry %} {% if entry[item] == None %}
+            <div></div>
+            {% else %}
+            <input type="hidden" class="form-control" name="{{ item }}" value="{{ entry[item] }}"> {% endif %} {% endfor %}
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-info btn-fill" data-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-info btn-fill">Submit</button>
+      </div>
+    </div>
+
+    </fieldset>
+    </form>
+  </div>
+</div>
+
+<!--   Core JS Files   -->
+<script src="../../static/js/jquery-1.10.2.js" type="text/javascript"></script>
+<script src="../../static/js/bootstrap.min.js" type="text/javascript"></script>
+
+<!--  Checkbox, Radio & Switch Plugins -->
+<script src="../../static/js/bootstrap-checkbox-radio-switch.js"></script>
+
+<!--  Charts Plugin -->
+<script src="../../static/js/chartist.min.js"></script>
+
+<!--  Notifications Plugin    -->
+<script src="../../static/js/bootstrap-notify.js"></script>
+
+<!--  Google Maps Plugin    -->
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+
+<!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
+<script src="../../static/js/light-bootstrap-dashboard.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.8.1/bootstrap-table-all.js"></script>
+
+<!-- Light Bootstrap Table DEMO methods, don't include it in your project! -->
+<script src="../../static/js/demo.js"></script>
+
+</html>
+{% endblock %}
