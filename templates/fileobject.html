@@ -255,6 +255,60 @@
                       </div>
                     </div>
 
+              {% if settingsvars['vtfile'] == "on" %}
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="card">
+                      <div class="header">
+                        <h4 class="title">VirusTotal Information</h4>
+                        <p class="category">More information can be found at <a href="https://www.virustotal.com" target="_blank">VirusTotal</a></p>
+                      </div>
+                      <div class="content">
+                      <table class="table table-hover table-striped">
+                      <thead>
+                      <th>Attribute</th>
+                      <th>Value</th>
+                      </thead>
+                      <tbody>
+                      <tr>
+                       <td>Scan Date</td>
+                          <td>{{ jsonvt['scan_date'] }}</td>
+                      </tr>
+                      <tr>
+                          <td>Positives/Total</td>
+                          <td>{{ jsonvt['positives'] }}/{{ jsonvt['total'] }}</td>
+                          </tr>
+                          </tbody>
+                          </table>
+
+                       <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Scanner</th>
+                        <th>Result</th>
+                        <th>Update</th>
+                      </thead>
+                      <tbody>
+                      {% for result in jsonvt['scans'] %}
+                      {% if jsonvt['scans'][result]['result'] == None %}
+                      <div></div>
+                      {% else %}
+                      <tr>
+                      <td>{{ result }}</td>
+                      <td>{{ jsonvt['scans'][result]['result'] }}</td>
+                      <td>{{ jsonvt['scans'][result]['update'] }}</td>
+                      </tr>
+                      {% endif %}
+                     
+                     
+                      {% endfor %}
+                            </tbody>
+                            </table>
+                      </div>
+                    </div>
+                    </div>
+                    </div>
+                    {% endif %}
+
               {% if reldata > 0 %}
                 <div class="row">
                   <div class="col-lg-12">

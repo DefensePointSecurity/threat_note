@@ -58,9 +58,6 @@ def vt_hash_lookup(filehash):
         params = {'resource': filehash, 'apikey': apikey}
         r = requests.get(url, params=params, verify=False, proxies=libs.helpers.get_proxy())
         j = json.loads(r.text)
-        if len(j) < 20:
-            pass
-        else:
-            return j
+        return j
     except:
         pass

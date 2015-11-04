@@ -636,6 +636,14 @@ def updatesettings():
                 with con:
                     cur = con.cursor()
                     cur.execute("UPDATE settings SET vtinfo = 'off'")
+            if 'vtfile' in newdict.keys():
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET vtfile = 'on'")
+            else:
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET vtfile = 'off'")
             if 'whoisinfo' in newdict.keys():
                 with con:
                     cur = con.cursor()
@@ -1116,7 +1124,10 @@ def filesobject(uid):
             except:
                 pass
         reldata = len(temprel)
-        jsonvt = libs.virustotal.vt_hash_lookup(str(http['object']))
+        if settingsvars['vtfile'] == "on":
+            jsonvt = libs.virustotal.vt_hash_lookup(str(http['object']))
+        else:
+            jsonvt=""
         return render_template('fileobject.html', records=newdict, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, jsonvt=jsonvt)
     except Exception as e:
         return render_template('error.html', error=e)
