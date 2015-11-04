@@ -1116,7 +1116,8 @@ def filesobject(uid):
             except:
                 pass
         reldata = len(temprel)
-        return render_template('fileobject.html', records=newdict, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata)
+        jsonvt = libs.virustotal.vt_hash_lookup(str(http['object']))
+        return render_template('fileobject.html', records=newdict, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, jsonvt=jsonvt)
     except Exception as e:
         return render_template('error.html', error=e)
 

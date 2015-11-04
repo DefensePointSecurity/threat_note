@@ -44,3 +44,23 @@ def vt_domain_lookup(domain):
             return j
     except:
         pass
+
+def vt_hash_lookup(filehash):
+    try:
+        con = lite.connect('threatnote.db')
+        con.row_factory = lite.Row
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT apikey from settings")
+            apikey = cur.fetchall()
+            apikey = str(apikey[0][0])
+        url = "https://www.virustotal.com/vtapi/v2/file/report"
+        params = {'resource': filehash, 'apikey': apikey}
+        r = requests.get(url, params=params, verify=False, proxies=libs.helpers.get_proxy())
+        j = json.loads(r.text)
+        if len(j) < 20:
+            pass
+        else:
+            return j
+    except:
+        pass
