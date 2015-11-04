@@ -14,6 +14,7 @@ import io
 import re
 import sqlite3 as lite
 import time
+import urllib
 
 import libs.helpers
 import libs.investigate
@@ -1191,6 +1192,23 @@ def get_indicators():
             indicatorlist.append(newdict)
     return jsonify({'indicators': indicatorlist})
 
+@app.route('/api/v1/ip_indicator/<ip>', methods=['GET'])
+def get_ip_indicator(ip):
+    con = lite.connect('threatnote.db')
+    con.row_factory = lite.Row
+    indicatorlist = []
+    with con:
+        cur = con.cursor()
+        cur.execute("SELECT * FROM indicators where object='" + ip + "'")
+        indicators = cur.fetchall()
+        names = [description[0] for description in cur.description]
+        for ind in indicators:
+            newdict = {}
+            for i in names:
+                newdict[i] = str(ind[i])
+            indicatorlist.append(newdict)
+    return jsonify({'indicator': indicatorlist})
+
 @app.route('/api/v1/network', methods=['GET'])
 def get_network():
     con = lite.connect('threatnote.db')
@@ -1247,6 +1265,7 @@ def get_campaigns(campaign):
     con = lite.connect('threatnote.db')
     con.row_factory = lite.Row
     indicatorlist = []
+    campaign = urllib.unquote(campaign).decode('utf8')
     with con:
         cur = con.cursor()
         cur.execute("SELECT * FROM indicators where campaign='" + campaign + "'")
