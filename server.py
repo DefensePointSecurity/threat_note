@@ -391,7 +391,7 @@ def newobject():
                         cur.execute("SELECT * from indicators")
                         names = [description[0]
                                  for description in cur.description]
-                        lennames = len(names) - int(9)
+                        lennames = len(names) - int(10)
                         if len(object) > 0:
                             errormessage = "Entry already exists in database."
                             return render_template(
@@ -402,18 +402,18 @@ def newobject():
                                     'inputlastseen'],
                                 inputcampaign=newdict[
                                     'inputcampaign'],
-                                comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
+                                comments=newdict['comments'], diamondmodel=newdict['diamondmodel'], tags=newdict['tags'])
                         else:
                             con = lite.connect('threatnote.db')
                             cur = con.cursor()
                             first = [None, newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'], newdict[
-                                'inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'], newdict['confidence'], newdict['comments']]
+                                'inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'], newdict['confidence'], newdict['comments'],newdict['tags']]
                             for t in range(0, lennames):
                                 first.append("")
                             with con:
                                 for t in [(first)]:
                                     cur.execute(
-                                        'insert into indicators values (?,?,?,?,?,?,?,?,?' + ",?" * int(lennames) + ')', t)
+                                        'insert into indicators values (?,?,?,?,?,?,?,?,?,?' + ",?" * int(lennames) + ')', t)
                             con = lite.connect('threatnote.db')
                             con.row_factory = lite.Row
                             with con:
@@ -430,7 +430,7 @@ def newobject():
                             'inputfirstseen'],
                         inputlastseen=newdict['inputlastseen'], confidence=newdict[
                             'confidence'], inputcampaign=newdict['inputcampaign'],
-                        comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
+                        comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],tags=newdict['tags'])
             else:
                 con = lite.connect('threatnote.db')
                 con.row_factory = lite.Row
@@ -442,7 +442,7 @@ def newobject():
                     cur = con.cursor()
                     cur.execute("SELECT * from indicators")
                     names = [description[0] for description in cur.description]
-                    lennames = len(names) - int(9)
+                    lennames = len(names) - int(10)
                     if len(object) > 0:
                         errormessage = "Entry already exists in database."
                         return render_template(
@@ -453,18 +453,18 @@ def newobject():
                                 'inputlastseen'],
                             inputcampaign=newdict[
                                 'inputcampaign'],
-                            comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
+                            comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],tags=newdict['tags'])
                     else:
                         con = lite.connect('threatnote.db')
                         cur = con.cursor()
                         first = [None, newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'], newdict[
-                            'inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'], newdict['confidence'], newdict['comments']]
+                            'inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'], newdict['confidence'], newdict['comments'], newdict['tags']]
                         for t in range(0, lennames):
                             first.append("")
                         with con:
                             for t in [(first)]:
                                 cur.execute(
-                                    'insert into indicators values (?,?,?,?,?,?,?,?,?' + ",?" * int(lennames) + ')', t)
+                                    'insert into indicators values (?,?,?,?,?,?,?,?,?,?' + ",?" * int(lennames) + ')', t)
                         con = lite.connect('threatnote.db')
                         con.row_factory = lite.Row
                         with con:
@@ -701,6 +701,7 @@ def updateobject():
         tempdict = {}
         for i in records:
             newdict[i] = records[i]
+        taglist = newdict['tags'].split(",")
         con = lite.connect('threatnote.db')
         con.row_factory = lite.Row
         with con:
@@ -769,18 +770,18 @@ def updateobject():
         if newdict['type'] == "Threat Actor":
             return render_template(
                 'threatactorobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
-                settingsvars=settingsvars,temprel=temprel, reldata=reldata)
+                settingsvars=settingsvars,temprel=temprel, reldata=reldata, taglist=taglist)
         elif newdict['diamondmodel'] == "Victim":
             return render_template(
                 'victimobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
-                settingsvars=settingsvars,temprel=temprel, reldata=reldata)
+                settingsvars=settingsvars,temprel=temprel, reldata=reldata,taglist=taglist)
         elif newdict['type'] == "Hash":
             return render_template(
-                'fileobject.html', records=tempdict, settingsvars=settingsvars,temprel=temprel, reldata=reldata)
+                'fileobject.html', records=tempdict, settingsvars=settingsvars,temprel=temprel, reldata=reldata, taglist=taglist)
         else:
             return render_template(
                 'networkobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata, odnsdata=odnsdata,
-                settingsvars=settingsvars,temprel=temprel, reldata=reldata)
+                settingsvars=settingsvars,temprel=temprel, reldata=reldata,taglist=taglist)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -830,6 +831,7 @@ def objectsummary(uid):
             rels = cur.fetchall()
             rels = rels[0][0]
         rellist = rels.split(",")
+        taglist = newdict['tags'].split(",")
         temprel = {}
         for rel in rellist:
             try:
@@ -870,7 +872,7 @@ def objectsummary(uid):
             address = "Information about " + str(http['object'])
         return render_template(
             'networkobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, settingsvars=settingsvars, address=address, temprel=temprel, reldata=reldata)
+            odnsdata=odnsdata, settingsvars=settingsvars, address=address, temprel=temprel, reldata=reldata, taglist=taglist)
     except Exception as e:
         return render_template('error.html', error=e)
 

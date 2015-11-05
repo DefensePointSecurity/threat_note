@@ -237,7 +237,27 @@
                           </td>
                           <td>{{ records['comments'] }}</td>
                         </tr>
-                        {% endif %} {% for key in records %} {% if key == "id" or key == "type" or key == "campaign" or key == "confidence" or key == "Firstseen" or key == "Lastseen" or key == "comments" or key == "diamondmodel" or key == "object" or key == "firstseen" or key == "relationships" or key
+                        {% endif %}
+                        {% if records['tags']|length == 0 %}
+                        <tr>
+                        <td>
+                        <span class="text-capitalize">Tags</span>
+                        </td>
+                        <td>-</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                        <td>
+                        <span class="text-capitalize">Tags</span>
+                        </td>
+                        <td>
+                        {% for tag in taglist %}
+                        <button type="button" class="btn btn-default btn-fill btn-xs">{{ tag }}</button>
+                        {% endfor %}
+                        </td>
+                        </tr>
+                        {% endif %} 
+                        {% for key in records %} {% if key == "id" or key == "type" or key == "campaign" or key == "confidence" or key == "Firstseen" or key == "tags" or key == "Lastseen" or key == "comments" or key == "diamondmodel" or key == "object" or key == "firstseen" or key == "relationships" or key
                         == "lastseen" or records[key] == "None" or records[key] == "" %}
                         <div></div>
                         {% else %}
