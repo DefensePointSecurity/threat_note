@@ -194,6 +194,16 @@
                           </td>
                           <td>OpenDNS Investigate</td>
                         </tr>
+                        <tr>
+                          <td>
+                            {% if records['circlinfo'] == "on" %}
+                            <label class="checkbox">
+                              <input type="checkbox" class="form-control" name="circlinfo" checked data-toggle="checkbox"> {% else %}
+                              <label class="checkbox">
+                                <input type="checkbox" class="form-control" name="circlinfo" data-toggle="checkbox"> {% endif %}
+                          </td>
+                          <td>CIRCL.lu Passive DNS</td>
+                        </tr>
                       </tbody>
                     </table>
 
@@ -206,6 +216,13 @@
                   <label>Investigate API Key</label>
                   <input type="text" class="form-control" name="odnskey" value="{{ records['odnskey'] }}" placeholder="89ba67a0-b1f2-75ef-9fb9-04eae0434963">
                   </br>
+                  <label>Circl.lu Username</label>
+                  <input type="text" class="form-control" name="circlusername" value="{{ records['circlusername'] }}" placeholder="Username">
+                  </br>
+                  <label>Circl.lu Password</label>
+                  <input type="password" class="form-control" name="circlpassword" value="{{ records['circlpassword'] }}" placeholder="********">
+                  </br>
+
                   <button type="submit" class="btn btn-info btn-fill">Submit</button>
 
 

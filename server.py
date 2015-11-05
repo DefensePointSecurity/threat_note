@@ -20,6 +20,7 @@ import libs.helpers
 import libs.investigate
 import libs.virustotal
 import libs.whoisinfo
+import libs.circl
 
 from flask import Flask
 from flask import flash
@@ -659,6 +660,14 @@ def updatesettings():
                 with con:
                     cur = con.cursor()
                     cur.execute("UPDATE settings SET vtfile = 'off'")
+            if 'circlinfo' in newdict.keys():
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET circlinfo = 'on'")
+            else:
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET circlinfo = 'off'")
             if 'whoisinfo' in newdict.keys():
                 with con:
                     cur = con.cursor()
@@ -691,6 +700,14 @@ def updatesettings():
                 cur = con.cursor()
                 cur.execute(
                     "UPDATE settings SET httpsproxy = '" + newdict['httpsproxy'] + "'")
+            with con:
+                cur = con.cursor()
+                cur.execute(
+                    "UPDATE settings SET circlusername = '" + newdict['circlusername'] + "'")
+            with con:
+                cur = con.cursor()
+                cur.execute(
+                    "UPDATE settings SET circlpassword = '" + newdict['circlpassword'] + "'") 
         con = lite.connect('threatnote.db')
         con.row_factory = lite.Row
         with con:
@@ -765,6 +782,7 @@ def updateobject():
         jsonvt = ""
         whoisdata = ""
         odnsdata = ""
+        circldata = ""
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
             if settingsvars['vtinfo'] == "on":
@@ -773,6 +791,8 @@ def updateobject():
                 whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
             if settingsvars['odnsinfo'] == "on":
                 odnsdata = libs.investigate.ip_query(str(http['object']))
+            if settingsvars['circlinfo'] == "on":
+                circldata = libs.circl.circlquery(str(http['object']))
         elif str(http['type']) == "Domain":
             if settingsvars['whoisinfo'] == "on":
                 whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
@@ -781,6 +801,8 @@ def updateobject():
             if settingsvars['odnsinfo'] == "on":
                 odnsdata = libs.investigate.domain_categories(
                     str(http['object']))
+            if settingsvars['circlinfo'] == "on":
+                circldata = libs.circl.circlquery(str(http['object']))
         if newdict['type'] == "Threat Actor":
             return render_template(
                 'threatactorobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
@@ -795,7 +817,7 @@ def updateobject():
         else:
             return render_template(
                 'networkobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata, odnsdata=odnsdata,
-                settingsvars=settingsvars,temprel=temprel, reldata=reldata,taglist=taglist)
+                settingsvars=settingsvars,temprel=temprel, reldata=reldata,taglist=taglist, circldata=circldata)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -861,6 +883,7 @@ def objectsummary(uid):
         jsonvt = ""
         whoisdata = ""
         odnsdata = ""
+        circldata = ""
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
             if settingsvars['vtinfo'] == "on":
@@ -869,6 +892,8 @@ def objectsummary(uid):
                 whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
             if settingsvars['odnsinfo'] == "on":
                 odnsdata = libs.investigate.ip_query(str(http['object']))
+            if settingsvars['circlinfo'] == "on":
+                circldata = libs.circl.circlquery(str(http['object']))
         elif str(http['type']) == "Domain":
             if settingsvars['whoisinfo'] == "on":
                 whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
@@ -876,6 +901,8 @@ def objectsummary(uid):
                 jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
             if settingsvars['odnsinfo'] == "on":
                 odnsdata = libs.investigate.domain_categories(str(http['object']))
+            if settingsvars['circlinfo'] == "on":
+                circldata = libs.circl.circlquery(str(http['object']))
         if settingsvars['whoisinfo'] == "on":
             if str(http['type']) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
@@ -886,7 +913,7 @@ def objectsummary(uid):
             address = "Information about " + str(http['object'])
         return render_template(
             'networkobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, settingsvars=settingsvars, address=address, temprel=temprel, reldata=reldata, taglist=taglist)
+            odnsdata=odnsdata, settingsvars=settingsvars, address=address, temprel=temprel, circldata=circldata, reldata=reldata, taglist=taglist)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -1073,6 +1100,7 @@ def victimobject(uid):
         jsonvt = ""
         whoisdata = ""
         odnsdata = ""
+        circldata = ""
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
             if settingsvars['vtinfo'] == "on":
@@ -1081,6 +1109,8 @@ def victimobject(uid):
                 whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
             if settingsvars['odnsinfo'] == "on":
                 odnsdata = libs.investigate.ip_query(str(http['object']))
+            if settingsvars['circlinfo'] == "on":
+                circldata = libs.circl.circlquery(str(http['object']))
         elif str(http['type']) == "Domain":
             if settingsvars['whoisinfo'] == "on":
                 whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
@@ -1089,6 +1119,8 @@ def victimobject(uid):
             if settingsvars['odnsinfo'] == "on":
                 odnsdata = libs.investigate.domain_categories(
                     str(http['object']))
+            if settingsvars['circlinfo'] == "on":
+                circldata = libs.circl.circlquery(str(http['object']))
         if settingsvars['whoisinfo'] == "on":
             if str(http['type']) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(
@@ -1100,7 +1132,7 @@ def victimobject(uid):
             address = "Information about " + str(http['object'])
         return render_template(
             'victimobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, taglist=taglist)
+            odnsdata=odnsdata, circldata=circldata, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, taglist=taglist)
     except Exception as e:
         return render_template('error.html', error=e)
 
