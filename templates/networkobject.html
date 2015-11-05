@@ -569,7 +569,7 @@
 
                       </thead>
                       <tbody>
-                      {% if circlssl|length == 0 %}
+                      {% if circlssl == None or circlssl == {} or circlssl == "" %}
                       <tr>
                       <td>No Information Available</td>
                       <td></td>
