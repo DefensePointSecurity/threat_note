@@ -170,6 +170,20 @@ def home():
             cur.execute("SELECT count(DISTINCT id) AS number FROM indicators")
             counts = cur.fetchall()
             counts = counts[0][0]
+            tags = []
+            cur.execute("SELECT * FROM indicators")
+            taglist = cur.fetchall()
+            for tag in taglist:
+                if tag['tags'] == "":
+                    pass
+                else:
+                    fulllist = tag['tags'].split(",")
+                    for tag in fulllist:
+                        tags.append(tag)
+            newtags = []
+            for i in tags:
+                  if i not in newtags:
+                        newtags.append(i)
             dictcount = {}
             dictlist = []
             typecount = {}
@@ -198,7 +212,7 @@ def home():
                 typecount["value"] = round(newtemp, 2)
                 typelist.append(typecount.copy())
             favs = []
-        return render_template('dashboard.html', networks=dictlist, network=network, favs=favs, typelist=typelist)
+        return render_template('dashboard.html', networks=dictlist, network=network, favs=favs, typelist=typelist, taglist=newtags)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -1042,6 +1056,7 @@ def victimobject(uid):
             cur.execute("SELECT relationships from indicators where id='" + uid + "'")
             rels = cur.fetchall()
             rels = rels[0][0]
+        taglist = newdict['tags'].split(",")
         rellist = rels.split(",")
         temprel = {}
         for rel in rellist:
@@ -1085,7 +1100,7 @@ def victimobject(uid):
             address = "Information about " + str(http['object'])
         return render_template(
             'victimobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata)
+            odnsdata=odnsdata, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, taglist=taglist)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -1115,6 +1130,7 @@ def filesobject(uid):
             rels = cur.fetchall()
             rels = rels[0][0]
         rellist = rels.split(",")
+        taglist = newdict['tags'].split(",")
         temprel = {}
         for rel in rellist:
             try:
@@ -1131,7 +1147,7 @@ def filesobject(uid):
             jsonvt = libs.virustotal.vt_hash_lookup(str(http['object']))
         else:
             jsonvt=""
-        return render_template('fileobject.html', records=newdict, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, jsonvt=jsonvt)
+        return render_template('fileobject.html', records=newdict, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, jsonvt=jsonvt, taglist=taglist)
     except Exception as e:
         return render_template('error.html', error=e)
 

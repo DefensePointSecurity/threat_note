@@ -157,6 +157,23 @@
           </div>
 
 
+<div class="row">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="header">
+                  <h4 class="title">Tag Cloud</h4>
+                  <p class="category">Lists all the tags in your database</p>
+                </div>
+                <div class="content">
+                  {% for tag in taglist %}
+                        <button type="button" class="btn btn-info btn-fill btn-sm">{{ tag }}</button>
+                        {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+  
 
           <div class="row">
             <div class="col-md-6">
@@ -197,6 +214,9 @@
                 </div>
               </div>
             </div>
+
+
+
           </div>
         </div>
       </div>
