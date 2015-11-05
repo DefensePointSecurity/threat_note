@@ -585,6 +585,42 @@
                     </div>
                     {% endif %} {% endif %}
 
+
+                    {% if settingsvars['ptinfo'] == "on" %}
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="card">
+                      <div class="header">
+                        <h4 class="title">PassiveTotal Passive DNS</h4>
+                        <p class="category">More information can be found at <a href="https://www.passivetotal.org/" target="_blank">PassiveTotal</a></p>
+                      </div>
+                      <div class="content">
+                       <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Resolved</th>
+                        <th>First Seen</th>
+                        <th>Last Seen</th>
+
+                      </thead>
+                      <tbody>
+                      {% for result in ptdata['results']['records'] %}
+                      <tr>
+                      <td>{{ result['resolve'] }}</td>
+                      <td>{{ result['firstSeen'] }}</td>
+                      <td>{{ result['lastSeen'] }}</td>
+                      </tr>
+                      {% endfor %}
+                      
+                            <tr>
+                            
+                            </tbody>
+                            </table>
+                      </div>
+                    </div>
+                    </div>
+                    </div>
+                    {% endif %}
+
                       
                
                   </div>
