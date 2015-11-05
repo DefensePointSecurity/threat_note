@@ -50,6 +50,12 @@
               <p>Campaigns</p>
             </a>
           </li>
+            <li>
+            <a href="/tags">
+              <i class="pe-7s-ticket"></i>
+              <p>Tags</p>
+            </a>
+          </li>
           
         </ul>
       </div>
@@ -203,6 +209,16 @@
                                 <input type="checkbox" class="form-control" name="circlinfo" data-toggle="checkbox"> {% endif %}
                           </td>
                           <td>CIRCL.lu Passive DNS</td>
+                        </tr>
+                        <tr>
+                          <td>
+                            {% if records['circlssl'] == "on" %}
+                            <label class="checkbox">
+                              <input type="checkbox" class="form-control" name="circlssl" checked data-toggle="checkbox"> {% else %}
+                              <label class="checkbox">
+                                <input type="checkbox" class="form-control" name="circlssl" data-toggle="checkbox"> {% endif %}
+                          </td>
+                          <td>CIRCL.lu Passive SSL</td>
                         </tr>
                       </tbody>
                     </table>
