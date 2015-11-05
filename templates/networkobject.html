@@ -569,12 +569,19 @@
 
                       </thead>
                       <tbody>
+                      {% if circlssl|length == 0 %}
+                      <tr>
+                      <td>No Information Available</td>
+                      <td></td>
+                      </tr>
+                      {% else %}
                       {% for i in circlssl[records['object']]['subjects'] %}
                       <tr>
                       <td>{{ i }}</td>
                       <td>{{ circlssl[records['object']]['subjects'][i]['values'][0] }}</td>
                       </tr>
                       {% endfor %}
+                      {% endif %}
                             <tr>
                             
                             </tbody>
