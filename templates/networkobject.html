@@ -543,7 +543,7 @@
 
                       </thead>
                       <tbody>
-                      {% if circldata == None or circldata == {} or circldata == "" %}
+                      {% if circldata == None or circldata == {} or circldata == "" or circldata|length == 0 %}
                       <tr>
                       <td>No Information Available</td>
                       <td></td>
