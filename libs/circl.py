@@ -26,8 +26,11 @@ def circlquery(indicator):
                 pass
             obj['time_first'] = datetime.datetime.fromtimestamp(obj['time_last'])
             obj['time_last'] = datetime.datetime.fromtimestamp(obj['time_last'])
-            to_return.append(obj)    
-        return to_return
+            to_return.append(obj)  
+        if len(to_return) == 0:  
+            return ""
+        else:
+            return to_return
     except:
         pass
 
@@ -42,8 +45,11 @@ def circlssl(indicator):
             settings = settings[0]
             username = settings['circlusername']
             password = settings['circlpassword']
-        r = requests.get('https://www.circl.lu/v2pssl/query/'+indicator, auth=(username,password), verify=False)   
-        return json.loads(r.text)
+        r = requests.get('https://www.circl.lu/v2pssl/query/'+indicator, auth=(username,password), verify=False)  
+        if "certificates" in r.text: 
+            return json.loads(r.text)
+        else:
+            return ""
     except:
         pass
 
