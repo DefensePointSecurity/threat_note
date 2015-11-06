@@ -110,11 +110,18 @@
           <div class="row">
             <div class="col-md-12">
               <div class="card">
-                <div class="header">
-                  <h4 class="title">Latest Indicators</h4>
-                  <p class="category">This table shows you the latest indicators entered into threat_note.</p>
+                <div style="" class="header">
+                  <div style="float: left;">
+                    <h4 class="title">Latest Indicators</h4>
+                    <p class="category">This table shows you the latest indicators entered into threat_note.</p>
+                  </div>
+                  <div style="float: right;">
+                    <a href="/newobject" class="btn btn-info btn-fill"><i class="fa fa-plus"></i> New Indicator</a>
+                  </div>
+
                 </div>
-                <div class="content table-responsive table-full-width">
+
+                <div style="margin-top:60px" class="content table-responsive table-full-width">
                   <table class="table table-hover table-striped">
                     <thead>
                       <th>Object</th>
@@ -122,46 +129,75 @@
                       <th>First Seen</th>
                       <th>Last Seen</th>
                       <th>Campaign</th>
+                      <th>Confidence</th>
                       <th>Diamond Model</th>
                       <th>Comments</th>
                     </thead>
                     <tbody>
-                      {% for row in network %}
+                      {% for p in network %}
                       <tr>
-                        {% if row['type'] == "Threat Actor" %}
-                        <td><a href="/threatactors/{{ row['id'] }}/info">{{ row['object'] }}</a></td>
+                      {% if p['type'] == "Threat Actor" %}
+                        <td><a href="/threatactors/{{ p['id'] }}/info">{{ p['object'] }}</a></td>
+                        {% elif p['type'] == "Hash" %}
+                        <td><a href="/files/{{ p['id'] }}/info">{{ p['object'] }}</a></td>
                         {% else %}
-                        <td><a href="/network/{{ row['id'] }}/info">{{ row['object'] }}</a></td>
+                        <td><a href="/network/{{ p['id'] }}/info">{{ p['object'] }}</a></td>
                         {% endif %}
-                        <td>{{ row['type'] }}</td>
-                        {% if row['firstseen']|length == 0 %}
-                        <td>-</td>
-                        {% else %}
-                        <td>{{ row['firstseen'] }}</td>
-                        {% endif %} {% if row['lastseen']|length == 0 %}
-                        <td>-</td>
-                        {% else %}
-                        <td>{{ row['lastseen'] }}</td>
-                        {% endif %} {% if row['campaign']|length == 0 %}
-                        <td>-</td>
-                        {% else %}
-                        <td>{{ row['campaign'] }}</td>
-                        {% endif %}
-                        <td>{{ row['diamondmodel'] }}</td>
-                        {% if row['comments']|length == 0 %}
-                        <td>-</td>
-                        {% else %}
-                        <td>{{ row['comments'] }}</td>
-                        {% endif %}
+                                           <td>{{ p['type'] }}</td>
+                                            {% if p['firstseen']|length == 0 %}
+                                            <td>-</td>
+                                            {% else %}
+                                            <td>{{ p['firstseen'] }}</td>
+                                            {% endif %}
+                                            {% if p['lastseen']|length == 0 %}
+                                            <td>-</td>
+                                            {% else %}
+                                            <td>{{ p['lastseen'] }}</td>
+                                            {% endif %}
+                                            {% if p['campaign']|length == 0 %}
+                                            <td>-</td>
+                                            {% else %}
+                                            <td>{{ p['campaign'] }}</td>
+                                            {% endif %}
+                                            {% if p['confidence'] == "Low" %}
+                                            <td><i class="fa fa-circle text-warning"></i> {{ p['confidence'] }}</td>
+                                            {% elif p['confidence'] == "Medium" %}
+                                            <td><i class="fa fa-circle text-info"></i> {{ p['confidence'] }}</td>
+                                            {% elif p['confidence'] == "High" %}
+                                            <td><i class="fa fa-circle text-danger"></i> {{ p['confidence'] }}</td>
+                                            {% endif %}
+                                            <td>{{ p['diamondmodel'] }}</td>
+                                            {% if p['comments']|length == 0 %}
+                                            <td>-</td>
+                                            {% else %}
+                                            <td>{{ p['comments'] }}</td>
+                                            {% endif %}
+                                              <td class="td-actions text-right">
+                                                    <a href="/relationships/{{ p['id'] }}" role="button" rel="tooltip" title="Add Relationship" class="btn btn-info btn-simple btn-xs">
+                                                    <i class="fa fa-link"></i>
+                                                    </a>
+                                                    <a href="/edit/{{ p['id'] }}" role="button" rel="tooltip" title="Edit Indicator" class="btn btn-info btn-simple btn-xs">
+                                                    <i class="fa fa-pencil"></i>
+                                                    </a>
+                                                    <a href="/delete/network/{{ p['id'] }}" role="button" rel="tooltip" title="Remove" class="btn btn-danger btn-simple btn-xs">
+                                                      <i class="fa fa-times"></i>
+                          </a>
+                        </td>
                       </tr>
                       {% endfor %}
                     </tbody>
                   </table>
-                </div>
-              </div>
-            </div>
-          </div>
 
+                  </a>
+                  </td>
+                  </tr>
+                  </tbody>
+                  </table>
+                  </div>
+                  </div>
+
+
+         
 
 <div class="row">
             <div class="col-md-12">
