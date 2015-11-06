@@ -15,7 +15,6 @@ def circlquery(indicator):
             settings = settings[0]
             username = settings['circlusername']
             password = settings['circlpassword']
-        requests.packages.urllib3.disable_warnings()
         r = requests.get('https://www.circl.lu/pdns/query/'+indicator, auth=(username,password), verify=False)
         to_return = []
         for l in r.text.split('\n'):
@@ -43,7 +42,6 @@ def circlssl(indicator):
             settings = settings[0]
             username = settings['circlusername']
             password = settings['circlpassword']
-        requests.packages.urllib3.disable_warnings()
         r = requests.get('https://www.circl.lu/v2pssl/query/'+indicator, auth=(username,password), verify=False)   
         return json.loads(r.text)
     except:

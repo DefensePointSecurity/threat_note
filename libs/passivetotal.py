@@ -13,7 +13,6 @@ def pt(indicator):
             settings = cur.fetchall()
             settings = settings[0]
             apikey = settings['ptkey']
-        requests.packages.urllib3.disable_warnings()
         url = 'https://www.passivetotal.org/api/v1/passive'
         params = {'api_key': apikey, 'query': indicator}
         response = requests.get(url, params=params)
