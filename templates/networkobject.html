@@ -535,6 +535,15 @@
 
                       </thead>
                       <tbody>
+                      {% if circldata == None or circldata == {} or circldata == "" %}
+                      <tr>
+                      <td>No Information Available</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      </tr>
+                      {% else %}
                       {% for i in circldata %}
                             <tr>
                             <td>{{ i['rrtype'] }}</td>
@@ -549,6 +558,7 @@
                     </div>
                     </div>
                     </div>
+                    {% endif %}
                     {% endif %}
 
 
