@@ -50,6 +50,12 @@
               <p>Campaigns</p>
             </a>
           </li>
+            <li>
+            <a href="/tags">
+              <i class="pe-7s-ticket"></i>
+              <p>Tags</p>
+            </a>
+          </li>
           
         </ul>
       </div>
@@ -184,6 +190,16 @@
                           </td>
                           <td>VirusTotal File Information</td>
                         </tr>
+                         <tr>
+                          <td>
+                            {% if records['ptinfo'] == "on" %}
+                            <label class="checkbox">
+                              <input type="checkbox" class="form-control" name="ptinfo" checked data-toggle="checkbox"> {% else %}
+                              <label class="checkbox">
+                                <input type="checkbox" class="form-control" name="ptinfo" data-toggle="checkbox"> {% endif %}
+                          </td>
+                          <td>PassiveTotal Passive DNS</td>
+                        </tr>
                         <tr>
                           <td>
                             {% if records['odnsinfo'] == "on" %}
@@ -193,6 +209,26 @@
                                 <input type="checkbox" class="form-control" name="odnsinfo" data-toggle="checkbox"> {% endif %}
                           </td>
                           <td>OpenDNS Investigate</td>
+                        </tr>
+                        <tr>
+                          <td>
+                            {% if records['circlinfo'] == "on" %}
+                            <label class="checkbox">
+                              <input type="checkbox" class="form-control" name="circlinfo" checked data-toggle="checkbox"> {% else %}
+                              <label class="checkbox">
+                                <input type="checkbox" class="form-control" name="circlinfo" data-toggle="checkbox"> {% endif %}
+                          </td>
+                          <td>CIRCL.lu Passive DNS</td>
+                        </tr>
+                        <tr>
+                          <td>
+                            {% if records['circlssl'] == "on" %}
+                            <label class="checkbox">
+                              <input type="checkbox" class="form-control" name="circlssl" checked data-toggle="checkbox"> {% else %}
+                              <label class="checkbox">
+                                <input type="checkbox" class="form-control" name="circlssl" data-toggle="checkbox"> {% endif %}
+                          </td>
+                          <td>CIRCL.lu Passive SSL</td>
                         </tr>
                       </tbody>
                     </table>
@@ -205,6 +241,15 @@
                   </br>
                   <label>Investigate API Key</label>
                   <input type="text" class="form-control" name="odnskey" value="{{ records['odnskey'] }}" placeholder="89ba67a0-b1f2-75ef-9fb9-04eae0434963">
+                  </br>
+                  <label>Circl.lu Username</label>
+                  <input type="text" class="form-control" name="circlusername" value="{{ records['circlusername'] }}" placeholder="Username">
+                  </br>
+                  <label>Circl.lu Password</label>
+                  <input type="password" class="form-control" name="circlpassword" value="{{ records['circlpassword'] }}" placeholder="********">
+                  </br>
+                  <label>PassiveTotal API Key</label>
+                  <input type="text" class="form-control" name="ptkey" value="{{ records['ptkey'] }}" placeholder="149d08c494b4db323420180b09312b2f34e529230496cddfa868c01eea">
                   </br>
                   <button type="submit" class="btn btn-info btn-fill">Submit</button>
 

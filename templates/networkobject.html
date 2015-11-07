@@ -79,7 +79,12 @@
               <p>Campaigns</p>
             </a>
           </li>
-            
+              <li>
+            <a href="/tags">
+              <i class="pe-7s-ticket"></i>
+              <p>Tags</p>
+            </a>
+          </li>
 
         </ul>
       </div>
@@ -237,7 +242,27 @@
                           </td>
                           <td>{{ records['comments'] }}</td>
                         </tr>
-                        {% endif %} {% for key in records %} {% if key == "id" or key == "type" or key == "campaign" or key == "confidence" or key == "Firstseen" or key == "Lastseen" or key == "comments" or key == "diamondmodel" or key == "object" or key == "firstseen" or key == "relationships" or key
+                        {% endif %}
+                        {% if records['tags']|length == 0 %}
+                        <tr>
+                        <td>
+                        <span class="text-capitalize">Tags</span>
+                        </td>
+                        <td>-</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                        <td>
+                        <span class="text-capitalize">Tags</span>
+                        </td>
+                        <td>
+                        {% for tag in taglist %}
+                        <button type="button" class="btn btn-default btn-fill btn-xs">{{ tag }}</button>
+                        {% endfor %}
+                        </td>
+                        </tr>
+                        {% endif %} 
+                        {% for key in records %} {% if key == "id" or key == "type" or key == "campaign" or key == "confidence" or key == "Firstseen" or key == "tags" or key == "Lastseen" or key == "comments" or key == "diamondmodel" or key == "object" or key == "firstseen" or key == "relationships" or key
                         == "lastseen" or records[key] == "None" or records[key] == "" %}
                         <div></div>
                         {% else %}
@@ -438,6 +463,8 @@
                             </table>
                       </div>
                     </div>
+                    </div>
+                    </div>
                     {% elif records['type'] == "Domain" %}
                     <div class="row">
                   <div class="col-lg-12">
@@ -463,6 +490,8 @@
                             </table>
                       </div>
                     </div>
+                    </div>
+                    </div>
                         {% endif %} {% endif %}
 
                     {% if settingsvars['threatcrowd'] == "on" %}
@@ -478,6 +507,8 @@
                         <iframe src='https://www.threatcrowd.org/graphHtml.php?ip={{ records['object'] }}' frameborder='0' scrolling='no' width="100%" height="500px"></iframe>
                       </div>
                     </div>
+                    </div>
+                    </div>
                     {% elif records['type'] == "Domain" %}
                     <div class="row">
                       <div class="col-lg-12">
@@ -490,7 +521,128 @@
                             <iframe src='https://www.threatcrowd.org/graphHtml.php?domain={{ records['object'] }}' frameborder='0' scrolling='no' width="100%" height="500px"></iframe>
                           </div>
                         </div>
+                        </div>
+                        </div>
                         {% endif %} {% endif %}
+
+                        {% if settingsvars['circlinfo'] == "on" %}
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="card">
+                      <div class="header">
+                        <h4 class="title">CIRCL.lu Passive DNS</h4>
+                        <p class="category">More information can be found at <a href="https://www.circl.lu/services/passive-dns/" target="_blank">CIRCL.lu</a></p>
+                      </div>
+                      <div class="content">
+                       <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Record Type</th>
+                        <th>Record Data</th>
+                        <th>First Seen</th>
+                        <th>Last Seen</th>
+
+                      </thead>
+                      <tbody>
+                      {% if circldata == None or circldata == {} or circldata == "" %}
+                      <tr>
+                      <td>No Information Available</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      </tr>
+                      {% else %}
+                      {% for i in circldata %}
+                            <tr>
+                            <td>{{ i['rrtype'] }}</td>
+                            <td>{{ i['rdata'] }}</td>
+                            <td>{{ i['time_first'] }}</td>
+                            <td>{{ i['time_last'] }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% endif %}
+                            </tbody>
+                            </table>
+                      </div>
+                    </div>
+                    </div>
+                    </div>
+                    {% endif %}
+
+
+                     {% if settingsvars['circlssl'] == "on" %}
+                     {% if records['type'] == "IPv4" %}
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="card">
+                      <div class="header">
+                        <h4 class="title">CIRCL.lu Passive SSL</h4>
+                        <p class="category">More information can be found at <a href="https://www.circl.lu/services/passive-ssl/" target="_blank">CIRCL.lu</a></p>
+                      </div>
+                      <div class="content">
+                       <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Certificate</th>
+                        <th>Data</th>
+
+                      </thead>
+                      <tbody>
+                      {% if circlssl == None or circlssl == {} or circlssl == "" %}
+                      <tr>
+                      <td>No Information Available</td>
+                      <td></td>
+                      </tr>
+                      {% else %}
+                      {% for i in circlssl[records['object']]['subjects'] %}
+                      <tr>
+                      <td>{{ i }}</td>
+                      <td>{{ circlssl[records['object']]['subjects'][i]['values'][0] }}</td>
+                      </tr>
+                      {% endfor %}
+                      {% endif %}
+                            </tbody>
+                            </table>
+                      </div>
+                    </div>
+                    </div>
+                    </div>
+                    {% endif %} {% endif %}
+
+
+                    {% if settingsvars['ptinfo'] == "on" %}
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="card">
+                      <div class="header">
+                        <h4 class="title">PassiveTotal Passive DNS</h4>
+                        <p class="category">More information can be found at <a href="https://www.passivetotal.org/" target="_blank">PassiveTotal</a></p>
+                      </div>
+                      <div class="content">
+                       <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Resolved</th>
+                        <th>First Seen</th>
+                        <th>Last Seen</th>
+
+                      </thead>
+                      <tbody>
+                      {% for result in ptdata['results']['records'] %}
+                      <tr>
+                      <td>{{ result['resolve'] }}</td>
+                      <td>{{ result['firstSeen'] }}</td>
+                      <td>{{ result['lastSeen'] }}</td>
+                      </tr>
+                      {% endfor %}
+                      
+                            <tr>
+                            
+                            </tbody>
+                            </table>
+                      </div>
+                    </div>
+                    </div>
+                    </div>
+                    {% endif %}
+
                       
                
                   </div>

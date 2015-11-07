@@ -50,7 +50,12 @@
               <p>Campaigns</p>
             </a>
           </li>
-            
+              <li>
+            <a href="/tags">
+              <i class="pe-7s-ticket"></i>
+              <p>Tags</p>
+            </a>
+          </li>
 
         </ul>
         {% elif entry['type'] == "Entity" %}
@@ -91,7 +96,13 @@
               <p>Campaigns</p>
             </a>
           </li>
-           
+             <li>
+            <a href="/tags">
+              <i class="pe-7s-ticket"></i>
+              <p>Tags</p>
+            </a>
+          </li>
+
         </ul>
         {% else %}
         <ul class="nav">
@@ -131,7 +142,13 @@
               <p>Campaigns</p>
             </a>
           </li>
-  
+    <li>
+            <a href="/tags">
+              <i class="pe-7s-ticket"></i>
+              <p>Tags</p>
+            </a>
+          </li>
+          
         </ul>
         {% endif %}
 
@@ -197,6 +214,7 @@
                             <input type="text" class="form-control" name="{{ entry['object'] }}" value="{{ entry['object'] }}" disabled placeholder="09-01-2015">
                           </div>
 
+
                           <div class="form-group">
                             <label>Object Type</label>
                             <select class="form-control" name="type">
@@ -207,6 +225,7 @@
                               <option value="Threat Actor">Threat Actor</option>
                               <option value="Entity">Entity</option>
                               <option value="Network">Network</option>
+                              <option value="Hash">Hash</option>
                               {% elif entry['type'] == "IPv6" %}
                               <option value="IPv4">IPv4</option>
                               <option value="IPv6" selected="true">IPv6</option>
@@ -214,6 +233,7 @@
                               <option value="Threat Actor">Threat Actor</option>
                               <option value="Entity">Entity</option>
                               <option value="Network">Network</option>
+                              <option value="Hash">Hash</option>
                               {% elif entry['type'] == "Domain" %}
                               <option value="IPv4">IPv4</option>
                               <option value="IPv6">IPv6</option>
@@ -221,6 +241,7 @@
                               <option value="Threat Actor">Threat Actor</option>
                               <option value="Entity">Entity</option>
                               <option value="Network">Network</option>
+                              <option value="Hash">Hash</option>
                               {% elif entry['type'] == "Threat Actor" %}
                               <option value="IPv4">IPv4</option>
                               <option value="IPv6">IPv6</option>
@@ -228,6 +249,7 @@
                               <option value="Threat Actor" selected="true">Threat Actor</option>
                               <option value="Entity">Entity</option>
                               <option value="Network">Network</option>
+                              <option value="Hash">Hash</option>
                               {% elif entry['type'] == "Network" %}
                               <option value="IPv4">IPv4</option>
                               <option value="IPv6">IPv6</option>
@@ -235,6 +257,7 @@
                               <option value="Threat Actor">Threat Actor</option>
                               <option value="Entity">Entity</option>
                               <option value="Network" selected="true">Network</option>
+                              <option value="Hash">Hash</option>
                               {% elif entry['type'] == "Entity" %}
                               <option value="IPv4">IPv4</option>
                               <option value="IPv6">IPv6</option>
@@ -242,6 +265,15 @@
                               <option value="Threat Actor">Threat Actor</option>
                               <option value="Entity" selected="true">Entity</option>
                               <option value="Network">Network</option>
+                              <option value="Hash">Hash</option>
+                               {% elif entry['type'] == "Hash" %}
+                              <option value="IPv4">IPv4</option>
+                              <option value="IPv6">IPv6</option>
+                              <option value="Domain">Domain</option>
+                              <option value="Threat Actor">Threat Actor</option>
+                              <option value="Entity">Entity</option>
+                              <option value="Network">Network</option>
+                              <option value="Hash" selected="true">Hash</option>
                               {% else %}
                               <option value="IPv4" selected="true">IPv4</option>
                               <option value="IPv6">IPv6</option>
@@ -299,14 +331,22 @@
                               <option value="Adversary" selected="true">Adversary</option>
                               <option value="Infrastructure">Infrastructure</option>
                               <option value="Victim">Victim</option>
+                              <option value="Capability">Capability</option>
                               {% elif entry['diamondmodel'] == "Infrastructure" %}
                               <option value="Adversary">Adversary</option>
                               <option value="Infrastructure" selected="true">Infrastructure</option>
                               <option value="Victim">Victim</option>
+                              <option value="Capability">Capability</option>
                               {% elif entry['diamondmodel'] == "Victim" %}
                               <option value="Adversary">Adversary</option>
                               <option value="Infrastructure">Infrastructure</option>
                               <option value="Victim" selected="true">Victim</option>
+                              <option value="Capability">Capability</option>
+                              {% elif entry['diamondmodel'] == "Capability" %}
+                              <option value="Adversary">Adversary</option>
+                              <option value="Infrastructure">Infrastructure</option>
+                              <option value="Victim">Victim</option>
+                              <option value="Capability" selected="true">Capability</option>
                               {% endif %}
                             </select>
                           </div>
@@ -316,9 +356,15 @@
                             <textarea class="form-control" rows="3" name="comments" value="{{ entry['comments'] }}">{{ entry['comments'] }}</textarea>
                           </div>
 
+                          <div class="form-group">
+                            <label>Tags</label>
+                            <input type="text" class="form-control" id="tokenfield" name="tags" value="{{ entry['tags'] }}" />
+                          </div>
+                          
 
 
-                          {% for i in entry %} {% if i == "comments" or i == "type" or i == "campaign" or i == "type" or i == "firstseen" or i == "lastseen" or i == "id" or i == "confidence" or i == "object" or i == "diamondmodel" %}
+
+                          {% for i in entry %} {% if i == "comments" or i == "type" or i == "campaign" or i == "type" or i == "firstseen" or i == "lastseen" or i == "tags" or i == "id" or i== "relationships" or i == "confidence" or i == "object" or i == "diamondmodel" %}
                           <div></div>
 
                           {% else %} {% if entry[i] == None or entry[i] == ""%}
@@ -433,6 +479,7 @@
 <!--   Core JS Files   -->
 <script src="../../static/js/jquery-1.10.2.js" type="text/javascript"></script>
 <script src="../../static/js/bootstrap.min.js" type="text/javascript"></script>
+<script src="../../static/js/bootstrap-tokenfield.js" type="text/javascript"></script>
 
 <!--  Checkbox, Radio & Switch Plugins -->
 <script src="../../static/js/bootstrap-checkbox-radio-switch.js"></script>
@@ -452,6 +499,16 @@
 
 <!-- Light Bootstrap Table DEMO methods, don't include it in your project! -->
 <script src="../../static/js/demo.js"></script>
+
+<script>
+$('#tokenfield').tokenfield({
+  autocomplete: {
+    source: ['red','blue','green','yellow','violet','brown','purple','black','white'],
+    delay: 100
+  },
+  showAutocompleteOnFocus: true
+})
+</script>
 
 </html>
 {% endblock %}

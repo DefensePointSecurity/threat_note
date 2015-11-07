@@ -14,11 +14,14 @@ import io
 import re
 import sqlite3 as lite
 import time
+import urllib
 
 import libs.helpers
 import libs.investigate
 import libs.virustotal
 import libs.whoisinfo
+import libs.circl
+import libs.passivetotal
 
 from flask import Flask
 from flask import flash
@@ -169,6 +172,20 @@ def home():
             cur.execute("SELECT count(DISTINCT id) AS number FROM indicators")
             counts = cur.fetchall()
             counts = counts[0][0]
+            tags = []
+            cur.execute("SELECT * FROM indicators")
+            taglist = cur.fetchall()
+            for tag in taglist:
+                if tag['tags'] == "":
+                    pass
+                else:
+                    fulllist = tag['tags'].split(",")
+                    for tag in fulllist:
+                        tags.append(tag)
+            newtags = []
+            for i in tags:
+                  if i not in newtags:
+                        newtags.append(i)
             dictcount = {}
             dictlist = []
             typecount = {}
@@ -197,7 +214,7 @@ def home():
                 typecount["value"] = round(newtemp, 2)
                 typelist.append(typecount.copy())
             favs = []
-        return render_template('dashboard.html', networks=dictlist, network=network, favs=favs, typelist=typelist)
+        return render_template('dashboard.html', networks=dictlist, network=network, favs=favs, typelist=typelist, taglist=newtags)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -207,6 +224,10 @@ def home():
 def about():
     return render_template('about.html')
 
+@app.route('/tags', methods=['GET'])
+@login_required
+def tags():
+    return render_template('tags.html')
 
 @app.route('/networks', methods=['GET'])
 @login_required
@@ -390,7 +411,7 @@ def newobject():
                         cur.execute("SELECT * from indicators")
                         names = [description[0]
                                  for description in cur.description]
-                        lennames = len(names) - int(9)
+                        lennames = len(names) - int(10)
                         if len(object) > 0:
                             errormessage = "Entry already exists in database."
                             return render_template(
@@ -401,18 +422,18 @@ def newobject():
                                     'inputlastseen'],
                                 inputcampaign=newdict[
                                     'inputcampaign'],
-                                comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
+                                comments=newdict['comments'], diamondmodel=newdict['diamondmodel'], tags=newdict['tags'])
                         else:
                             con = lite.connect('threatnote.db')
                             cur = con.cursor()
                             first = [None, newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'], newdict[
-                                'inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'], newdict['confidence'], newdict['comments']]
+                                'inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'], newdict['confidence'], newdict['comments'],newdict['tags']]
                             for t in range(0, lennames):
                                 first.append("")
                             with con:
                                 for t in [(first)]:
                                     cur.execute(
-                                        'insert into indicators values (?,?,?,?,?,?,?,?,?' + ",?" * int(lennames) + ')', t)
+                                        'insert into indicators values (?,?,?,?,?,?,?,?,?,?' + ",?" * int(lennames) + ')', t)
                             con = lite.connect('threatnote.db')
                             con.row_factory = lite.Row
                             with con:
@@ -429,7 +450,7 @@ def newobject():
                             'inputfirstseen'],
                         inputlastseen=newdict['inputlastseen'], confidence=newdict[
                             'confidence'], inputcampaign=newdict['inputcampaign'],
-                        comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
+                        comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],tags=newdict['tags'])
             else:
                 con = lite.connect('threatnote.db')
                 con.row_factory = lite.Row
@@ -441,7 +462,7 @@ def newobject():
                     cur = con.cursor()
                     cur.execute("SELECT * from indicators")
                     names = [description[0] for description in cur.description]
-                    lennames = len(names) - int(9)
+                    lennames = len(names) - int(10)
                     if len(object) > 0:
                         errormessage = "Entry already exists in database."
                         return render_template(
@@ -452,18 +473,18 @@ def newobject():
                                 'inputlastseen'],
                             inputcampaign=newdict[
                                 'inputcampaign'],
-                            comments=newdict['comments'], diamondmodel=newdict['diamondmodel'])
+                            comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],tags=newdict['tags'])
                     else:
                         con = lite.connect('threatnote.db')
                         cur = con.cursor()
                         first = [None, newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'], newdict[
-                            'inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'], newdict['confidence'], newdict['comments']]
+                            'inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'], newdict['confidence'], newdict['comments'], newdict['tags']]
                         for t in range(0, lennames):
                             first.append("")
                         with con:
                             for t in [(first)]:
                                 cur.execute(
-                                    'insert into indicators values (?,?,?,?,?,?,?,?,?' + ",?" * int(lennames) + ')', t)
+                                    'insert into indicators values (?,?,?,?,?,?,?,?,?,?' + ",?" * int(lennames) + ')', t)
                         con = lite.connect('threatnote.db')
                         con.row_factory = lite.Row
                         with con:
@@ -628,6 +649,14 @@ def updatesettings():
                 with con:
                     cur = con.cursor()
                     cur.execute("UPDATE settings SET threatcrowd = 'off'")
+            if 'ptinfo' in newdict.keys():
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET ptinfo = 'on'")
+            else:
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET ptinfo = 'off'")
             if 'vtinfo' in newdict.keys():
                 with con:
                     cur = con.cursor()
@@ -644,6 +673,22 @@ def updatesettings():
                 with con:
                     cur = con.cursor()
                     cur.execute("UPDATE settings SET vtfile = 'off'")
+            if 'circlinfo' in newdict.keys():
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET circlinfo = 'on'")
+            else:
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET circlinfo = 'off'")
+            if 'circlssl' in newdict.keys():
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET circlssl = 'on'")
+            else:
+                with con:
+                    cur = con.cursor()
+                    cur.execute("UPDATE settings SET circlssl = 'off'")
             if 'whoisinfo' in newdict.keys():
                 with con:
                     cur = con.cursor()
@@ -676,6 +721,18 @@ def updatesettings():
                 cur = con.cursor()
                 cur.execute(
                     "UPDATE settings SET httpsproxy = '" + newdict['httpsproxy'] + "'")
+            with con:
+                cur = con.cursor()
+                cur.execute(
+                    "UPDATE settings SET circlusername = '" + newdict['circlusername'] + "'")
+            with con:
+                cur = con.cursor()
+                cur.execute(
+                    "UPDATE settings SET circlpassword = '" + newdict['circlpassword'] + "'")
+            with con:
+                cur = con.cursor()
+                cur.execute(
+                    "UPDATE settings SET ptkey = '" + newdict['ptkey'] + "'")  
         con = lite.connect('threatnote.db')
         con.row_factory = lite.Row
         with con:
@@ -700,6 +757,7 @@ def updateobject():
         tempdict = {}
         for i in records:
             newdict[i] = records[i]
+        taglist = newdict['tags'].split(",")
         con = lite.connect('threatnote.db')
         con.row_factory = lite.Row
         with con:
@@ -749,6 +807,9 @@ def updateobject():
         jsonvt = ""
         whoisdata = ""
         odnsdata = ""
+        circldata = ""
+        circlssl = ""
+        ptdata = ""
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
             if settingsvars['vtinfo'] == "on":
@@ -757,6 +818,12 @@ def updateobject():
                 whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
             if settingsvars['odnsinfo'] == "on":
                 odnsdata = libs.investigate.ip_query(str(http['object']))
+            if settingsvars['circlinfo'] == "on":
+                circldata = libs.circl.circlquery(str(http['object']))
+            if settingsvars['circlssl'] == "on":
+                circlssl = libs.circl.circlssl(str(http['object']))
+            if settingsvars['ptinfo'] == "on":
+                ptdata = libs.passivetotal.pt(str(http['object']))
         elif str(http['type']) == "Domain":
             if settingsvars['whoisinfo'] == "on":
                 whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
@@ -765,21 +832,25 @@ def updateobject():
             if settingsvars['odnsinfo'] == "on":
                 odnsdata = libs.investigate.domain_categories(
                     str(http['object']))
+            if settingsvars['circlinfo'] == "on":
+                circldata = libs.circl.circlquery(str(http['object']))
+            if settingsvars['ptinfo'] == "on":
+                ptdata = libs.passivetotal.pt(str(http['object']))
         if newdict['type'] == "Threat Actor":
             return render_template(
                 'threatactorobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
-                settingsvars=settingsvars,temprel=temprel, reldata=reldata)
+                settingsvars=settingsvars,temprel=temprel, reldata=reldata, taglist=taglist)
         elif newdict['diamondmodel'] == "Victim":
             return render_template(
                 'victimobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
-                settingsvars=settingsvars,temprel=temprel, reldata=reldata)
+                settingsvars=settingsvars,temprel=temprel, reldata=reldata,taglist=taglist, ptdata=ptdata )
         elif newdict['type'] == "Hash":
             return render_template(
-                'fileobject.html', records=tempdict, settingsvars=settingsvars,temprel=temprel, reldata=reldata)
+                'fileobject.html', records=tempdict, settingsvars=settingsvars,temprel=temprel, reldata=reldata, taglist=taglist)
         else:
             return render_template(
                 'networkobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata, odnsdata=odnsdata,
-                settingsvars=settingsvars,temprel=temprel, reldata=reldata)
+                settingsvars=settingsvars,temprel=temprel, reldata=reldata,taglist=taglist, circldata=circldata, circlssl=circlssl, ptdata=ptdata)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -829,6 +900,7 @@ def objectsummary(uid):
             rels = cur.fetchall()
             rels = rels[0][0]
         rellist = rels.split(",")
+        taglist = newdict['tags'].split(",")
         temprel = {}
         for rel in rellist:
             try:
@@ -844,6 +916,9 @@ def objectsummary(uid):
         jsonvt = ""
         whoisdata = ""
         odnsdata = ""
+        circldata = ""
+        circlssl = ""
+        ptdata = ""
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
             if settingsvars['vtinfo'] == "on":
@@ -852,6 +927,12 @@ def objectsummary(uid):
                 whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
             if settingsvars['odnsinfo'] == "on":
                 odnsdata = libs.investigate.ip_query(str(http['object']))
+            if settingsvars['circlinfo'] == "on":
+                circldata = libs.circl.circlquery(str(http['object']))
+            if settingsvars['circlssl'] == "on":
+                circlssl = libs.circl.circlssl(str(http['object']))
+            if settingsvars['ptinfo'] == "on":
+                ptdata = libs.passivetotal.pt(str(http['object']))
         elif str(http['type']) == "Domain":
             if settingsvars['whoisinfo'] == "on":
                 whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
@@ -859,6 +940,10 @@ def objectsummary(uid):
                 jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
             if settingsvars['odnsinfo'] == "on":
                 odnsdata = libs.investigate.domain_categories(str(http['object']))
+            if settingsvars['circlinfo'] == "on":
+                circldata = libs.circl.circlquery(str(http['object']))
+            if settingsvars['ptinfo'] == "on":
+                ptdata = libs.passivetotal.pt(str(http['object']))
         if settingsvars['whoisinfo'] == "on":
             if str(http['type']) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
@@ -869,7 +954,7 @@ def objectsummary(uid):
             address = "Information about " + str(http['object'])
         return render_template(
             'networkobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, settingsvars=settingsvars, address=address, temprel=temprel, reldata=reldata)
+            odnsdata=odnsdata, settingsvars=settingsvars, address=address, ptdata=ptdata, temprel=temprel, circldata=circldata, circlssl=circlssl, reldata=reldata, taglist=taglist)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -1039,6 +1124,7 @@ def victimobject(uid):
             cur.execute("SELECT relationships from indicators where id='" + uid + "'")
             rels = cur.fetchall()
             rels = rels[0][0]
+        taglist = newdict['tags'].split(",")
         rellist = rels.split(",")
         temprel = {}
         for rel in rellist:
@@ -1055,6 +1141,9 @@ def victimobject(uid):
         jsonvt = ""
         whoisdata = ""
         odnsdata = ""
+        circldata = ""
+        circlssl = ""
+        ptdata = ""
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
             if settingsvars['vtinfo'] == "on":
@@ -1063,6 +1152,12 @@ def victimobject(uid):
                 whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
             if settingsvars['odnsinfo'] == "on":
                 odnsdata = libs.investigate.ip_query(str(http['object']))
+            if settingsvars['circlinfo'] == "on":
+                circldata = libs.circl.circlquery(str(http['object']))
+            if settingsvars['circlssl'] == "on":
+                circlssl = libs.circl.circlssl(str(http['object']))
+            if settingsvars['ptinfo'] == "on":
+                ptdata = libs.passivetotal.pt(str(http['object']))
         elif str(http['type']) == "Domain":
             if settingsvars['whoisinfo'] == "on":
                 whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
@@ -1071,6 +1166,10 @@ def victimobject(uid):
             if settingsvars['odnsinfo'] == "on":
                 odnsdata = libs.investigate.domain_categories(
                     str(http['object']))
+            if settingsvars['circlinfo'] == "on":
+                circldata = libs.circl.circlquery(str(http['object']))
+            if settingsvars['ptinfo'] == "on":
+                ptdata = libs.passivetotal.pt(str(http['object']))
         if settingsvars['whoisinfo'] == "on":
             if str(http['type']) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(
@@ -1082,7 +1181,7 @@ def victimobject(uid):
             address = "Information about " + str(http['object'])
         return render_template(
             'victimobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata)
+            odnsdata=odnsdata, circldata=circldata, circlssl=circlssl, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, taglist=taglist, ptdata=ptdata)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -1112,6 +1211,7 @@ def filesobject(uid):
             rels = cur.fetchall()
             rels = rels[0][0]
         rellist = rels.split(",")
+        taglist = newdict['tags'].split(",")
         temprel = {}
         for rel in rellist:
             try:
@@ -1128,7 +1228,7 @@ def filesobject(uid):
             jsonvt = libs.virustotal.vt_hash_lookup(str(http['object']))
         else:
             jsonvt=""
-        return render_template('fileobject.html', records=newdict, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, jsonvt=jsonvt)
+        return render_template('fileobject.html', records=newdict, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, jsonvt=jsonvt, taglist=taglist)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -1191,6 +1291,23 @@ def get_indicators():
             indicatorlist.append(newdict)
     return jsonify({'indicators': indicatorlist})
 
+@app.route('/api/v1/ip_indicator/<ip>', methods=['GET'])
+def get_ip_indicator(ip):
+    con = lite.connect('threatnote.db')
+    con.row_factory = lite.Row
+    indicatorlist = []
+    with con:
+        cur = con.cursor()
+        cur.execute("SELECT * FROM indicators where object='" + ip + "'")
+        indicators = cur.fetchall()
+        names = [description[0] for description in cur.description]
+        for ind in indicators:
+            newdict = {}
+            for i in names:
+                newdict[i] = str(ind[i])
+            indicatorlist.append(newdict)
+    return jsonify({'indicator': indicatorlist})
+
 @app.route('/api/v1/network', methods=['GET'])
 def get_network():
     con = lite.connect('threatnote.db')
@@ -1247,6 +1364,7 @@ def get_campaigns(campaign):
     con = lite.connect('threatnote.db')
     con.row_factory = lite.Row
     indicatorlist = []
+    campaign = urllib.unquote(campaign).decode('utf8')
     with con:
         cur = con.cursor()
         cur.execute("SELECT * FROM indicators where campaign='" + campaign + "'")
