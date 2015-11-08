@@ -22,6 +22,7 @@ import libs.virustotal
 import libs.whoisinfo
 import libs.circl
 import libs.passivetotal
+import libs.cuckoo
 
 from flask import Flask
 from flask import flash
@@ -214,7 +215,19 @@ def home():
                 typecount["value"] = round(newtemp, 2)
                 typelist.append(typecount.copy())
             favs = []
-        return render_template('dashboard.html', networks=dictlist, network=network, favs=favs, typelist=typelist, taglist=newtags)
+            con = lite.connect('threatnote.db')
+            con.row_factory = lite.Row
+            with con:
+                cur = con.cursor()
+                cur.execute("SELECT cuckoohost,cuckooapiport FROM settings")
+            cuckoo_settings = cur.fetchall()[0]
+            if cuckoo_settings[0]:
+                importsetting = True
+            else:
+                importsetting = False
+
+        return render_template('dashboard.html', networks=dictlist, network=network, favs=favs, typelist=typelist,
+                               taglist=newtags, importsetting=importsetting)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -390,16 +403,103 @@ def newobject():
         newdict = {}
         for i in records:
             newdict[i] = records[i]
-        # Makes sure if you submit an IPv4 indicator, it's an actual IP
-        # address.
-        ipregex = re.match(
-            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', newdict['inputobject'])
-        # Convert the inputobject of IP or Domain to a list for Bulk Add
-        # functionality.
-        newdict['inputobject'] = newdict['inputobject'].split(',')
-        for newobject in newdict['inputobject']:
-            if newdict['inputtype'] == "IPv4":
-                if ipregex:
+
+        # Import indicators from Cuckoo for the selected analysis task
+        if records.has_key('type') and 'cuckoo' in records['type']:
+            con = lite.connect('threatnote.db')
+            cur = con.cursor()
+            host_data, dns_data, sha1, firstseen = libs.cuckoo.report_data(records['cuckoo_task_id'])
+            if not None in (host_data, dns_data, sha1, firstseen):
+                for ip in host_data:
+                    cur.execute('SELECT object FROM indicators WHERE object = ?', (ip,))
+                    if not cur.fetchone():
+                        intodb = (None, ip, 'IPv4', firstseen, '', 'Infrastructure', records['campaign'], 'Low', '',
+                                  records['tags'], '')
+                        with con:
+                            cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?,?,?)', intodb)
+
+                for dns in dns_data:
+                    cur.execute('SELECT object FROM indicators WHERE object = ?', (dns['request'],))
+                    if not cur.fetchone():
+                        intodb = (None, dns['request'], 'Domain', firstseen, '', 'Infrastructure', records['campaign'],
+                                  'Low', '', records['tags'], '')
+                        with con:
+                            cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?,?,?)', intodb)
+                cur.execute('SELECT object FROM indicators WHERE object = ?', (sha1,))
+                if not cur.fetchone():
+                    intodb = (None, sha1, 'Hash', firstseen, '', 'Capability', records['campaign'], 'Low', '',
+                              records['tags'], '')
+                    with con:
+                        cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?,?,?)', intodb)
+                # Redirect to Dashboard after successful import
+                return redirect(url_for('home'))
+            else:
+                errormessage = 'Task is not a file analysis'
+                return redirect(url_for('import_indicators'))
+
+        if records.has_key('inputtype'):
+            # Makes sure if you submit an IPv4 indicator, it's an actual IP
+            # address.
+            ipregex = re.match(
+                r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', newdict['inputobject'])
+            # Convert the inputobject of IP or Domain to a list for Bulk Add
+            # functionality.
+            newdict['inputobject'] = newdict['inputobject'].split(',')
+            for newobject in newdict['inputobject']:
+                if newdict['inputtype'] == "IPv4":
+                    if ipregex:
+                        con = lite.connect('threatnote.db')
+                        con.row_factory = lite.Row
+                        with con:
+                            cur = con.cursor()
+                            cur.execute(
+                                "SELECT object from indicators WHERE object = '" + newobject + "'")
+                            object = cur.fetchall()
+                            cur = con.cursor()
+                            cur.execute("SELECT * from indicators")
+                            names = [description[0]
+                                     for description in cur.description]
+                            lennames = len(names) - int(10)
+                            if len(object) > 0:
+                                errormessage = "Entry already exists in database."
+                                return render_template(
+                                    'newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
+                                    inputobject=newobject, inputfirstseen=newdict[
+                                        'inputfirstseen'],
+                                    inputlastseen=newdict[
+                                        'inputlastseen'],
+                                    inputcampaign=newdict[
+                                        'inputcampaign'],
+                                    comments=newdict['comments'], diamondmodel=newdict['diamondmodel'], tags=newdict['tags'])
+                            else:
+                                con = lite.connect('threatnote.db')
+                                cur = con.cursor()
+                                first = [None, newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'], newdict[
+                                    'inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'], newdict['confidence'], newdict['comments'],newdict['tags']]
+                                for t in range(0, lennames):
+                                    first.append("")
+                                with con:
+                                    for t in [(first)]:
+                                        cur.execute(
+                                            'insert into indicators values (?,?,?,?,?,?,?,?,?,?' + ",?" * int(lennames) + ')', t)
+                                con = lite.connect('threatnote.db')
+                                con.row_factory = lite.Row
+                                with con:
+                                    cur = con.cursor()
+                                    cur.execute(
+                                        "SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
+                                    network = cur.fetchall()
+                    else:
+                        errormessage = "Not a valid IP Address."
+                        newobject = ', '.join(newdict['inputobject'])
+                        return render_template(
+                            'newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
+                            inputobject=newobject, inputfirstseen=newdict[
+                                'inputfirstseen'],
+                            inputlastseen=newdict['inputlastseen'], confidence=newdict[
+                                'confidence'], inputcampaign=newdict['inputcampaign'],
+                            comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],tags=newdict['tags'])
+                else:
                     con = lite.connect('threatnote.db')
                     con.row_factory = lite.Row
                     with con:
@@ -409,8 +509,7 @@ def newobject():
                         object = cur.fetchall()
                         cur = con.cursor()
                         cur.execute("SELECT * from indicators")
-                        names = [description[0]
-                                 for description in cur.description]
+                        names = [description[0] for description in cur.description]
                         lennames = len(names) - int(10)
                         if len(object) > 0:
                             errormessage = "Entry already exists in database."
@@ -422,12 +521,12 @@ def newobject():
                                     'inputlastseen'],
                                 inputcampaign=newdict[
                                     'inputcampaign'],
-                                comments=newdict['comments'], diamondmodel=newdict['diamondmodel'], tags=newdict['tags'])
+                                comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],tags=newdict['tags'])
                         else:
                             con = lite.connect('threatnote.db')
                             cur = con.cursor()
                             first = [None, newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'], newdict[
-                                'inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'], newdict['confidence'], newdict['comments'],newdict['tags']]
+                                'inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'], newdict['confidence'], newdict['comments'], newdict['tags']]
                             for t in range(0, lennames):
                                 first.append("")
                             with con:
@@ -441,96 +540,45 @@ def newobject():
                                 cur.execute(
                                     "SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
                                 network = cur.fetchall()
-                else:
-                    errormessage = "Not a valid IP Address."
-                    newobject = ', '.join(newdict['inputobject'])
-                    return render_template(
-                        'newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
-                        inputobject=newobject, inputfirstseen=newdict[
-                            'inputfirstseen'],
-                        inputlastseen=newdict['inputlastseen'], confidence=newdict[
-                            'confidence'], inputcampaign=newdict['inputcampaign'],
-                        comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],tags=newdict['tags'])
+
+            if newdict['inputtype'] == "IPv4" or newdict['inputtype'] == "Domain" or newdict[
+                    'inputtype'] == "Network" or newdict['inputtype'] == "IPv6":
+                con = lite.connect('threatnote.db')
+                con.row_factory = lite.Row
+                with con:
+                    cur = con.cursor()
+                    cur.execute(
+                        "SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
+                    network = cur.fetchall()
+                return render_template('networks.html', network=network)
+
+            elif newdict['diamondmodel'] == "Victim":
+                con = lite.connect('threatnote.db')
+                con.row_factory = lite.Row
+                with con:
+                    cur = con.cursor()
+                    cur.execute(
+                        "SELECT * FROM indicators where diamondmodel='Victim'")
+                    victims = cur.fetchall()
+                return render_template('victims.html', network=victims)
+            elif newdict['inputtype'] == "Hash":
+                con = lite.connect('threatnote.db')
+                con.row_factory = lite.Row
+                with con:
+                    cur = con.cursor()
+                    cur.execute(
+                        "SELECT * FROM indicators where type='Hash'")
+                    files = cur.fetchall()
+                return render_template('files.html', network=files)
             else:
                 con = lite.connect('threatnote.db')
                 con.row_factory = lite.Row
                 with con:
                     cur = con.cursor()
                     cur.execute(
-                        "SELECT object from indicators WHERE object = '" + newobject + "'")
-                    object = cur.fetchall()
-                    cur = con.cursor()
-                    cur.execute("SELECT * from indicators")
-                    names = [description[0] for description in cur.description]
-                    lennames = len(names) - int(10)
-                    if len(object) > 0:
-                        errormessage = "Entry already exists in database."
-                        return render_template(
-                            'newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
-                            inputobject=newobject, inputfirstseen=newdict[
-                                'inputfirstseen'],
-                            inputlastseen=newdict[
-                                'inputlastseen'],
-                            inputcampaign=newdict[
-                                'inputcampaign'],
-                            comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],tags=newdict['tags'])
-                    else:
-                        con = lite.connect('threatnote.db')
-                        cur = con.cursor()
-                        first = [None, newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'], newdict[
-                            'inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'], newdict['confidence'], newdict['comments'], newdict['tags']]
-                        for t in range(0, lennames):
-                            first.append("")
-                        with con:
-                            for t in [(first)]:
-                                cur.execute(
-                                    'insert into indicators values (?,?,?,?,?,?,?,?,?,?' + ",?" * int(lennames) + ')', t)
-                        con = lite.connect('threatnote.db')
-                        con.row_factory = lite.Row
-                        with con:
-                            cur = con.cursor()
-                            cur.execute(
-                                "SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
-                            network = cur.fetchall()
-
-        if newdict['inputtype'] == "IPv4" or newdict['inputtype'] == "Domain" or newdict[
-                'inputtype'] == "Network" or newdict['inputtype'] == "IPv6":
-            con = lite.connect('threatnote.db')
-            con.row_factory = lite.Row
-            with con:
-                cur = con.cursor()
-                cur.execute(
-                    "SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
-                network = cur.fetchall()
-            return render_template('networks.html', network=network)
-
-        elif newdict['diamondmodel'] == "Victim":
-            con = lite.connect('threatnote.db')
-            con.row_factory = lite.Row
-            with con:
-                cur = con.cursor()
-                cur.execute(
-                    "SELECT * FROM indicators where diamondmodel='Victim'")
-                victims = cur.fetchall()
-            return render_template('victims.html', network=victims)
-        elif newdict['inputtype'] == "Hash":
-            con = lite.connect('threatnote.db')
-            con.row_factory = lite.Row
-            with con:
-                cur = con.cursor()
-                cur.execute(
-                    "SELECT * FROM indicators where type='Hash'")
-                files = cur.fetchall()
-            return render_template('files.html', network=files)
-        else:
-            con = lite.connect('threatnote.db')
-            con.row_factory = lite.Row
-            with con:
-                cur = con.cursor()
-                cur.execute(
-                    "SELECT * FROM indicators where type='Threat Actor'")
-                threatactors = cur.fetchall()
-            return render_template('threatactors.html', network=threatactors)
+                        "SELECT * FROM indicators where type='Threat Actor'")
+                    threatactors = cur.fetchall()
+                return render_template('threatactors.html', network=threatactors)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -721,6 +769,15 @@ def updatesettings():
                 cur = con.cursor()
                 cur.execute(
                     "UPDATE settings SET httpsproxy = '" + newdict['httpsproxy'] + "'")
+            with con:
+                cur = con.cursor()
+                cur.execute(
+                    "UPDATE settings SET cuckoohost = '" + newdict['cuckoohost'] + "'")
+            with con:
+                cur = con.cursor()
+                cur.execute(
+                    "UPDATE settings SET cuckooapiport = '" + newdict['cuckooapiport'] + "'")
+
             with con:
                 cur = con.cursor()
                 cur.execute(
@@ -1232,6 +1289,11 @@ def filesobject(uid):
     except Exception as e:
         return render_template('error.html', error=e)
 
+@app.route('/import', methods=['GET', 'POST'])
+@login_required
+def import_indicators():
+    cuckoo_tasks = libs.cuckoo.get_tasks()
+    return render_template('import.html', cuckoo_tasks=cuckoo_tasks)
 
 @app.route('/download/<uid>', methods=['GET'])
 @login_required
