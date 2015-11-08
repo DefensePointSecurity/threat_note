@@ -1418,9 +1418,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if not args.port:
-        port = '8888'
+        port = 8888
     else:
-        port = args.port
+        port = int(args.port)
 
     if not args.debug:
         debug = False
