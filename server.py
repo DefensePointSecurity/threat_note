@@ -44,19 +44,29 @@ from werkzeug.datastructures import ImmutableMultiDict
 from wtforms import PasswordField
 from wtforms import TextField
 from wtforms.validators import Required
+from sys import argv
 
 #
 # Configuration #
 #
+db_file = 'threatnote.db'
+if len(argv) > 1:
+    if '--db' in argv[1]:
+        db_file = argv[2]
+else:
+    libs.helpers.setup_db()
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yek_terces'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///threatnote.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_file
 
 lm = LoginManager()
 lm.init_app(app)
 lm.login_view = 'login'
 
 db = SQLAlchemy(app)
+
+
 
 
 class User(db.Model):
@@ -211,14 +221,19 @@ def home():
                 typecount["value"] = round(newtemp, 2)
                 typelist.append(typecount.copy())
             favs = []
+
+            # Add Import from Cuckoo button to Dashboard page
             con = libs.helpers.db_connection()
             with con:
                 cur = con.cursor()
                 cur.execute("SELECT cuckoohost,cuckooapiport FROM settings")
-            cuckoo_settings = cur.fetchall()[0]
-            if cuckoo_settings[0]:
-                importsetting = True
-            else:
+            try:
+                cuckoo_settings = cur.fetchall()[0]
+                if cuckoo_settings[0]:
+                    importsetting = True
+                else:
+                    importsetting = False
+            except:
                 importsetting = False
 
         return render_template('dashboard.html', networks=dictlist, network=network, favs=favs, typelist=typelist,
@@ -345,6 +360,7 @@ def settings():
             cur.execute("SELECT * from settings")
             records = cur.fetchall()
             records = records[0]
+
         return render_template('settings.html', records=records)
     except Exception as e:
         return render_template('error.html', error=e)
