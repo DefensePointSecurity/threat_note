@@ -8,6 +8,7 @@
 #
 
 
+import argparse
 import csv
 import hashlib
 import io
@@ -16,21 +17,20 @@ import sqlite3 as lite
 import time
 import urllib
 
+import libs.circl
 import libs.helpers
 import libs.investigate
+import libs.passivetotal
 import libs.virustotal
 import libs.whoisinfo
-import libs.circl
-import libs.passivetotal
-
 from flask import Flask
 from flask import flash
+from flask import jsonify
 from flask import make_response
 from flask import redirect
 from flask import render_template
 from flask import request
 from flask import url_for
-from flask import jsonify
 from flask.ext.login import LoginManager
 from flask.ext.login import current_user
 from flask.ext.login import login_required
@@ -38,7 +38,6 @@ from flask.ext.login import login_user
 from flask.ext.login import logout_user
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.wtf import Form
-
 from werkzeug.datastructures import ImmutableMultiDict
 from wtforms import PasswordField
 from wtforms import TextField
@@ -184,8 +183,8 @@ def home():
                         tags.append(tag)
             newtags = []
             for i in tags:
-                  if i not in newtags:
-                        newtags.append(i)
+                if i not in newtags:
+                    newtags.append(i)
             dictcount = {}
             dictlist = []
             typecount = {}
@@ -224,10 +223,12 @@ def home():
 def about():
     return render_template('about.html')
 
+
 @app.route('/tags', methods=['GET'])
 @login_required
 def tags():
     return render_template('tags.html')
+
 
 @app.route('/networks', methods=['GET'])
 @login_required
@@ -275,6 +276,7 @@ def victims():
         return render_template('victims.html', network=victims)
     except Exception as e:
         return render_template('error.html', error=e)
+
 
 @app.route('/files', methods=['GET'])
 @login_required
@@ -427,7 +429,7 @@ def newobject():
                             con = lite.connect('threatnote.db')
                             cur = con.cursor()
                             first = [None, newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'], newdict[
-                                'inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'], newdict['confidence'], newdict['comments'],newdict['tags']]
+                                'inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'], newdict['confidence'], newdict['comments'], newdict['tags']]
                             for t in range(0, lennames):
                                 first.append("")
                             with con:
@@ -450,7 +452,7 @@ def newobject():
                             'inputfirstseen'],
                         inputlastseen=newdict['inputlastseen'], confidence=newdict[
                             'confidence'], inputcampaign=newdict['inputcampaign'],
-                        comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],tags=newdict['tags'])
+                        comments=newdict['comments'], diamondmodel=newdict['diamondmodel'], tags=newdict['tags'])
             else:
                 con = lite.connect('threatnote.db')
                 con.row_factory = lite.Row
@@ -473,7 +475,7 @@ def newobject():
                                 'inputlastseen'],
                             inputcampaign=newdict[
                                 'inputcampaign'],
-                            comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],tags=newdict['tags'])
+                            comments=newdict['comments'], diamondmodel=newdict['diamondmodel'], tags=newdict['tags'])
                     else:
                         con = lite.connect('threatnote.db')
                         cur = con.cursor()
@@ -624,6 +626,7 @@ def deletefilesobject(uid):
     except Exception as e:
         return render_template('error.html', error=e)
 
+
 @app.route('/update/settings/', methods=['POST'])
 @login_required
 def updatesettings():
@@ -732,7 +735,7 @@ def updatesettings():
             with con:
                 cur = con.cursor()
                 cur.execute(
-                    "UPDATE settings SET ptkey = '" + newdict['ptkey'] + "'")  
+                    "UPDATE settings SET ptkey = '" + newdict['ptkey'] + "'")
         con = lite.connect('threatnote.db')
         con.row_factory = lite.Row
         with con:
@@ -799,7 +802,7 @@ def updateobject():
                     cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
                     reltype = cur.fetchall()
                     reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
+                    temprel[reltype['object']] = reltype['type']
             except:
                 pass
         reldata = len(temprel)
@@ -839,18 +842,18 @@ def updateobject():
         if newdict['type'] == "Threat Actor":
             return render_template(
                 'threatactorobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
-                settingsvars=settingsvars,temprel=temprel, reldata=reldata, taglist=taglist)
+                settingsvars=settingsvars, temprel=temprel, reldata=reldata, taglist=taglist)
         elif newdict['diamondmodel'] == "Victim":
             return render_template(
                 'victimobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
-                settingsvars=settingsvars,temprel=temprel, reldata=reldata,taglist=taglist, ptdata=ptdata )
+                settingsvars=settingsvars, temprel=temprel, reldata=reldata, taglist=taglist, ptdata=ptdata)
         elif newdict['type'] == "Hash":
             return render_template(
-                'fileobject.html', records=tempdict, settingsvars=settingsvars,temprel=temprel, reldata=reldata, taglist=taglist)
+                'fileobject.html', records=tempdict, settingsvars=settingsvars, temprel=temprel, reldata=reldata, taglist=taglist)
         else:
             return render_template(
                 'networkobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata, odnsdata=odnsdata,
-                settingsvars=settingsvars,temprel=temprel, reldata=reldata,taglist=taglist, circldata=circldata, circlssl=circlssl, ptdata=ptdata)
+                settingsvars=settingsvars, temprel=temprel, reldata=reldata, taglist=taglist, circldata=circldata, circlssl=circlssl, ptdata=ptdata)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -909,7 +912,7 @@ def objectsummary(uid):
                     cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
                     reltype = cur.fetchall()
                     reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
+                    temprel[reltype['object']] = reltype['type']
             except:
                 pass
         reldata = len(temprel)
@@ -982,13 +985,14 @@ def threatactorobject(uid):
                     cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
                     reltype = cur.fetchall()
                     reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
+                    temprel[reltype['object']] = reltype['type']
             except:
                 pass
         reldata = len(temprel)
         return render_template('threatactorobject.html', records=http, temprel=temprel, reldata=reldata)
     except Exception as e:
         return render_template('error.html', error=e)
+
 
 @app.route('/relationships/<uid>', methods=['GET'])
 @login_required
@@ -1016,16 +1020,15 @@ def relationships(uid):
                     cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
                     reltype = cur.fetchall()
                     reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
+                    temprel[reltype['object']] = reltype['type']
             except:
                 pass
-        reldata = len(temprel)
         return render_template('addrelationship.html', records=http, indicators=indicators)
     except Exception as e:
         return render_template('error.html', error=e)
 
 
-@app.route('/addrelationship', methods=['GET','POST'])
+@app.route('/addrelationship', methods=['GET', 'POST'])
 @login_required
 def addrelationship():
     try:
@@ -1042,12 +1045,12 @@ def addrelationship():
             cur.execute("UPDATE indicators SET relationships=relationships || '" + newdict['indicator'] + ",' WHERE id='" + newdict['id'] + "'")
         if newdict['type'] == "IPv4" or newdict['type'] == "IPv6" or newdict['type'] == "Domain" or newdict['type'] == "Network":
             return redirect(url_for('objectsummary', uid=str(newdict['id'])))
-        elif newdict['type'] ==  "Hash":
+        elif newdict['type'] == "Hash":
             return redirect(url_for('filesobject', uid=str(newdict['id'])))
         elif newdict['type'] == "Entity":
             return redirect(url_for('victimobject', uid=str(newdict['id'])))
         elif newdict['type'] == "Threat Actor":
-            return redirect(url_for('threatactorobject', uid=str(newdict['id'])))  
+            return redirect(url_for('threatactorobject', uid=str(newdict['id'])))
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -1134,7 +1137,7 @@ def victimobject(uid):
                     cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
                     reltype = cur.fetchall()
                     reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
+                    temprel[reltype['object']] = reltype['type']
             except:
                 pass
         reldata = len(temprel)
@@ -1181,9 +1184,10 @@ def victimobject(uid):
             address = "Information about " + str(http['object'])
         return render_template(
             'victimobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, circldata=circldata, circlssl=circlssl, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, taglist=taglist, ptdata=ptdata)
+            odnsdata=odnsdata, circldata=circldata, circlssl=circlssl, settingsvars=settingsvars, address=address, temprel=temprel, reldata=reldata, taglist=taglist, ptdata=ptdata)
     except Exception as e:
         return render_template('error.html', error=e)
+
 
 @app.route('/files/<uid>/info', methods=['GET'])
 @login_required
@@ -1220,15 +1224,15 @@ def filesobject(uid):
                     cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
                     reltype = cur.fetchall()
                     reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
+                    temprel[reltype['object']] = reltype['type']
             except:
                 pass
         reldata = len(temprel)
         if settingsvars['vtfile'] == "on":
             jsonvt = libs.virustotal.vt_hash_lookup(str(http['object']))
         else:
-            jsonvt=""
-        return render_template('fileobject.html', records=newdict, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, jsonvt=jsonvt, taglist=taglist)
+            jsonvt = ""
+        return render_template('fileobject.html', records=newdict, settingsvars=settingsvars, address=address, temprel=temprel, reldata=reldata, jsonvt=jsonvt, taglist=taglist)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -1274,6 +1278,7 @@ def download(uid):
         print str(e)
         pass
 
+
 @app.route('/api/v1/indicators', methods=['GET'])
 def get_indicators():
     con = lite.connect('threatnote.db')
@@ -1290,6 +1295,7 @@ def get_indicators():
                 newdict[i] = str(ind[i])
             indicatorlist.append(newdict)
     return jsonify({'indicators': indicatorlist})
+
 
 @app.route('/api/v1/ip_indicator/<ip>', methods=['GET'])
 def get_ip_indicator(ip):
@@ -1308,6 +1314,7 @@ def get_ip_indicator(ip):
             indicatorlist.append(newdict)
     return jsonify({'indicator': indicatorlist})
 
+
 @app.route('/api/v1/network', methods=['GET'])
 def get_network():
     con = lite.connect('threatnote.db')
@@ -1324,6 +1331,7 @@ def get_network():
                 newdict[i] = str(ind[i])
             indicatorlist.append(newdict)
     return jsonify({'network_indicators': indicatorlist})
+
 
 @app.route('/api/v1/threatactors', methods=['GET'])
 def get_threatactors():
@@ -1342,6 +1350,7 @@ def get_threatactors():
             indicatorlist.append(newdict)
     return jsonify({'threatactors': indicatorlist})
 
+
 @app.route('/api/v1/files', methods=['GET'])
 def get_files():
     con = lite.connect('threatnote.db')
@@ -1358,6 +1367,7 @@ def get_files():
                 newdict[i] = str(ind[i])
             indicatorlist.append(newdict)
     return jsonify({'files': indicatorlist})
+
 
 @app.route('/api/v1/campaigns/<campaign>', methods=['GET'])
 def get_campaigns(campaign):
@@ -1377,11 +1387,11 @@ def get_campaigns(campaign):
             indicatorlist.append(newdict)
     return jsonify({'campaigns': indicatorlist})
 
+
 @app.route('/api/v1/relationships/<ip>', methods=['GET'])
 def get_relationships(ip):
     con = lite.connect('threatnote.db')
     con.row_factory = lite.Row
-    indicatorlist = []
     with con:
         cur = con.cursor()
         cur.execute("SELECT relationships from indicators where object='" + ip + "'")
@@ -1396,10 +1406,25 @@ def get_relationships(ip):
                     cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
                     reltype = cur.fetchall()
                     reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
+                    temprel[reltype['object']] = reltype['type']
             except:
                 pass
     return jsonify({'relationships': temprel})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8888, debug=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--port', help="Specify port to listen on")
+    parser.add_argument('-d', '--debug', help="Run in debug mode", action="store_true")
+    args = parser.parse_args()
+
+    if not args.port:
+        port = '8888'
+    else:
+        port = args.port
+
+    if not args.debug:
+        debug = False
+    else:
+        debug = True
+
+    app.run(host='0.0.0.0', port=port, debug=debug)
