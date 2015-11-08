@@ -145,9 +145,6 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
-# Importing libraries
-
-
 #
 # Creating routes #
 #
@@ -157,8 +154,7 @@ def logout():
 @login_required
 def home():
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("SELECT count(DISTINCT id) AS number FROM indicators")
@@ -215,8 +211,7 @@ def home():
                 typecount["value"] = round(newtemp, 2)
                 typelist.append(typecount.copy())
             favs = []
-            con = lite.connect('threatnote.db')
-            con.row_factory = lite.Row
+            con = libs.helpers.db_connection()
             with con:
                 cur = con.cursor()
                 cur.execute("SELECT cuckoohost,cuckooapiport FROM settings")
@@ -247,8 +242,7 @@ def tags():
 def networks():
     try:
         # Grab only network indicators
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute(
@@ -264,8 +258,7 @@ def networks():
 def threatactors():
     try:
         # Grab threat actors
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("SELECT * FROM indicators where type='Threat Actor'")
@@ -279,8 +272,7 @@ def threatactors():
 @login_required
 def victims():
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("SELECT * FROM indicators where diamondmodel='Victim'")
@@ -293,8 +285,7 @@ def victims():
 @login_required
 def files():
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("SELECT * FROM indicators where type='Hash'")
@@ -308,8 +299,7 @@ def files():
 @login_required
 def campaigns():
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         camplist = []
         with con:
             cur = con.cursor()
@@ -349,8 +339,7 @@ def campaigns():
 @login_required
 def settings():
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("SELECT * from settings")
@@ -365,8 +354,7 @@ def settings():
 @login_required
 def campaignsummary(uid):
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute(
@@ -406,31 +394,33 @@ def newobject():
 
         # Import indicators from Cuckoo for the selected analysis task
         if records.has_key('type') and 'cuckoo' in records['type']:
-            con = lite.connect('threatnote.db')
-            cur = con.cursor()
+            con = libs.helpers.db_connection()
+
             host_data, dns_data, sha1, firstseen = libs.cuckoo.report_data(records['cuckoo_task_id'])
             if not None in (host_data, dns_data, sha1, firstseen):
-                for ip in host_data:
-                    cur.execute('SELECT object FROM indicators WHERE object = ?', (ip,))
+                with con:
+                    cur = con.cursor()
+                    for ip in host_data:
+                        cur.execute('SELECT object FROM indicators WHERE object = ?', (ip,))
+                        if not cur.fetchone():
+                            intodb = (None, ip, 'IPv4', firstseen, '', 'Infrastructure', records['campaign'], 'Low', '',
+                                      records['tags'], '')
+                            with con:
+                                cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?,?,?)', intodb)
+
+                    for dns in dns_data:
+                        cur.execute('SELECT object FROM indicators WHERE object = ?', (dns['request'],))
+                        if not cur.fetchone():
+                            intodb = (None, dns['request'], 'Domain', firstseen, '', 'Infrastructure', records['campaign'],
+                                      'Low', '', records['tags'], '')
+                            with con:
+                                cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?,?,?)', intodb)
+                    cur.execute('SELECT object FROM indicators WHERE object = ?', (sha1,))
                     if not cur.fetchone():
-                        intodb = (None, ip, 'IPv4', firstseen, '', 'Infrastructure', records['campaign'], 'Low', '',
+                        intodb = (None, sha1, 'Hash', firstseen, '', 'Capability', records['campaign'], 'Low', '',
                                   records['tags'], '')
                         with con:
                             cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?,?,?)', intodb)
-
-                for dns in dns_data:
-                    cur.execute('SELECT object FROM indicators WHERE object = ?', (dns['request'],))
-                    if not cur.fetchone():
-                        intodb = (None, dns['request'], 'Domain', firstseen, '', 'Infrastructure', records['campaign'],
-                                  'Low', '', records['tags'], '')
-                        with con:
-                            cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?,?,?)', intodb)
-                cur.execute('SELECT object FROM indicators WHERE object = ?', (sha1,))
-                if not cur.fetchone():
-                    intodb = (None, sha1, 'Hash', firstseen, '', 'Capability', records['campaign'], 'Low', '',
-                              records['tags'], '')
-                    with con:
-                        cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?,?,?)', intodb)
                 # Redirect to Dashboard after successful import
                 return redirect(url_for('home'))
             else:
@@ -448,8 +438,7 @@ def newobject():
             for newobject in newdict['inputobject']:
                 if newdict['inputtype'] == "IPv4":
                     if ipregex:
-                        con = lite.connect('threatnote.db')
-                        con.row_factory = lite.Row
+                        con = libs.helpers.db_connection()
                         with con:
                             cur = con.cursor()
                             cur.execute(
@@ -470,20 +459,20 @@ def newobject():
                                         'inputlastseen'],
                                     inputcampaign=newdict[
                                         'inputcampaign'],
-                                    comments=newdict['comments'], diamondmodel=newdict['diamondmodel'], tags=newdict['tags'])
+                                    comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],
+                                    tags=newdict['tags'])
                             else:
-                                con = lite.connect('threatnote.db')
-                                cur = con.cursor()
-                                first = [None, newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'], newdict[
-                                    'inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'], newdict['confidence'], newdict['comments'],newdict['tags']]
+                                con = libs.helpers.db_connection()
+                                first = [None, newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'],
+                                         newdict['inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'],
+                                         newdict['confidence'], newdict['comments'],newdict['tags']]
                                 for t in range(0, lennames):
                                     first.append("")
                                 with con:
                                     for t in [(first)]:
                                         cur.execute(
                                             'insert into indicators values (?,?,?,?,?,?,?,?,?,?' + ",?" * int(lennames) + ')', t)
-                                con = lite.connect('threatnote.db')
-                                con.row_factory = lite.Row
+                                con = libs.helpers.db_connection()
                                 with con:
                                     cur = con.cursor()
                                     cur.execute(
@@ -500,8 +489,7 @@ def newobject():
                                 'confidence'], inputcampaign=newdict['inputcampaign'],
                             comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],tags=newdict['tags'])
                 else:
-                    con = lite.connect('threatnote.db')
-                    con.row_factory = lite.Row
+                    con = libs.helpers.db_connection()
                     with con:
                         cur = con.cursor()
                         cur.execute(
@@ -523,8 +511,7 @@ def newobject():
                                     'inputcampaign'],
                                 comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],tags=newdict['tags'])
                         else:
-                            con = lite.connect('threatnote.db')
-                            cur = con.cursor()
+                            con = libs.helpers.db_connection()
                             first = [None, newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'], newdict[
                                 'inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'], newdict['confidence'], newdict['comments'], newdict['tags']]
                             for t in range(0, lennames):
@@ -533,8 +520,7 @@ def newobject():
                                 for t in [(first)]:
                                     cur.execute(
                                         'insert into indicators values (?,?,?,?,?,?,?,?,?,?' + ",?" * int(lennames) + ')', t)
-                            con = lite.connect('threatnote.db')
-                            con.row_factory = lite.Row
+                            con = libs.helpers.db_connection()
                             with con:
                                 cur = con.cursor()
                                 cur.execute(
@@ -543,8 +529,7 @@ def newobject():
 
             if newdict['inputtype'] == "IPv4" or newdict['inputtype'] == "Domain" or newdict[
                     'inputtype'] == "Network" or newdict['inputtype'] == "IPv6":
-                con = lite.connect('threatnote.db')
-                con.row_factory = lite.Row
+                con = libs.helpers.db_connection()
                 with con:
                     cur = con.cursor()
                     cur.execute(
@@ -553,8 +538,7 @@ def newobject():
                 return render_template('networks.html', network=network)
 
             elif newdict['diamondmodel'] == "Victim":
-                con = lite.connect('threatnote.db')
-                con.row_factory = lite.Row
+                con = libs.helpers.db_connection()
                 with con:
                     cur = con.cursor()
                     cur.execute(
@@ -562,8 +546,7 @@ def newobject():
                     victims = cur.fetchall()
                 return render_template('victims.html', network=victims)
             elif newdict['inputtype'] == "Hash":
-                con = lite.connect('threatnote.db')
-                con.row_factory = lite.Row
+                con = libs.helpers.db_connection()
                 with con:
                     cur = con.cursor()
                     cur.execute(
@@ -571,8 +554,7 @@ def newobject():
                     files = cur.fetchall()
                 return render_template('files.html', network=files)
             else:
-                con = lite.connect('threatnote.db')
-                con.row_factory = lite.Row
+                con = libs.helpers.db_connection()
                 with con:
                     cur = con.cursor()
                     cur.execute(
@@ -587,8 +569,7 @@ def newobject():
 @login_required
 def editobject(uid):
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         newdict = {}
         with con:
             cur = con.cursor()
@@ -610,8 +591,7 @@ def editobject(uid):
 @login_required
 def deletenetworkobject(uid):
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
@@ -628,8 +608,7 @@ def deletenetworkobject(uid):
 @login_required
 def deletethreatactorobject(uid):
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
@@ -645,8 +624,7 @@ def deletethreatactorobject(uid):
 @login_required
 def deletevictimobject(uid):
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
@@ -661,8 +639,7 @@ def deletevictimobject(uid):
 @login_required
 def deletefilesobject(uid):
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
@@ -683,8 +660,7 @@ def updatesettings():
         for i in records:
             newdict[i] = records[i]
         # Make sure we're updating the settings instead of overwriting them
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("SELECT * from settings")
@@ -790,8 +766,7 @@ def updatesettings():
                 cur = con.cursor()
                 cur.execute(
                     "UPDATE settings SET ptkey = '" + newdict['ptkey'] + "'")  
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("SELECT * from settings")
@@ -815,8 +790,7 @@ def updateobject():
         for i in records:
             newdict[i] = records[i]
         taglist = newdict['tags'].split(",")
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             for t in newdict:
                 if t == "id":
@@ -936,8 +910,7 @@ def insertnewfield():
 @login_required
 def objectsummary(uid):
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         newdict = {}
         with con:
             cur = con.cursor()
@@ -1020,8 +993,7 @@ def objectsummary(uid):
 @login_required
 def threatactorobject(uid):
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("SELECT * from indicators where id='" + uid + "'")
@@ -1051,8 +1023,7 @@ def threatactorobject(uid):
 @login_required
 def relationships(uid):
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("SELECT * from indicators where id='" + uid + "'")
@@ -1092,8 +1063,7 @@ def addrelationship():
         newdict = {}
         for i in records:
             newdict[i] = records[i]
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("UPDATE indicators SET relationships=relationships || '" + newdict['indicator'] + ",' WHERE id='" + newdict['id'] + "'")
@@ -1113,8 +1083,7 @@ def addrelationship():
 @login_required
 def profile():
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             tempdict = {}
             cur = con.cursor()
@@ -1161,8 +1130,7 @@ def profile():
 @login_required
 def victimobject(uid):
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         newdict = {}
         with con:
             cur = con.cursor()
@@ -1246,8 +1214,7 @@ def victimobject(uid):
 @login_required
 def filesobject(uid):
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         newdict = {}
         with con:
             cur = con.cursor()
@@ -1303,8 +1270,7 @@ def download(uid):
     file = io.BytesIO()
     # fieldnames =
     # ['id','object','type','firstseen','lastseen','diamondmodel','campaign','confidence','comments']
-    con = lite.connect('threatnote.db')
-    con.row_factory = lite.Row
+    con = libs.helpers.db_connection()
     indlist = []
     with con:
         cur = con.cursor()
@@ -1338,8 +1304,7 @@ def download(uid):
 
 @app.route('/api/v1/indicators', methods=['GET'])
 def get_indicators():
-    con = lite.connect('threatnote.db')
-    con.row_factory = lite.Row
+    con = libs.helpers.db_connection()
     indicatorlist = []
     with con:
         cur = con.cursor()
@@ -1355,8 +1320,7 @@ def get_indicators():
 
 @app.route('/api/v1/ip_indicator/<ip>', methods=['GET'])
 def get_ip_indicator(ip):
-    con = lite.connect('threatnote.db')
-    con.row_factory = lite.Row
+    con = libs.helpers.db_connection()
     indicatorlist = []
     with con:
         cur = con.cursor()
@@ -1372,8 +1336,7 @@ def get_ip_indicator(ip):
 
 @app.route('/api/v1/network', methods=['GET'])
 def get_network():
-    con = lite.connect('threatnote.db')
-    con.row_factory = lite.Row
+    con = libs.helpers.db_connection()
     indicatorlist = []
     with con:
         cur = con.cursor()
@@ -1389,8 +1352,7 @@ def get_network():
 
 @app.route('/api/v1/threatactors', methods=['GET'])
 def get_threatactors():
-    con = lite.connect('threatnote.db')
-    con.row_factory = lite.Row
+    con = libs.helpers.db_connection()
     indicatorlist = []
     with con:
         cur = con.cursor()
@@ -1406,8 +1368,7 @@ def get_threatactors():
 
 @app.route('/api/v1/files', methods=['GET'])
 def get_files():
-    con = lite.connect('threatnote.db')
-    con.row_factory = lite.Row
+    con = libs.helpers.db_connection()
     indicatorlist = []
     with con:
         cur = con.cursor()
@@ -1423,8 +1384,7 @@ def get_files():
 
 @app.route('/api/v1/campaigns/<campaign>', methods=['GET'])
 def get_campaigns(campaign):
-    con = lite.connect('threatnote.db')
-    con.row_factory = lite.Row
+    con = libs.helpers.db_connection()
     indicatorlist = []
     campaign = urllib.unquote(campaign).decode('utf8')
     with con:
@@ -1441,8 +1401,7 @@ def get_campaigns(campaign):
 
 @app.route('/api/v1/relationships/<ip>', methods=['GET'])
 def get_relationships(ip):
-    con = lite.connect('threatnote.db')
-    con.row_factory = lite.Row
+    con = libs.helpers.db_connection()
     indicatorlist = []
     with con:
         cur = con.cursor()

@@ -1,6 +1,13 @@
 import collections
 import sqlite3 as lite
 
+
+def db_connection():
+    con = lite.connect('threatnote.db')
+    con.row_factory = lite.Row
+    return con
+
+
 def get_proxy():
     try:
         con = lite.connect('threatnote.db')
@@ -29,3 +36,4 @@ def convert(data):
         return type(data)(map(convert, data))
     else:
         return data
+

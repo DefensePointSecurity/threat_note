@@ -6,8 +6,7 @@ import sqlite3 as lite
 # IPv4 VirusTotal function for passive DNS
 def vt_ipv4_lookup(ipv4):
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("SELECT apikey from settings")
@@ -26,8 +25,7 @@ def vt_ipv4_lookup(ipv4):
 # Domain VirusTotal function for passive DNS
 def vt_domain_lookup(domain):
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("SELECT apikey from settings")
@@ -47,8 +45,7 @@ def vt_domain_lookup(domain):
 
 def vt_hash_lookup(filehash):
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("SELECT apikey from settings")

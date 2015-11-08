@@ -3,8 +3,7 @@ import requests
 import sqlite3 as lite
 
 def get_settings():
-	con = lite.connect('threatnote.db')
-	con.row_factory = lite.Row
+	con = libs.helpers.db_connection()
 	with con:
 		cur = con.cursor()
 		cur.execute("SELECT cuckoohost,cuckooapiport FROM settings")

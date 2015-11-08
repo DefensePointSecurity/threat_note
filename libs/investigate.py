@@ -4,8 +4,7 @@ import sqlite3 as lite
 
 
 def get_odns_apikey():
-    con = lite.connect('threatnote.db')
-    con.row_factory = lite.Row
+    con = libs.helpers.db_connection()
     with con:
         cur = con.cursor()
         cur.execute("SELECT odnskey from settings")
