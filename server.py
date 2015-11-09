@@ -376,6 +376,8 @@ def campaignsummary(uid):
         if str(http['type']) == "IPv4" or str(http['type']) == "IPv6" or str(
                 http['type']) == "Domain" or str(http['type']) == "Network":
             return redirect(url_for('objectsummary', uid=str(http['id'])))
+        elif str(http['type']) == "Hash":
+            return redirect(url_for('filesobject', uid=str(http['id'])))
         else:
             return redirect(url_for('threatactorobject', uid=str(http['id'])))
     except Exception as e:
