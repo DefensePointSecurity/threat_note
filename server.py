@@ -329,7 +329,7 @@ def campaigns():
                 for ent in camps:
                     entlist.append(str(ent[0]))
                 campaignents[str(camp[0])] = entlist
-        return render_template('campaigns.html', network=campaigns, campaignents=campaignents)
+        return render_template('campaigns.html', campaignents=campaignents)
     except Exception as e:
         return render_template('error.html', error=e)
 
