@@ -258,7 +258,7 @@
                         <span class="text-capitalize">Tags</span>
                         </td>
                         <td>
-                        {% for tag in taglist %}
+                        {% for tag in records['tags'].split(",") %}
                         <button type="button" class="btn btn-default btn-fill btn-xs">{{ tag }}</button>
                         {% endfor %}
                         </td>

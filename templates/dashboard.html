@@ -134,7 +134,7 @@
                       <th>Campaign</th>
                       <th>Confidence</th>
                       <th>Diamond Model</th>
-                      <th>Comments</th>
+                      <th>Tags</th>
                     </thead>
                     <tbody>
                       {% for p in network %}
@@ -170,10 +170,12 @@
                                             <td><i class="fa fa-circle text-danger"></i> {{ p['confidence'] }}</td>
                                             {% endif %}
                                             <td>{{ p['diamondmodel'] }}</td>
-                                            {% if p['comments']|length == 0 %}
+                                            {% if p['tags']|length == 0 %}
                                             <td>-</td>
                                             {% else %}
-                                            <td>{{ p['comments'] }}</td>
+                                            <td>{% for tag in p['tags'].split(",")[:4] %}
+                        <button type="button" class="btn btn-default btn-fill btn-xs">{{ tag }}</button>
+                        {% endfor %}</td>
                                             {% endif %}
                                               <td class="td-actions text-right">
                                                     <a href="/relationships/{{ p['id'] }}" role="button" rel="tooltip" title="Add Relationship" class="btn btn-info btn-simple btn-xs">

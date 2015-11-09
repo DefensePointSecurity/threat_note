@@ -642,8 +642,10 @@ def deletevictimobject(uid):
             cur = con.cursor()
             cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
             cur = con.cursor()
-            cur.execute("SELECT * FROM indicators where diamondmodel='victim'")
-            cur.fetchall()
+            cur.execute(
+                "SELECT * FROM indicators where type='Threat Actor'")
+            network = cur.fetchall()
+        return render_template('threatactors.html', network=network)
     except Exception as e:
         return render_template('error.html', error=e)
 
