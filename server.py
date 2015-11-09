@@ -15,6 +15,7 @@ import re
 import sqlite3 as lite
 import time
 import urllib
+import argparse
 
 import libs.helpers
 import libs.investigate
@@ -44,18 +45,12 @@ from werkzeug.datastructures import ImmutableMultiDict
 from wtforms import PasswordField
 from wtforms import TextField
 from wtforms.validators import Required
-from sys import argv
+
 
 #
 # Configuration #
 #
 db_file = 'threatnote.db'
-if len(argv) > 1:
-    if '--db' in argv[1]:
-        db_file = argv[2]
-else:
-    libs.helpers.setup_db()
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yek_terces'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_file
@@ -1438,5 +1433,27 @@ def get_relationships(ip):
                 pass
     return jsonify({'relationships': temprel})
 
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8888, debug=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--port', help="Specify port to listen on")
+    parser.add_argument('-d', '--debug', help="Run in debug mode", action="store_true")
+    parser.add_argument('-db', '--database', help="Path to sqlite database")
+    args = parser.parse_args()
+
+    if args.db:
+        db_file = args.db
+    else:
+        libs.helpers.setup_db()
+
+    if not args.port:
+        port = '8888'
+    else:
+        port = args.port
+
+    if not args.debug:
+        debug = False
+    else:
+        debug = True
+
+    app.run(host='0.0.0.0', port=port, debug=debug)
