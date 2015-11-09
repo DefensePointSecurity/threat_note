@@ -4,7 +4,7 @@ import os
 
 
 def setup_db(db_file='threatnote.db'):
-    indicator_table = '''CREATE TABLE `indicators` (`id`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,\n	`object` TEXT,	`type`	TEXT,
+    indicator_table = '''CREATE TABLE `indicators` (`id`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, `object` TEXT,	`type`	TEXT,
     `firstseen`	TEXT,	`lastseen`	TEXT,	`diamondmodel`	TEXT,	`campaign`	TEXT,	`confidence`	TEXT,
     `comments`	TEXT,	`tags` TEXT,	`relationships` TEXT	);'''
 
@@ -23,11 +23,20 @@ def setup_db(db_file='threatnote.db'):
             for query in [indicator_table, settings_table, user_table]:
                 cur.execute(query)
             cur.execute('INSERT INTO settings DEFAULT VALUES')
-            #s = "''," * 16
-            #cur.execute("INSERT INTO settings VALUES(" + s + "'')")
+
+            # Set to blank to allow settings UI to display placeholder vaule.
+            cur.execute("UPDATE settings SET cuckoohost = ''")
+            cur.execute("UPDATE settings SET cuckooapiport = ''")
+            cur.execute("UPDATE settings SET httpproxy = ''")
+            cur.execute("UPDATE settings SET httpsproxy = ''")
+            cur.execute("UPDATE settings SET odnskey = ''")
+            cur.execute("UPDATE settings SET apikey = ''")
+            cur.execute("UPDATE settings SET ptkey = ''")
+            cur.execute("UPDATE settings SET circlusername = ''")
+            cur.execute("UPDATE settings SET circlpassword = ''")
 
 
-
+#
 def db_connection(db_file='threatnote.db'):
     con = lite.connect(db_file)
     con.row_factory = lite.Row

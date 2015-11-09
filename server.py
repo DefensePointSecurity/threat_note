@@ -1438,7 +1438,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--port', help="Specify port to listen on")
     parser.add_argument('-d', '--debug', help="Run in debug mode", action="store_true")
-    parser.add_argument('-db', '--database', help="Path to sqlite database")
+    parser.add_argument('-db', '--database', help="Path to sqlite database - Not Implemented")
     args = parser.parse_args()
 
 
