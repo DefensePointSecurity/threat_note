@@ -4,8 +4,7 @@ import sqlite3 as lite
 
 
 def get_odns_apikey():
-    con = lite.connect('threatnote.db')
-    con.row_factory = lite.Row
+    con = libs.helpers.db_connection()
     with con:
         cur = con.cursor()
         cur.execute("SELECT odnskey from settings")
@@ -17,7 +16,6 @@ def get_odns_apikey():
 
 def domain_security(enity):
     api_url = 'https://investigate.api.opendns.com/'
-    #api_key = mongo.db.settings.distinct("odnskey")[0]
     api_key = get_odns_apikey()
     headers = {'Authorization': 'Bearer ' + api_key}
     domain = enity
@@ -37,7 +35,6 @@ def domain_security(enity):
 
 def domain_tag(enity):
     api_url = 'https://investigate.api.opendns.com/'
-    #api_key = mongo.db.settings.distinct("odnskey")[0]
     api_key = get_odns_apikey()
     headers = {'Authorization': 'Bearer ' + api_key}
     domain = enity
@@ -62,7 +59,6 @@ def domain_tag(enity):
 
 def domain_categories(enity):
     api_url = 'https://investigate.api.opendns.com/'
-    #api_key = mongo.db.settings.distinct("odnskey")[0]
     api_key = get_odns_apikey()
     if api_key:
         headers = {'Authorization': 'Bearer ' + api_key}
@@ -87,7 +83,6 @@ def domain_categories(enity):
 
 def ip_query(entity):
     api_url = 'https://investigate.api.opendns.com/'
-    #api_key = mongo.db.settings.distinct("odnskey")[0]
     api_key = get_odns_apikey()
     if api_key:
         headers = {'Authorization': 'Bearer ' + api_key}

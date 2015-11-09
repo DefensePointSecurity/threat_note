@@ -110,22 +110,21 @@
 
           <div class="row">
             <div class="col-md-6">
-
               <div class="card ">
                 <form class="form-horizontal" action="/update/settings/" enctype="application/x-www-form-urlencoded" method="POST">
                   <div class="header">
-                    <h4 class="title">Proxy Settings</h4>
-                    <p class="category">Network Proxy Configuration Settings</p>
+                    <h4 class="title">Cuckoo Settings</h4>
+                    <p class="category">Cuckoo Server and API Port</p>
                   </div>
                   <div class="content">
                     <div class="row">
                       <div class="col-md-8">
                         <fieldset>
-                          <label>HTTP</label>
-                          <input type="text" class="form-control" name="httpproxy" value="{{ records['httpproxy'] }}" placeholder="http://127.0.0.1:8080">
+                          <label>Host</label>
+                          <input type="text" class="form-control" name="cuckoohost" value="{{ records['cuckoohost'] }}" placeholder="127.0.0.1">
                           </br>
-                          <label>HTTPS</label>
-                          <input type="text" class="form-control" name="httpsproxy" value="{{ records['httpsproxy'] }}" placeholder="https://127.0.0.1:8080">
+                          <label>Port</label>
+                          <input type="text" class="form-control" name="cuckooapiport" value="{{ records['cuckooapiport'] }}" placeholder="8090" >
                           </br>
                         </fieldset>
                       </div>
@@ -133,6 +132,8 @@
                   </div>
               </div>
             </div>
+
+
 
             <div class="col-md-6">
               <div class="card ">
@@ -256,15 +257,38 @@
 
                 </div>
                 </fieldset>
-                </form>
-
 
               </div>
             </div>
+
+          <div class="col-md-6">
+              <div class="card ">
+                <form class="form-horizontal" action="/update/settings/" enctype="application/x-www-form-urlencoded" method="POST">
+                  <div class="header">
+                    <h4 class="title">Proxy Settings</h4>
+                    <p class="category">Network Proxy Configuration Settings</p>
+                  </div>
+                  <div class="content">
+                    <div class="row">
+                      <div class="col-md-8">
+                        <fieldset>
+                          <label>HTTP</label>
+                          <input type="text" class="form-control" name="httpproxy" value="{{ records['httpproxy'] }}" placeholder="http://127.0.0.1:8080">
+                          </br>
+                          <label>HTTPS</label>
+                          <input type="text" class="form-control" name="httpsproxy" value="{{ records['httpsproxy'] }}" placeholder="https://127.0.0.1:8080">
+                          </br>
+                        </fieldset>
+                      </div>
+                    </div>
+                  </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
-
+</form>
       <footer class="footer">
         <div class="container-fluid">
           <nav class="pull-left">

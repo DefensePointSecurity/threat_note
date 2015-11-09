@@ -6,8 +6,7 @@ import datetime
 
 def circlquery(indicator):
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
+        con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("SELECT * from settings")

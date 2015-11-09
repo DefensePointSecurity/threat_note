@@ -1,5 +1,47 @@
 import collections
 import sqlite3 as lite
+import os
+
+
+def setup_db(db_file='threatnote.db'):
+    indicator_table = '''CREATE TABLE `indicators` (`id`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, `object` TEXT,	`type`	TEXT,
+    `firstseen`	TEXT,	`lastseen`	TEXT,	`diamondmodel`	TEXT,	`campaign`	TEXT,	`confidence`	TEXT,
+    `comments`	TEXT,	`tags` TEXT,	`relationships` TEXT	);'''
+
+    settings_table = '''CREATE TABLE `settings` (	`apikey`	TEXT,	`odnskey`	TEXT,	`vtinfo`	TEXT,
+    `whoisinfo`	TEXT, `odnsinfo`	TEXT,	`httpproxy`	TEXT,	`httpsproxy`	TEXT,	`threatcrowd` TEXT,	`vtfile` TEXT,	`circlinfo`
+    TEXT,	`circlusername` TEXT,	`circlpassword` TEXT,	`circlssl` TEXT,	`ptinfo` TEXT,	`ptkey` TEXT,
+    cuckoohost text, cuckooapiport text);'''
+
+    user_table = '''CREATE TABLE users (_id INTEGER NOT NULL, 	user VARCHAR, 	email VARCHAR, 	"key" VARCHAR,
+                    PRIMARY KEY (_id));'''
+
+    if not os.path.exists(db_file):
+        con = lite.connect(db_file)
+        with con:
+            cur = con.cursor()
+            for query in [indicator_table, settings_table, user_table]:
+                cur.execute(query)
+            cur.execute('INSERT INTO settings DEFAULT VALUES')
+
+            # Set to blank to allow settings UI to display placeholder vaule.
+            cur.execute("UPDATE settings SET cuckoohost = ''")
+            cur.execute("UPDATE settings SET cuckooapiport = ''")
+            cur.execute("UPDATE settings SET httpproxy = ''")
+            cur.execute("UPDATE settings SET httpsproxy = ''")
+            cur.execute("UPDATE settings SET odnskey = ''")
+            cur.execute("UPDATE settings SET apikey = ''")
+            cur.execute("UPDATE settings SET ptkey = ''")
+            cur.execute("UPDATE settings SET circlusername = ''")
+            cur.execute("UPDATE settings SET circlpassword = ''")
+
+
+#
+def db_connection(db_file='threatnote.db'):
+    con = lite.connect(db_file)
+    con.row_factory = lite.Row
+    return con
+
 
 def get_proxy():
     try:
@@ -29,3 +71,4 @@ def convert(data):
         return type(data)(map(convert, data))
     else:
         return data
+
