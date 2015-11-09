@@ -798,82 +798,14 @@ def updateobject():
                             "ALTER TABLE indicators ADD COLUMN " + t + " TEXT DEFAULT ''")
                         cur.execute("UPDATE indicators SET " + t + "= '" + records[
                                     t] + "' WHERE id = '" + records['id'] + "'")
-        with con:
-            cur = con.cursor()
-            cur.execute(
-                "SELECT * from indicators where id='" + records['id'] + "'")
-            http = cur.fetchall()
-            http = http[0]
-            names = [description[0] for description in cur.description]
-            for i in names:
-                tempdict[i] = http[i]
-            cur.execute("SELECT * from settings")
-            settingsvars = cur.fetchall()
-            settingsvars = settingsvars[0]
-            cur.execute("SELECT relationships from indicators where id='" + records['id'] + "'")
-            rels = cur.fetchall()
-            rels = rels[0][0]
-        rellist = rels.split(",")
-        temprel = {}
-        for rel in rellist:
-            try:
-                with con:
-                    cur = con.cursor()
-                    cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
-                    reltype = cur.fetchall()
-                    reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
-            except:
-                pass
-        reldata = len(temprel)
-        # Returns object information with updated values
-        jsonvt = ""
-        whoisdata = ""
-        odnsdata = ""
-        circldata = ""
-        circlssl = ""
-        ptdata = ""
-        # Run ipwhois or domainwhois based on the type of indicator
-        if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
-            if settingsvars['vtinfo'] == "on":
-                jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
-            if settingsvars['whoisinfo'] == "on":
-                whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
-            if settingsvars['odnsinfo'] == "on":
-                odnsdata = libs.investigate.ip_query(str(http['object']))
-            if settingsvars['circlinfo'] == "on":
-                circldata = libs.circl.circlquery(str(http['object']))
-            if settingsvars['circlssl'] == "on":
-                circlssl = libs.circl.circlssl(str(http['object']))
-            if settingsvars['ptinfo'] == "on":
-                ptdata = libs.passivetotal.pt(str(http['object']))
-        elif str(http['type']) == "Domain":
-            if settingsvars['whoisinfo'] == "on":
-                whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
-            if settingsvars['vtinfo'] == "on":
-                jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
-            if settingsvars['odnsinfo'] == "on":
-                odnsdata = libs.investigate.domain_categories(
-                    str(http['object']))
-            if settingsvars['circlinfo'] == "on":
-                circldata = libs.circl.circlquery(str(http['object']))
-            if settingsvars['ptinfo'] == "on":
-                ptdata = libs.passivetotal.pt(str(http['object']))
-        if records['type'] == "Threat Actor":
-            return render_template(
-                'threatactorobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
-                settingsvars=settingsvars,temprel=temprel, reldata=reldata, taglist=taglist)
-        elif records['diamondmodel'] == "Victim":
-            return render_template(
-                'victimobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
-                settingsvars=settingsvars,temprel=temprel, reldata=reldata,taglist=taglist, ptdata=ptdata )
-        elif records['type'] == "Hash":
-            return render_template(
-                'fileobject.html', records=tempdict, settingsvars=settingsvars,temprel=temprel, reldata=reldata, taglist=taglist)
-        else:
-            return render_template(
-                'networkobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata, odnsdata=odnsdata,
-                settingsvars=settingsvars,temprel=temprel, reldata=reldata,taglist=taglist, circldata=circldata, circlssl=circlssl, ptdata=ptdata)
+        if records['type'] == "IPv4" or records['type'] == "IPv6" or records['type'] == "Domain" or records['type'] == "Network":
+            return redirect(url_for('objectsummary', uid=str(records['id'])))
+        elif records['type'] ==  "Hash":
+            return redirect(url_for('filesobject', uid=str(records['id'])))
+        elif records['type'] == "Entity":
+            return redirect(url_for('victimobject', uid=str(records['id'])))
+        elif records['type'] == "Threat Actor":
+            return redirect(url_for('threatactorobject', uid=str(records['id'])))  
     except Exception as e:
         return render_template('error.html', error=e)
 
