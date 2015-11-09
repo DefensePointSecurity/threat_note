@@ -589,6 +589,73 @@
                     </div>
                     {% endif %}
 
+                              {% if settingsvars['farsightinfo'] == "on" %}
+                    {% if records['type'] == "IPv4" %}
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="card">
+                      <div class="header">
+                        <h4 class="title">Farsight Passive DNS</h4>
+                        <p class="category">More information can be found at <a href="https://www.farsightsecurity.com/" target="_blank">Farsight</a></p>
+                      </div>
+                      <div class="content">
+                       <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Count</th>
+                        <th>Record Type</th>
+                        <th>Record Name</th>
+                        <th>First Seen</th>
+                        <th>Last Seen</th>
+                      </thead>
+                      <tbody>
+                      {% for result in farsightdata %}
+                      <tr>
+                      <td>{{ result['count'] }}</td>
+                      <td>{{ result['rrtype'] }}</td>
+                      <td>{{ result['rrname'] }}</td>
+                      <td>{{ result['time_first'] or result['zone_time_first'] }}</td>
+                      <td>{{ result['time_last'] or result['zone_time_last'] }}</td>
+                      </tr>
+                      {% endfor %}
+
+                            <tr>
+
+                            </tbody>
+                            </table>
+                      </div>
+                    </div>
+                    </div>
+                    </div>
+                    {% else %}
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="card">
+                      <div class="header">
+                        <h4 class="title">Farsight Passive DNS</h4>
+                        <p class="category">More information can be found at <a href="https://www.farsightsecurity.com/" target="_blank">Farsight</a></p>
+                      </div>
+                      <div class="content">
+                       <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Count</th>
+                        <th>Record Type</th>
+                        <th>Record Name</th>
+                        <th>First Seen</th>
+                        <th>Last Seen</th>
+                      </thead>
+                      <tbody>
+                      {% for result in farsightdata %}
+                      <tr>
+                      <td>{{ result['count'] }}</td>
+                      <td>{{ result['rrtype'] }}</td>
+                      <td>{% for i in result['rdata'] %} {{ i }}, {% endfor %}</td>
+                      <td>{{ result['time_first'] or result['zone_time_first'] }}</td>
+                      <td>{{ result['time_last'] or result['zone_time_last'] }}</td>
+                      </tr>
+                      {% endfor %}
+                    {% endif %}
+                    {% endif %}
+
                         </div>
                 </div>
               </div>

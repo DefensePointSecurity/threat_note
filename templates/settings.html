@@ -159,6 +159,16 @@
                           </td>
                           <td>Whois Information</td>
                         </tr>
+                           <tr>
+                          <td>
+                            {% if records['farsightinfo'] == "on" %}
+                            <label class="checkbox">
+                              <input type="checkbox" class="form-control" name="farsightinfo" checked data-toggle="checkbox"> {% else %}
+                              <label class="checkbox">
+                                <input type="checkbox" class="form-control" name="farsightinfo" data-toggle="checkbox"> {% endif %}
+                          </td>
+                          <td>Farsight Passive DNS</td>
+                        </tr>
                         <tr>
                           <td>
                             {% if records['vtinfo'] == "on" %}
@@ -300,6 +310,9 @@
                   </br>
                   <label>Cuckoo API Port</label>
                   <input type="text" class="form-control" name="cuckooapiport" value="{{ records['cuckooapiport'] }}" placeholder="8090" >
+                  </br>
+                  <label>Farsight API Key</label>
+                  <input type="text" class="form-control" name="farsightkey" value="{{ records['farsightkey'] }}" placeholder="149d08c494b4db323420180b09312b2f34e529230496cddfa868c01eea">
                   </br>
                   <button type="submit" class="btn btn-info btn-fill">Submit</button>
 

@@ -17,24 +17,25 @@ import time
 import urllib
 import argparse
 
+import libs.circl
+import libs.cuckoo
+import libs.farsight
 import libs.helpers
 import libs.investigate
-import libs.virustotal
-import libs.whoisinfo
-import libs.circl
 import libs.passivetotal
-import libs.cuckoo
+import libs.whoisinfo
+import libs.virustotal
 
 from flask import Flask
 from flask import flash
+from flask import jsonify
 from flask import make_response
 from flask import redirect
 from flask import render_template
 from flask import request
 from flask import url_for
-from flask import jsonify
-from flask.ext.login import LoginManager
 from flask.ext.login import current_user
+from flask.ext.login import LoginManager
 from flask.ext.login import login_required
 from flask.ext.login import login_user
 from flask.ext.login import logout_user
@@ -60,8 +61,6 @@ lm.init_app(app)
 lm.login_view = 'login'
 
 db = SQLAlchemy(app)
-
-
 
 
 class User(db.Model):
@@ -727,6 +726,15 @@ def updatesettings():
             else:
                 with con:
                     cur.execute("UPDATE settings SET whoisinfo = 'off'")
+            if 'farsightinfo' in newdict.keys():
+                with con:
+                    cur.execute("UPDATE settings SET farsightinfo = 'on'")
+            else:
+                with con:
+                    cur.execute("UPDATE settings SET farsightinfo = 'off'")
+            with con:
+                cur.execute(
+                    "UPDATE settings SET farsightkey = '" + newdict['farsightkey'] + "'")
             with con:
                 cur.execute(
                     "UPDATE settings SET apikey = '" + newdict['apikey'] + "'")
@@ -874,6 +882,7 @@ def objectsummary(uid):
         circldata = ""
         circlssl = ""
         ptdata = ""
+        farsightdata = ""
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
             if settingsvars['vtinfo'] == "on":
@@ -888,6 +897,8 @@ def objectsummary(uid):
                 circlssl = libs.circl.circlssl(str(http['object']))
             if settingsvars['ptinfo'] == "on":
                 ptdata = libs.passivetotal.pt(str(http['object']))
+            if settingsvars['farsightinfo'] == "on":
+                farsightdata = libs.farsight.farsightip(str(http['object']))
         elif str(http['type']) == "Domain":
             if settingsvars['whoisinfo'] == "on":
                 whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
@@ -899,6 +910,8 @@ def objectsummary(uid):
                 circldata = libs.circl.circlquery(str(http['object']))
             if settingsvars['ptinfo'] == "on":
                 ptdata = libs.passivetotal.pt(str(http['object']))
+            if settingsvars['farsightinfo'] == "on":
+                farsightdata = libs.farsight.farsightdomain(str(http['object']))
         if settingsvars['whoisinfo'] == "on":
             if str(http['type']) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
@@ -909,7 +922,7 @@ def objectsummary(uid):
             address = "Information about " + str(http['object'])
         return render_template(
             'networkobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, settingsvars=settingsvars, address=address, ptdata=ptdata, temprel=temprel, circldata=circldata, circlssl=circlssl, reldata=reldata, taglist=taglist)
+            odnsdata=odnsdata, settingsvars=settingsvars, address=address, ptdata=ptdata, temprel=temprel, circldata=circldata, circlssl=circlssl, reldata=reldata, taglist=taglist, farsightdata=farsightdata)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -1094,6 +1107,7 @@ def victimobject(uid):
         circldata = ""
         circlssl = ""
         ptdata = ""
+        farsightdata = ""
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
             if settingsvars['vtinfo'] == "on":
@@ -1108,6 +1122,8 @@ def victimobject(uid):
                 circlssl = libs.circl.circlssl(str(http['object']))
             if settingsvars['ptinfo'] == "on":
                 ptdata = libs.passivetotal.pt(str(http['object']))
+            if settingsvars['farsightinfo'] == "on":
+                farsightdata = libs.farsight.farsightip(str(http['object']))
         elif str(http['type']) == "Domain":
             if settingsvars['whoisinfo'] == "on":
                 whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
@@ -1131,7 +1147,7 @@ def victimobject(uid):
             address = "Information about " + str(http['object'])
         return render_template(
             'victimobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, circldata=circldata, circlssl=circlssl, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, taglist=taglist, ptdata=ptdata)
+            odnsdata=odnsdata, circldata=circldata, circlssl=circlssl, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, taglist=taglist, ptdata=ptdata, farsightdata=farsightdata)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -1193,8 +1209,6 @@ def download(uid):
     if uid == 'unknown':
         uid = ""
     file = io.BytesIO()
-    # fieldnames =
-    # ['id','object','type','firstseen','lastseen','diamondmodel','campaign','confidence','comments']
     con = libs.helpers.db_connection()
     indlist = []
     with con:
@@ -1355,10 +1369,6 @@ if __name__ == '__main__':
     parser.add_argument('-db', '--database', help="Path to sqlite database - Not Implemented")
     args = parser.parse_args()
 
-
-    #if args.database:
-    #    db_file = args.database
-    #else:
     libs.helpers.setup_db()
 
     if not args.port:
