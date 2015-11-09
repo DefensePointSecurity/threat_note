@@ -183,11 +183,11 @@ def home():
                 else:
                     fulllist = tag['tags'].split(",")
                     for tag in fulllist:
-                        tags.append(tag)
+                        tags.append(tag.strip())
             newtags = []
             for i in tags:
                   if i not in newtags:
-                        newtags.append(i)
+                        newtags.append(i.strip())
             dictcount = {}
             dictlist = []
             typecount = {}
@@ -216,7 +216,6 @@ def home():
                 typecount["value"] = round(newtemp, 2)
                 typelist.append(typecount.copy())
             favs = []
-
             # Add Import from Cuckoo button to Dashboard page
             con = libs.helpers.db_connection()
             with con:
