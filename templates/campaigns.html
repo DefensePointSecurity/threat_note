@@ -137,10 +137,12 @@
                     <tbody>
                       {% for ind in campaignents[campaign] %}
                       <tr>
-                        {% if ind[2] == "Threat Actor" %}
-                        <td><a href="/threatactors/{{ ind[0] }}/info">{{ ind[1] }}</a></td>
-                        {% else %}
+                        {% if ind[2] == "IPv4" or ind[2] == "IPv6" or ind[2] == "Domain" or ind[2] == "Network"}
                         <td><a href="/network/{{ ind[0] }}/info">{{ ind[1] }}</a></td>
+                        {% elif ind[2] == "Threat Actor" %}
+                        <td><a href="/threatactors/{{ ind[0] }}/info">{{ ind[1] }}</a></td>
+                        {% elif ind[2] == "Hash" %}
+                        <td><a href="/files/{{ ind[0] }}/info">{{ ind[1] }}</a></td>
                         {% endif %}
                       </tr>
                       {% endfor %}
