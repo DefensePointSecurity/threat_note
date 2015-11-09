@@ -287,7 +287,7 @@
 
                           <div class="form-group">
                             <label>Campaign</label>
-                            <input type="text" class="form-control" name="{{ i }}" value="{{ entry[i] }}" placeholder="LASER PANDA">
+                            <input type="text" class="form-control" name="campaign" value="{{ entry['campaign'] }}" placeholder="LASER PANDA">
                           </div>
 
                           <div class="form-group">
@@ -315,13 +315,13 @@
 
                           <div class="form-group">
                             <label>First Seen</label>
-                            <input type="text" class="form-control" name="{{ i }}" value="{{ entry['firstseen'] }}" placeholder="09-01-2015">
+                            <input type="text" class="form-control" name="firstseen" value="{{ entry['firstseen'] }}" placeholder="09-01-2015">
                           </div>
 
 
                           <div class="form-group">
                             <label>Last Seen</label>
-                            <input type="text" class="form-control" name="{{ i }}" value="{{ entry['lastseen'] }}" placeholder="09-15-2015">
+                            <input type="text" class="form-control" name="lastseen" value="{{ entry['lastseen'] }}" placeholder="09-15-2015">
                           </div>
 
                           <div class="form-group">
@@ -361,8 +361,6 @@
                             <input type="text" class="form-control" id="tokenfield" name="tags" value="{{ entry['tags'] }}" />
                           </div>
                           
-
-
 
                           {% for i in entry %} {% if i == "comments" or i == "type" or i == "campaign" or i == "type" or i == "firstseen" or i == "lastseen" or i == "tags" or i == "id" or i== "relationships" or i == "confidence" or i == "object" or i == "diamondmodel" %}
                           <div></div>
