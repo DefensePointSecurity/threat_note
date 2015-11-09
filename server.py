@@ -315,19 +315,19 @@ def campaigns():
                 entlist = []
                 cur = con.cursor()
                 cur.execute(
-                    "SELECT DISTINCT object FROM indicators WHERE length(campaign) < 1")
+                    "SELECT DISTINCT * FROM indicators WHERE length(campaign) < 1")
                 camps = cur.fetchall()
                 for ent in camps:
-                    entlist.append(str(ent[0]))
+                    entlist.append(ent)
                 campaignents["Unknown"] = entlist
             else:
                 entlist = []
                 cur = con.cursor()
                 cur.execute(
-                    "SELECT DISTINCT object FROM indicators WHERE campaign = '" + str(camp[0]) + "'")
+                    "SELECT DISTINCT * FROM indicators WHERE campaign = '" + str(camp[0]) + "'")
                 camps = cur.fetchall()
                 for ent in camps:
-                    entlist.append(str(ent[0]))
+                    entlist.append(ent)
                 campaignents[str(camp[0])] = entlist
         return render_template('campaigns.html', campaignents=campaignents)
     except Exception as e:

@@ -1,4 +1,4 @@
-{% include "banners/newheader.html" %} 
+{% include "banners/newheader.html" %}
 {% block content %}
 
 <body>
@@ -56,7 +56,7 @@
               <p>Tags</p>
             </a>
           </li>
-            
+
 
         </ul>
       </div>
@@ -135,9 +135,13 @@
                       <th>Indicator</th>
                     </thead>
                     <tbody>
-                      {% for p in campaignents[campaign] %}
+                      {% for ind in campaignents[campaign] %}
                       <tr>
-                        <td><a href="/campaign/{{ p }}/info">{{ p }}</a></td>
+                        {% if ind[2] == "Threat Actor" %}
+                        <td><a href="/threatactors/{{ ind[0] }}/info">{{ ind[1] }}</a></td>
+                        {% else %}
+                        <td><a href="/network/{{ ind[0] }}/info">{{ ind[1] }}</a></td>
+                        {% endif %}
                       </tr>
                       {% endfor %}
                     </tbody>
