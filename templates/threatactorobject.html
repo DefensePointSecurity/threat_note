@@ -138,7 +138,9 @@
               </div>
               <div class="card">
                 <div class="header">
-                  <h4 class="title"><i class="pe-7s-user"></i> {{ records['object'] }}</h4>
+                  <h4 class="title"><i class="pe-7s-user"></i> {{ records['object'] }}<div style="float: right;">
+                    <a href="/edit/{{ records['id'] }}" class="btn btn-info btn-fill"><i class="fa fa-pencil"></i> </a>
+                  </div></h4>
                   <p class="category">Other info will go here.</p>
                 </div>
 
