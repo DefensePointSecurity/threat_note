@@ -136,12 +136,12 @@
                   </br>
                 </div>
               </div>
-              <div class="row">
+             <div class="row">
                 <div class="card">
                   <div class="header">
                     <h4 class="title"><i class="pe-7s-global"></i>
-                      <span style="padding-left:10px"></span>{{ records['object'] }}<div style="float: right;"><a href="/relationships/{{ records['id'] }}" class="btn btn-info btn-fill"><i class="fa fa-link"></i></a>
-                    <a href="/edit/{{ records['id'] }}" class="btn btn-info btn-fill"><i class="fa fa-pencil"></i> </a>
+                      <span style="padding-left:10px"></span>{{ records['object'] }}<div style="float: right;"><a href="/relationships/{{ records['id'] }}" class="btn btn-info btn-fill" rel="tooltip" title="Add Relationship"><i class="fa fa-link" ></i></a>
+                    <a href="/edit/{{ records['id'] }}" class="btn btn-info btn-fill" rel="tooltip" title="Edit Object"><i class="fa fa-pencil"></i> </a>
                   </div></h4>
                     <p class="category">{{ address }}</p>
                   </div>
@@ -332,7 +332,11 @@
                             {% elif line == "nets" %}
                               {% for i in whoisdata['nets'][0] %}
                               <tr>
+                              {% if whoisdata['nets'][0][i] == None %}
+                            <td><span class="text-capitalize">{{ i }}</span</td><td>-</td>
+                            {% else %}
                             <td><span class="text-capitalize">{{ i }}</span</td><td>{{ whoisdata['nets'][0][i] }}</td>
+                            {% endif %}
                             </tr>
                             {% endfor %}
                             {% elif line == "asn" %}
