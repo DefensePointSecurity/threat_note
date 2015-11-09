@@ -261,7 +261,7 @@
                         {% endfor %}
                         </td>
                         </tr>
-                        {% endif %} 
+                        {% endif %}
                         {% for key in records %} {% if key == "id" or key == "type" or key == "campaign" or key == "confidence" or key == "Firstseen" or key == "tags" or key == "Lastseen" or key == "comments" or key == "diamondmodel" or key == "object" or key == "firstseen" or key == "relationships" or key
                         == "lastseen" or records[key] == "None" or records[key] == "" %}
                         <div></div>
@@ -273,7 +273,7 @@
                           <td>{{ records[key] }}</td>
                         </tr>
 
-                        {% endif %} {% endfor %} 
+                        {% endif %} {% endfor %}
                       </tbody>
                     </table>
                     </div>
@@ -298,7 +298,7 @@
                       {% for rel in temprel %}
                        <tr>
                        <td>{{ rel }}</td>
-                       <td>{{ temprel[rel] }}</td>                     
+                       <td>{{ temprel[rel] }}</td>
                        </tr>
                        {% endfor %}
                             </tbody>
@@ -308,7 +308,7 @@
                     </div>
                     </div>
                     {% endif %}
-              
+
 
                     {% if settingsvars['whoisinfo'] == "on" %}
                 {% if records['type'] == "IPv4" %}
@@ -357,7 +357,7 @@
                     <div class="card">
                       <div class="header">
                         <h4 class="title">Whois Information</h4>
-                        <p class="category">More information can be found at <a href="https://who.is/whois-ip/ip-address/{{ records['object'] }}" target="_blank">who.is</a></p>
+                        <p class="category">More information can be found at <a href="https://who.is/whois/{{ records['object'] }}" target="_blank">who.is</a></p>
                       </div>
                       <div class="content">
                         <table class="table table-hover table-striped">
@@ -632,9 +632,9 @@
                       <td>{{ result['lastSeen'] }}</td>
                       </tr>
                       {% endfor %}
-                      
+
                             <tr>
-                            
+
                             </tbody>
                             </table>
                       </div>
@@ -643,8 +643,8 @@
                     </div>
                     {% endif %}
 
-                      
-               
+
+
                   </div>
                 </div>
               </div>
