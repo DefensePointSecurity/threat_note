@@ -1441,13 +1441,14 @@ if __name__ == '__main__':
     parser.add_argument('-db', '--database', help="Path to sqlite database")
     args = parser.parse_args()
 
-    if args.db:
-        db_file = args.db
-    else:
-        libs.helpers.setup_db()
+
+    #if args.database:
+    #    db_file = args.database
+    #else:
+    libs.helpers.setup_db()
 
     if not args.port:
-        port = '8888'
+        port = 8888
     else:
         port = args.port
 
@@ -1455,5 +1456,6 @@ if __name__ == '__main__':
         debug = False
     else:
         debug = True
+
 
     app.run(host='0.0.0.0', port=port, debug=debug)
