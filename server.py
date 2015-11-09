@@ -221,10 +221,10 @@ def home():
             con = libs.helpers.db_connection()
             with con:
                 cur = con.cursor()
-                cur.execute("SELECT cuckoohost,cuckooapiport FROM settings")
+                cur.execute("SELECT cuckoo FROM settings")
             try:
                 cuckoo_settings = cur.fetchall()[0]
-                if cuckoo_settings[0]:
+                if 'on' in cuckoo_settings[0]:
                     importsetting = True
                 else:
                     importsetting = False
@@ -680,106 +680,87 @@ def updatesettings():
             cur.fetchall()
             if 'threatcrowd' in newdict.keys():
                 with con:
-                    cur = con.cursor()
                     cur.execute("UPDATE settings SET threatcrowd = 'on'")
             else:
                 with con:
-                    cur = con.cursor()
                     cur.execute("UPDATE settings SET threatcrowd = 'off'")
             if 'ptinfo' in newdict.keys():
                 with con:
-                    cur = con.cursor()
                     cur.execute("UPDATE settings SET ptinfo = 'on'")
             else:
                 with con:
-                    cur = con.cursor()
                     cur.execute("UPDATE settings SET ptinfo = 'off'")
+            if 'cuckoo' in newdict.keys():
+                with con:
+                    cur.execute("UPDATE settings SET cuckoo = 'on'")
+            else:
+                with con:
+                    cur.execute("UPDATE settings SET cuckoo = 'off'")
             if 'vtinfo' in newdict.keys():
                 with con:
-                    cur = con.cursor()
                     cur.execute("UPDATE settings SET vtinfo = 'on'")
             else:
                 with con:
-                    cur = con.cursor()
                     cur.execute("UPDATE settings SET vtinfo = 'off'")
             if 'vtfile' in newdict.keys():
                 with con:
-                    cur = con.cursor()
                     cur.execute("UPDATE settings SET vtfile = 'on'")
             else:
                 with con:
-                    cur = con.cursor()
                     cur.execute("UPDATE settings SET vtfile = 'off'")
             if 'circlinfo' in newdict.keys():
                 with con:
-                    cur = con.cursor()
                     cur.execute("UPDATE settings SET circlinfo = 'on'")
             else:
                 with con:
-                    cur = con.cursor()
                     cur.execute("UPDATE settings SET circlinfo = 'off'")
             if 'circlssl' in newdict.keys():
                 with con:
-                    cur = con.cursor()
                     cur.execute("UPDATE settings SET circlssl = 'on'")
             else:
                 with con:
-                    cur = con.cursor()
                     cur.execute("UPDATE settings SET circlssl = 'off'")
             if 'whoisinfo' in newdict.keys():
                 with con:
-                    cur = con.cursor()
                     cur.execute("UPDATE settings SET whoisinfo = 'on'")
             else:
                 with con:
-                    cur = con.cursor()
                     cur.execute("UPDATE settings SET whoisinfo = 'off'")
             with con:
-                cur = con.cursor()
                 cur.execute(
                     "UPDATE settings SET apikey = '" + newdict['apikey'] + "'")
             if 'odnsinfo' in newdict.keys():
                 with con:
-                    cur = con.cursor()
                     cur.execute("UPDATE settings SET odnsinfo = 'on'")
             else:
                 with con:
-                    cur = con.cursor()
                     cur.execute("UPDATE settings SET odnsinfo = 'off'")
             with con:
-                cur = con.cursor()
                 cur.execute(
                     "UPDATE settings SET odnskey = '" + newdict['odnskey'] + "'")
             with con:
-                cur = con.cursor()
                 cur.execute(
                     "UPDATE settings SET httpproxy = '" + newdict['httpproxy'] + "'")
             with con:
-                cur = con.cursor()
                 cur.execute(
                     "UPDATE settings SET httpsproxy = '" + newdict['httpsproxy'] + "'")
             with con:
-                cur = con.cursor()
                 cur.execute(
                     "UPDATE settings SET cuckoohost = '" + newdict['cuckoohost'] + "'")
             with con:
-                cur = con.cursor()
                 cur.execute(
                     "UPDATE settings SET cuckooapiport = '" + newdict['cuckooapiport'] + "'")
-
             with con:
-                cur = con.cursor()
                 cur.execute(
                     "UPDATE settings SET circlusername = '" + newdict['circlusername'] + "'")
             with con:
-                cur = con.cursor()
                 cur.execute(
                     "UPDATE settings SET circlpassword = '" + newdict['circlpassword'] + "'")
             with con:
-                cur = con.cursor()
                 cur.execute(
                     "UPDATE settings SET ptkey = '" + newdict['ptkey'] + "'")  
-        con = libs.helpers.db_connection()
+
+        #con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("SELECT * from settings")

@@ -4,14 +4,14 @@ import os
 
 
 def setup_db(db_file='threatnote.db'):
-    indicator_table = '''CREATE TABLE `indicators` (`id`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, `object` TEXT,	`type`	TEXT,
-    `firstseen`	TEXT,	`lastseen`	TEXT,	`diamondmodel`	TEXT,	`campaign`	TEXT,	`confidence`	TEXT,
-    `comments`	TEXT,	`tags` TEXT,	`relationships` TEXT	);'''
+    indicator_table = '''CREATE TABLE indicators (id	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, object TEXT, type TEXT,
+                        firstseen	TEXT,	lastseen	TEXT,	diamondmodel	TEXT,	campaign	TEXT,	confidence	TEXT,
+                        comments	TEXT,	tags TEXT,	relationships TEXT	);'''
 
-    settings_table = '''CREATE TABLE `settings` (	`apikey`	TEXT,	`odnskey`	TEXT,	`vtinfo`	TEXT,
-    `whoisinfo`	TEXT, `odnsinfo`	TEXT,	`httpproxy`	TEXT,	`httpsproxy`	TEXT,	`threatcrowd` TEXT,	`vtfile` TEXT,	`circlinfo`
-    TEXT,	`circlusername` TEXT,	`circlpassword` TEXT,	`circlssl` TEXT,	`ptinfo` TEXT,	`ptkey` TEXT,
-    cuckoohost text, cuckooapiport text);'''
+    settings_table = '''CREATE TABLE settings (	apikey	TEXT,	odnskey	TEXT,	vtinfo	TEXT,
+                        whoisinfo	TEXT, odnsinfo	TEXT,	httpproxy	TEXT,	httpsproxy	TEXT,	threatcrowd TEXT,	vtfile TEXT, circlinfo
+                        TEXT,	circlusername TEXT,	circlpassword TEXT,	circlssl TEXT,	ptinfo TEXT,	ptkey TEXT, cuckoo TEXT,
+                        cuckoohost TEXT, cuckooapiport TEXT);'''
 
     user_table = '''CREATE TABLE users (_id INTEGER NOT NULL, 	user VARCHAR, 	email VARCHAR, 	"key" VARCHAR,
                     PRIMARY KEY (_id));'''
