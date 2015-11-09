@@ -779,31 +779,29 @@ def updateobject():
         something = request.form
         imd = ImmutableMultiDict(something)
         records = libs.helpers.convert(imd)
-        newdict = {}
+        #newdict = {}
         tempdict = {}
-        for i in records:
-            newdict[i] = records[i]
-        taglist = newdict['tags'].split(",")
+        taglist = records['tags'].split(",")
         con = libs.helpers.db_connection()
         with con:
-            for t in newdict:
+            for t in records:
                 if t == "id":
                     pass
                 else:
                     try:
                         cur = con.cursor()
-                        cur.execute("UPDATE indicators SET " + t + "= '" + newdict[
-                                    t] + "' WHERE id = '" + newdict['id'] + "'")
+                        cur.execute("UPDATE indicators SET " + t + "= '" + records[
+                                    t] + "' WHERE id = '" + records['id'] + "'")
                     except:
                         cur = con.cursor()
                         cur.execute(
                             "ALTER TABLE indicators ADD COLUMN " + t + " TEXT DEFAULT ''")
-                        cur.execute("UPDATE indicators SET " + t + "= '" + newdict[
-                                    t] + "' WHERE id = '" + newdict['id'] + "'")
+                        cur.execute("UPDATE indicators SET " + t + "= '" + records[
+                                    t] + "' WHERE id = '" + records['id'] + "'")
         with con:
             cur = con.cursor()
             cur.execute(
-                "SELECT * from indicators where id='" + newdict['id'] + "'")
+                "SELECT * from indicators where id='" + records['id'] + "'")
             http = cur.fetchall()
             http = http[0]
             names = [description[0] for description in cur.description]
@@ -812,7 +810,7 @@ def updateobject():
             cur.execute("SELECT * from settings")
             settingsvars = cur.fetchall()
             settingsvars = settingsvars[0]
-            cur.execute("SELECT relationships from indicators where id='" + newdict['id'] + "'")
+            cur.execute("SELECT relationships from indicators where id='" + records['id'] + "'")
             rels = cur.fetchall()
             rels = rels[0][0]
         rellist = rels.split(",")
@@ -861,15 +859,15 @@ def updateobject():
                 circldata = libs.circl.circlquery(str(http['object']))
             if settingsvars['ptinfo'] == "on":
                 ptdata = libs.passivetotal.pt(str(http['object']))
-        if newdict['type'] == "Threat Actor":
+        if records['type'] == "Threat Actor":
             return render_template(
                 'threatactorobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
                 settingsvars=settingsvars,temprel=temprel, reldata=reldata, taglist=taglist)
-        elif newdict['diamondmodel'] == "Victim":
+        elif records['diamondmodel'] == "Victim":
             return render_template(
                 'victimobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
                 settingsvars=settingsvars,temprel=temprel, reldata=reldata,taglist=taglist, ptdata=ptdata )
-        elif newdict['type'] == "Hash":
+        elif records['type'] == "Hash":
             return render_template(
                 'fileobject.html', records=tempdict, settingsvars=settingsvars,temprel=temprel, reldata=reldata, taglist=taglist)
         else:
