@@ -23,13 +23,12 @@ def circlquery(indicator):
                 obj = json.loads(l)
             except:
                 pass
-            obj['time_first'] = datetime.datetime.fromtimestamp(obj['time_last'])
+            obj['time_first'] = datetime.datetime.fromtimestamp(obj['time_first'])
             obj['time_last'] = datetime.datetime.fromtimestamp(obj['time_last'])
-            to_return.append(obj)  
-        if len(to_return) == 0:  
-            return ""
-        else:
-            return to_return
+            if len(to_return) == 0:  
+                return ""
+            else:
+                return to_return
     except:
         pass
 

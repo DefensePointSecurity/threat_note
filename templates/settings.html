@@ -139,12 +139,15 @@
                   <p class="category">Configure 3rd Party Data Providers Options</p>
                 </div>
 
+                
+                   <div class="header">
+                  <p class="category">Network</p>
+                </div>
                 <div class="content table-responsive table-full-width">
                   <fieldset>
                     <table class="table">
                       <tbody>
-
-                        <tr>
+                           <tr>
                           <td>
                             {% if records['whoisinfo'] == "on" %}
 
@@ -156,17 +159,15 @@
                           </td>
                           <td>Whois Information</td>
                         </tr>
-                        <tr>
+                           <tr>
                           <td>
-                            {% if records['threatcrowd'] == "on" %}
-
+                            {% if records['farsightinfo'] == "on" %}
                             <label class="checkbox">
-                              <input type="checkbox" class="form-control" name="threatcrowd" checked data-toggle="checkbox"> {% else %}
-
+                              <input type="checkbox" class="form-control" name="farsightinfo" checked data-toggle="checkbox"> {% else %}
                               <label class="checkbox">
-                                <input type="checkbox" class="form-control" name="threatcrowd" data-toggle="checkbox"> {% endif %}
+                                <input type="checkbox" class="form-control" name="farsightinfo" data-toggle="checkbox"> {% endif %}
                           </td>
-                          <td>ThreatCrowd Visualizations</td>
+                          <td>Farsight Passive DNS</td>
                         </tr>
                         <tr>
                           <td>
@@ -176,17 +177,7 @@
                               <label class="checkbox">
                                 <input type="checkbox" class="form-control" name="vtinfo" data-toggle="checkbox"> {% endif %}
                           </td>
-                          <td>VirusTotal Passive DNS Information</td>
-                        </tr>
-                         <tr>
-                          <td>
-                            {% if records['vtfile'] == "on" %}
-                            <label class="checkbox">
-                              <input type="checkbox" class="form-control" name="vtfile" checked data-toggle="checkbox"> {% else %}
-                              <label class="checkbox">
-                                <input type="checkbox" class="form-control" name="vtfile" data-toggle="checkbox"> {% endif %}
-                          </td>
-                          <td>VirusTotal File Information</td>
+                          <td>VirusTotal Passive DNS</td>
                         </tr>
                          <tr>
                           <td>
@@ -198,6 +189,7 @@
                           </td>
                           <td>PassiveTotal Passive DNS</td>
                         </tr>
+
                         <tr>
                           <td>
                             {% if records['odnsinfo'] == "on" %}
@@ -216,7 +208,7 @@
                               <label class="checkbox">
                                 <input type="checkbox" class="form-control" name="circlinfo" data-toggle="checkbox"> {% endif %}
                           </td>
-                          <td>CIRCL.lu Passive DNS</td>
+                          <td>CIRCL Passive DNS</td>
                         </tr>
                         <tr>
                           <td>
@@ -226,8 +218,32 @@
                               <label class="checkbox">
                                 <input type="checkbox" class="form-control" name="circlssl" data-toggle="checkbox"> {% endif %}
                           </td>
-                          <td>CIRCL.lu Passive SSL</td>
+                          <td>CIRCL Passive SSL</td>
                         </tr>
+                       
+                 
+                      </tbody>
+                    </table>
+                  </div>
+
+                   <div class="header">
+                  <p class="category">File</p>
+                </div>
+                <div class="content table-responsive table-full-width">
+                  <fieldset>
+                    <table class="table">
+                      <tbody>
+                          <tr>
+                          <td>
+                            {% if records['vtfile'] == "on" %}
+                            <label class="checkbox">
+                              <input type="checkbox" class="form-control" name="vtfile" checked data-toggle="checkbox"> {% else %}
+                              <label class="checkbox">
+                                <input type="checkbox" class="form-control" name="vtfile" data-toggle="checkbox"> {% endif %}
+                          </td>
+                          <td>VirusTotal File Information</td>
+                        </tr>
+                        
                       <tr>
                           <td>
                             {% if records['cuckoo'] == "on" %}
@@ -238,22 +254,52 @@
                           </td>
                           <td>Cuckoo Sandbox</td>
                         </tr>
+                       
+                 
                       </tbody>
                     </table>
+                  </div>
 
+                  <div class="header">
+                  <p class="category">Visualization</p>
                 </div>
+                <div class="content table-responsive table-full-width">
+                  <fieldset>
+                    <table class="table">
+                      <tbody>
+                           <tr>
+                          <td>
+                            {% if records['threatcrowd'] == "on" %}
+
+                            <label class="checkbox">
+                              <input type="checkbox" class="form-control" name="threatcrowd" checked data-toggle="checkbox"> {% else %}
+
+                              <label class="checkbox">
+                                <input type="checkbox" class="form-control" name="threatcrowd" data-toggle="checkbox"> {% endif %}
+                          </td>
+                          <td>ThreatCrowd Visualizations</td>
+                        </tr>
+                       
+                       
+                 
+                      </tbody>
+                    </table>
+                  </div>
+
+
+
                 <div class="content">
                   <h4 class="title">Configure 3rd Party Integrations</h4>
                   <label>VirusTotal API Key</label>
                   <input type="text" class="form-control" name="apikey" value="{{ records['apikey'] }}" placeholder="149d08c494b4db323420180b09312b2f34e529230496cddfa868c01eea">
                   </br>
-                  <label>Investigate API Key</label>
+                  <label>OpenDNS Investigate API Key</label>
                   <input type="text" class="form-control" name="odnskey" value="{{ records['odnskey'] }}" placeholder="89ba67a0-b1f2-75ef-9fb9-04eae0434963">
                   </br>
-                  <label>Circl.lu Username</label>
+                  <label>CIRCL Username</label>
                   <input type="text" class="form-control" name="circlusername" value="{{ records['circlusername'] }}" placeholder="Username">
                   </br>
-                  <label>Circl.lu Password</label>
+                  <label>CIRCL Password</label>
                   <input type="password" class="form-control" name="circlpassword" value="{{ records['circlpassword'] }}" placeholder="********">
                   </br>
                   <label>PassiveTotal API Key</label>
@@ -264,6 +310,9 @@
                   </br>
                   <label>Cuckoo API Port</label>
                   <input type="text" class="form-control" name="cuckooapiport" value="{{ records['cuckooapiport'] }}" placeholder="8090" >
+                  </br>
+                  <label>Farsight API Key</label>
+                  <input type="text" class="form-control" name="farsightkey" value="{{ records['farsightkey'] }}" placeholder="149d08c494b4db323420180b09312b2f34e529230496cddfa868c01eea">
                   </br>
                   <button type="submit" class="btn btn-info btn-fill">Submit</button>
 

@@ -136,11 +136,13 @@
                   </br>
                 </div>
               </div>
-              <div class="row">
+             <div class="row">
                 <div class="card">
                   <div class="header">
                     <h4 class="title"><i class="pe-7s-global"></i>
-                      <span style="padding-left:10px"></span>{{ records['object'] }}</h4>
+                      <span style="padding-left:10px"></span>{{ records['object'] }}<div style="float: right;"><a href="/relationships/{{ records['id'] }}" class="btn btn-info btn-fill" rel="tooltip" title="Add Relationship"><i class="fa fa-link" ></i></a>
+                    <a href="/edit/{{ records['id'] }}" class="btn btn-info btn-fill" rel="tooltip" title="Edit Object"><i class="fa fa-pencil"></i> </a>
+                  </div></h4>
                     <p class="category">{{ address }}</p>
                   </div>
 
@@ -256,7 +258,7 @@
                         <span class="text-capitalize">Tags</span>
                         </td>
                         <td>
-                        {% for tag in taglist %}
+                        {% for tag in records['tags'].split(",") %}
                         <button type="button" class="btn btn-default btn-fill btn-xs">{{ tag }}</button>
                         {% endfor %}
                         </td>
@@ -330,7 +332,11 @@
                             {% elif line == "nets" %}
                               {% for i in whoisdata['nets'][0] %}
                               <tr>
+                              {% if whoisdata['nets'][0][i] == None %}
+                            <td><span class="text-capitalize">{{ i }}</span</td><td>-</td>
+                            {% else %}
                             <td><span class="text-capitalize">{{ i }}</span</td><td>{{ whoisdata['nets'][0][i] }}</td>
+                            {% endif %}
                             </tr>
                             {% endfor %}
                             {% elif line == "asn" %}
@@ -524,8 +530,8 @@
                   <div class="col-lg-12">
                     <div class="card">
                       <div class="header">
-                        <h4 class="title">CIRCL.lu Passive DNS</h4>
-                        <p class="category">More information can be found at <a href="https://www.circl.lu/services/passive-dns/" target="_blank">CIRCL.lu</a></p>
+                        <h4 class="title">CIRCL Passive DNS</h4>
+                        <p class="category">More information can be found at <a href="https://www.circl.lu/services/passive-dns/" target="_blank">CIRCL</a></p>
                       </div>
                       <div class="content">
                        <table class="table table-hover table-striped">
@@ -585,6 +591,73 @@
                     </div>
                     </div>
                     </div>
+                    {% endif %}
+
+                              {% if settingsvars['farsightinfo'] == "on" %}
+                    {% if records['type'] == "IPv4" %}
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="card">
+                      <div class="header">
+                        <h4 class="title">Farsight Passive DNS</h4>
+                        <p class="category">More information can be found at <a href="https://www.farsightsecurity.com/" target="_blank">Farsight</a></p>
+                      </div>
+                      <div class="content">
+                       <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Count</th>
+                        <th>Record Type</th>
+                        <th>Record Name</th>
+                        <th>First Seen</th>
+                        <th>Last Seen</th>
+                      </thead>
+                      <tbody>
+                      {% for result in farsightdata %}
+                      <tr>
+                      <td>{{ result['count'] }}</td>
+                      <td>{{ result['rrtype'] }}</td>
+                      <td>{{ result['rrname'] }}</td>
+                      <td>{{ result['time_first'] or result['zone_time_first'] }}</td>
+                      <td>{{ result['time_last'] or result['zone_time_last'] }}</td>
+                      </tr>
+                      {% endfor %}
+
+                            <tr>
+
+                            </tbody>
+                            </table>
+                      </div>
+                    </div>
+                    </div>
+                    </div>
+                    {% else %}
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="card">
+                      <div class="header">
+                        <h4 class="title">Farsight Passive DNS</h4>
+                        <p class="category">More information can be found at <a href="https://www.farsightsecurity.com/" target="_blank">Farsight</a></p>
+                      </div>
+                      <div class="content">
+                       <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Count</th>
+                        <th>Record Type</th>
+                        <th>Record Name</th>
+                        <th>First Seen</th>
+                        <th>Last Seen</th>
+                      </thead>
+                      <tbody>
+                      {% for result in farsightdata %}
+                      <tr>
+                      <td>{{ result['count'] }}</td>
+                      <td>{{ result['rrtype'] }}</td>
+                      <td>{% for i in result['rdata'] %} {{ i }}, {% endfor %}</td>
+                      <td>{{ result['time_first'] or result['zone_time_first'] }}</td>
+                      <td>{{ result['time_last'] or result['zone_time_last'] }}</td>
+                      </tr>
+                      {% endfor %}
+                    {% endif %}
                     {% endif %}
 
                         </div>

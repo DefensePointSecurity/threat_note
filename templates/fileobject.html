@@ -140,11 +140,11 @@
                 <div class="card">
                   <div class="header">
                     <h4 class="title"><i class="pe-7s-global"></i>
-                      <span style="padding-left:10px"></span>{{ records['object'] }}</h4>
+                      <span style="padding-left:10px"></span>{{ records['object'] }}<div style="float: right;"><a href="/relationships/{{ records['id'] }}" class="btn btn-info btn-fill" rel="tooltip" title="Add Relationship"><i class="fa fa-link" ></i></a>
+                    <a href="/edit/{{ records['id'] }}" class="btn btn-info btn-fill" rel="tooltip" title="Edit Object"><i class="fa fa-pencil"></i> </a>
+                  </div></h4>
                     <p class="category">{{ address }}</p>
                   </div>
-
-
                   <div class="content table-responsive table-full-width">
                     <table class="table table-hover table-striped">
                       <thead>
@@ -256,7 +256,7 @@
                         <span class="text-capitalize">Tags</span>
                         </td>
                         <td>
-                        {% for tag in taglist %}
+                        {% for tag in records['tags'].split(",") %}
                         <button type="button" class="btn btn-default btn-fill btn-xs">{{ tag }}</button>
                         {% endfor %}
                         </td>

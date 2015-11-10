@@ -17,24 +17,25 @@ import time
 import urllib
 import argparse
 
+import libs.circl
+import libs.cuckoo
+import libs.farsight
 import libs.helpers
 import libs.investigate
-import libs.virustotal
-import libs.whoisinfo
-import libs.circl
 import libs.passivetotal
-import libs.cuckoo
+import libs.whoisinfo
+import libs.virustotal
 
 from flask import Flask
 from flask import flash
+from flask import jsonify
 from flask import make_response
 from flask import redirect
 from flask import render_template
 from flask import request
 from flask import url_for
-from flask import jsonify
-from flask.ext.login import LoginManager
 from flask.ext.login import current_user
+from flask.ext.login import LoginManager
 from flask.ext.login import login_required
 from flask.ext.login import login_user
 from flask.ext.login import logout_user
@@ -60,8 +61,6 @@ lm.init_app(app)
 lm.login_view = 'login'
 
 db = SQLAlchemy(app)
-
-
 
 
 class User(db.Model):
@@ -183,11 +182,11 @@ def home():
                 else:
                     fulllist = tag['tags'].split(",")
                     for tag in fulllist:
-                        tags.append(tag)
+                        tags.append(tag.strip())
             newtags = []
             for i in tags:
                   if i not in newtags:
-                        newtags.append(i)
+                        newtags.append(i.strip())
             dictcount = {}
             dictlist = []
             typecount = {}
@@ -216,7 +215,6 @@ def home():
                 typecount["value"] = round(newtemp, 2)
                 typelist.append(typecount.copy())
             favs = []
-
             # Add Import from Cuckoo button to Dashboard page
             con = libs.helpers.db_connection()
             with con:
@@ -638,8 +636,11 @@ def deletevictimobject(uid):
         with con:
             cur = con.cursor()
             cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
-            cur.execute("SELECT * FROM indicators where diamondmodel='victim'")
-            cur.fetchall()
+            cur = con.cursor()
+            cur.execute(
+                "SELECT * FROM indicators where type='Threat Actor'")
+            network = cur.fetchall()
+        return render_template('threatactors.html', network=network)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -721,6 +722,15 @@ def updatesettings():
             else:
                 with con:
                     cur.execute("UPDATE settings SET whoisinfo = 'off'")
+            if 'farsightinfo' in newdict.keys():
+                with con:
+                    cur.execute("UPDATE settings SET farsightinfo = 'on'")
+            else:
+                with con:
+                    cur.execute("UPDATE settings SET farsightinfo = 'off'")
+            with con:
+                cur.execute(
+                    "UPDATE settings SET farsightkey = '" + newdict['farsightkey'] + "'")
             with con:
                 cur.execute(
                     "UPDATE settings SET apikey = '" + newdict['apikey'] + "'")
@@ -774,103 +784,33 @@ def updateobject():
         something = request.form
         imd = ImmutableMultiDict(something)
         records = libs.helpers.convert(imd)
-        newdict = {}
+        #newdict = {}
         tempdict = {}
-        for i in records:
-            newdict[i] = records[i]
-        taglist = newdict['tags'].split(",")
+        taglist = records['tags'].split(",")
         con = libs.helpers.db_connection()
         with con:
-            for t in newdict:
+            for t in records:
                 if t == "id":
                     pass
                 else:
                     try:
                         cur = con.cursor()
-                        cur.execute("UPDATE indicators SET " + t + "= '" + newdict[
-                                    t] + "' WHERE id = '" + newdict['id'] + "'")
+                        cur.execute("UPDATE indicators SET " + t + "= '" + records[
+                                    t] + "' WHERE id = '" + records['id'] + "'")
                     except:
                         cur = con.cursor()
                         cur.execute(
                             "ALTER TABLE indicators ADD COLUMN " + t + " TEXT DEFAULT ''")
-                        cur.execute("UPDATE indicators SET " + t + "= '" + newdict[
-                                    t] + "' WHERE id = '" + newdict['id'] + "'")
-        with con:
-            cur = con.cursor()
-            cur.execute(
-                "SELECT * from indicators where id='" + newdict['id'] + "'")
-            http = cur.fetchall()
-            http = http[0]
-            names = [description[0] for description in cur.description]
-            for i in names:
-                tempdict[i] = http[i]
-            cur.execute("SELECT * from settings")
-            settingsvars = cur.fetchall()
-            settingsvars = settingsvars[0]
-            cur.execute("SELECT relationships from indicators where id='" + newdict['id'] + "'")
-            rels = cur.fetchall()
-            rels = rels[0][0]
-        rellist = rels.split(",")
-        temprel = {}
-        for rel in rellist:
-            try:
-                with con:
-                    cur = con.cursor()
-                    cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
-                    reltype = cur.fetchall()
-                    reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
-            except:
-                pass
-        reldata = len(temprel)
-        # Returns object information with updated values
-        jsonvt = ""
-        whoisdata = ""
-        odnsdata = ""
-        circldata = ""
-        circlssl = ""
-        ptdata = ""
-        # Run ipwhois or domainwhois based on the type of indicator
-        if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
-            if settingsvars['vtinfo'] == "on":
-                jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
-            if settingsvars['whoisinfo'] == "on":
-                whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
-            if settingsvars['odnsinfo'] == "on":
-                odnsdata = libs.investigate.ip_query(str(http['object']))
-            if settingsvars['circlinfo'] == "on":
-                circldata = libs.circl.circlquery(str(http['object']))
-            if settingsvars['circlssl'] == "on":
-                circlssl = libs.circl.circlssl(str(http['object']))
-            if settingsvars['ptinfo'] == "on":
-                ptdata = libs.passivetotal.pt(str(http['object']))
-        elif str(http['type']) == "Domain":
-            if settingsvars['whoisinfo'] == "on":
-                whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
-            if settingsvars['vtinfo'] == "on":
-                jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
-            if settingsvars['odnsinfo'] == "on":
-                odnsdata = libs.investigate.domain_categories(
-                    str(http['object']))
-            if settingsvars['circlinfo'] == "on":
-                circldata = libs.circl.circlquery(str(http['object']))
-            if settingsvars['ptinfo'] == "on":
-                ptdata = libs.passivetotal.pt(str(http['object']))
-        if newdict['type'] == "Threat Actor":
-            return render_template(
-                'threatactorobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
-                settingsvars=settingsvars,temprel=temprel, reldata=reldata, taglist=taglist)
-        elif newdict['diamondmodel'] == "Victim":
-            return render_template(
-                'victimobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata,
-                settingsvars=settingsvars,temprel=temprel, reldata=reldata,taglist=taglist, ptdata=ptdata )
-        elif newdict['type'] == "Hash":
-            return render_template(
-                'fileobject.html', records=tempdict, settingsvars=settingsvars,temprel=temprel, reldata=reldata, taglist=taglist)
-        else:
-            return render_template(
-                'networkobject.html', records=tempdict, jsonvt=jsonvt, whoisdata=whoisdata, odnsdata=odnsdata,
-                settingsvars=settingsvars,temprel=temprel, reldata=reldata,taglist=taglist, circldata=circldata, circlssl=circlssl, ptdata=ptdata)
+                        cur.execute("UPDATE indicators SET " + t + "= '" + records[
+                                    t] + "' WHERE id = '" + records['id'] + "'")
+        if records['type'] == "IPv4" or records['type'] == "IPv6" or records['type'] == "Domain" or records['type'] == "Network":
+            return redirect(url_for('objectsummary', uid=str(records['id'])))
+        elif records['type'] ==  "Hash":
+            return redirect(url_for('filesobject', uid=str(records['id'])))
+        elif records['type'] == "Entity":
+            return redirect(url_for('victimobject', uid=str(records['id'])))
+        elif records['type'] == "Threat Actor":
+            return redirect(url_for('threatactorobject', uid=str(records['id'])))  
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -938,6 +878,7 @@ def objectsummary(uid):
         circldata = ""
         circlssl = ""
         ptdata = ""
+        farsightdata = ""
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
             if settingsvars['vtinfo'] == "on":
@@ -952,6 +893,8 @@ def objectsummary(uid):
                 circlssl = libs.circl.circlssl(str(http['object']))
             if settingsvars['ptinfo'] == "on":
                 ptdata = libs.passivetotal.pt(str(http['object']))
+            if settingsvars['farsightinfo'] == "on":
+                farsightdata = libs.farsight.farsightip(str(http['object']))
         elif str(http['type']) == "Domain":
             if settingsvars['whoisinfo'] == "on":
                 whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
@@ -963,6 +906,8 @@ def objectsummary(uid):
                 circldata = libs.circl.circlquery(str(http['object']))
             if settingsvars['ptinfo'] == "on":
                 ptdata = libs.passivetotal.pt(str(http['object']))
+            if settingsvars['farsightinfo'] == "on":
+                farsightdata = libs.farsight.farsightdomain(str(http['object']))
         if settingsvars['whoisinfo'] == "on":
             if str(http['type']) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
@@ -973,7 +918,7 @@ def objectsummary(uid):
             address = "Information about " + str(http['object'])
         return render_template(
             'networkobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, settingsvars=settingsvars, address=address, ptdata=ptdata, temprel=temprel, circldata=circldata, circlssl=circlssl, reldata=reldata, taglist=taglist)
+            odnsdata=odnsdata, settingsvars=settingsvars, address=address, ptdata=ptdata, temprel=temprel, circldata=circldata, circlssl=circlssl, reldata=reldata, taglist=taglist, farsightdata=farsightdata)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -1158,6 +1103,7 @@ def victimobject(uid):
         circldata = ""
         circlssl = ""
         ptdata = ""
+        farsightdata = ""
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
             if settingsvars['vtinfo'] == "on":
@@ -1172,6 +1118,8 @@ def victimobject(uid):
                 circlssl = libs.circl.circlssl(str(http['object']))
             if settingsvars['ptinfo'] == "on":
                 ptdata = libs.passivetotal.pt(str(http['object']))
+            if settingsvars['farsightinfo'] == "on":
+                farsightdata = libs.farsight.farsightip(str(http['object']))
         elif str(http['type']) == "Domain":
             if settingsvars['whoisinfo'] == "on":
                 whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
@@ -1195,7 +1143,7 @@ def victimobject(uid):
             address = "Information about " + str(http['object'])
         return render_template(
             'victimobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, circldata=circldata, circlssl=circlssl, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, taglist=taglist, ptdata=ptdata)
+            odnsdata=odnsdata, circldata=circldata, circlssl=circlssl, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, taglist=taglist, ptdata=ptdata, farsightdata=farsightdata)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -1258,8 +1206,6 @@ def download(uid):
     if uid == 'unknown':
         uid = ""
     file = io.BytesIO()
-    # fieldnames =
-    # ['id','object','type','firstseen','lastseen','diamondmodel','campaign','confidence','comments']
     con = libs.helpers.db_connection()
     indlist = []
     with con:
@@ -1420,10 +1366,6 @@ if __name__ == '__main__':
     parser.add_argument('-db', '--database', help="Path to sqlite database - Not Implemented")
     args = parser.parse_args()
 
-
-    #if args.database:
-    #    db_file = args.database
-    #else:
     libs.helpers.setup_db()
 
     if not args.port:
