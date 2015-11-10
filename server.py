@@ -608,9 +608,7 @@ def deletenetworkobject(uid):
         with con:
             cur = con.cursor()
             cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
-            cur = con.cursor()
-            cur.execute(
-                "SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
+            cur.execute("SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
             network = cur.fetchall()
         return render_template('networks.html', network=network)
     except Exception as e:
@@ -625,7 +623,6 @@ def deletethreatactorobject(uid):
         with con:
             cur = con.cursor()
             cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
-            cur = con.cursor()
             cur.execute("SELECT * FROM indicators where type='Threat Actor'")
             threatactors = cur.fetchall()
         return render_template('threatactors.html', network=threatactors)
@@ -641,7 +638,6 @@ def deletevictimobject(uid):
         with con:
             cur = con.cursor()
             cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
-            cur = con.cursor()
             cur.execute("SELECT * FROM indicators where diamondmodel='victim'")
             cur.fetchall()
     except Exception as e:
@@ -656,7 +652,6 @@ def deletefilesobject(uid):
         with con:
             cur = con.cursor()
             cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
-            cur = con.cursor()
             cur.execute("SELECT * FROM indicators where type='Hash'")
             cur.fetchall()
     except Exception as e:
@@ -1246,7 +1241,8 @@ def filesobject(uid):
             jsonvt = libs.virustotal.vt_hash_lookup(str(http['object']))
         else:
             jsonvt=""
-        return render_template('fileobject.html', records=newdict, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, jsonvt=jsonvt, taglist=taglist)
+        return render_template('fileobject.html', records=newdict, settingsvars=settingsvars, address=address,
+                               temprel=temprel, reldata=reldata, jsonvt=jsonvt, taglist=taglist)
     except Exception as e:
         return render_template('error.html', error=e)
 
