@@ -243,7 +243,34 @@ def about():
 @app.route('/tags', methods=['GET'])
 @login_required
 def tags():
-    return render_template('tags.html')
+    try:
+        tags = []
+        con = libs.helpers.db_connection()
+        with con:
+            cur = con.cursor()
+            cur.execute("SELECT * FROM indicators")
+            taglist = cur.fetchall()
+            for tag in taglist:
+                if tag['tags'] == "":
+                    pass
+                else:
+                    fulllist = tag['tags'].split(",")
+                    for tag in fulllist:
+                        tags.append(tag.strip())
+        campaignents = {}
+        for tag in tags:
+            entlist = []
+            cur = con.cursor()
+            cur.execute(
+                "SELECT * FROM indicators WHERE tags LIKE '%" + tag + "%'")
+            camps = cur.fetchall()
+            #camps = camps[0]
+            for ent in camps:
+                entlist.append(ent)
+            campaignents[str(tag)] = entlist
+        return render_template('tags.html', tags=campaignents)
+    except Exception as e:
+        return render_template('error.html', error=e)
 
 @app.route('/networks', methods=['GET'])
 @login_required
@@ -308,16 +335,10 @@ def files():
 def campaigns():
     try:
         con = libs.helpers.db_connection()
-        camplist = []
         with con:
             cur = con.cursor()
             cur.execute("SELECT DISTINCT campaign FROM indicators")
             campaigns = cur.fetchall()
-            for i in campaigns:
-                if i[0] == "":
-                    camplist.append("Unknown")
-                else:
-                    camplist.append(str(i[0]))
         campaignents = {}
         for camp in campaigns:
             if camp[0] == "":
