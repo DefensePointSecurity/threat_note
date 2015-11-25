@@ -1,4 +1,4 @@
-{% include "banners/newheader.html" %} 
+{% include "banners/newheader.html" %}
 {% block content %}
 
 <body>
@@ -56,7 +56,7 @@
               <p>Tags</p>
             </a>
           </li>
-            
+
 
         </ul>
       </div>
@@ -103,13 +103,51 @@
                   <h4 class="title">Tags</h4>
                 </div>
                 <div class="content">
-                  This page is currently being developed.</p>
+                  This page lists the tags that have been associated with indicators in the database. Each tag is in it's own table, with the tag name at the top, and the indicators that are associated with that particular tag. Clicking on an indicator
+                  in each tag will take you to their object page, where you can edit or delete the indicator.
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
-         
+          {% for tag in tags %}
+          <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+              <div class="card">
+                <div class="header">
+                  <div style="float: right;"><a href="/download/{{ campaign }}" class="btn btn-info btn-fill"><i class="fa fa-plus"></i> Download Indicators</a>
+                  </div>
+                  <h4 class="title"><i class="pe-7s-ticket"></i> {{ tag }}</h4>
+                  <p class="category">
+                    <a href="/editcampaign/{{ campaign }}" class="fa"></a>
+                  </p>
+                </div>
+                <div class="content table-responsive table-full-width">
+                  <table class="table table-hover table-striped">
+                    <thead>
+                      <th>Indicator</th>
+                    </thead>
+                    <tbody>
+                      {% for tag in tags[tag] %}
+                      <tr>
+                      {% if tag['type'] == "IPv4" or tag['type'] == "IPv6" or tag['type'] == "Domain" or tag['type'] == "Network" %}
+                        <td><a href="/network/{{ tag['id'] }}/info">{{ tag['object'] }}</a></td>
+                        {% elif tag['type'] == "Threat Actor" %}
+                        <td><a href="/threatactors/{{ tag['id'] }}/info">{{ tag['object'] }}</a></td>
+                        {% elif tag['type'] == "Hash" %}
+                        <td><a href="/files/{{ tag['id'] }}/info">{{ tag['object'] }}</a></td>
+                        {% endif %}
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {% endfor %}
 
         </div>
       </div>
