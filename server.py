@@ -39,86 +39,67 @@ from flask.ext.login import LoginManager
 from flask.ext.login import login_required
 from flask.ext.login import login_user
 from flask.ext.login import logout_user
-from flask.ext.sqlalchemy import SQLAlchemy
+#from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.wtf import Form
 
 from werkzeug.datastructures import ImmutableMultiDict
 from wtforms import PasswordField
-from wtforms import TextField
-from wtforms.validators import Required
+from wtforms import StringField
+from wtforms.validators import DataRequired
 
+from libs.models import User, Setting, Indicator
+from libs.database import db_session
+from libs.database import init_db
 
 #
 # Configuration #
 #
-db_file = 'threatnote.db'
+#db_file = 'threatnote.db'
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yek_terces'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_file
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_file
 
 lm = LoginManager()
 lm.init_app(app)
 lm.login_view = 'login'
 
-db = SQLAlchemy(app)
-
-
-class User(db.Model):
-    __tablename__ = 'users'
-    _id = db.Column('_id', db.Integer, primary_key=True, autoincrement=True)
-    user = db.Column('user', db.String)
-    email = db.Column('email', db.String)
-    key = db.Column('key', db.String)
-
-    def __init__(self, user, key, email):
-        self.user = user.lower()
-        self.key = hashlib.md5(key.encode('utf-8')).hexdigest()
-        self.email = email
-
-    def is_authenticated(self):
-        return True
-
-    def is_active(self):
-        return True
-
-    def is_anonymous(self):
-        return False
-
-    def get_id(self):
-        return self._id
+#db = SQLAlchemy(app)
 
 
 class LoginForm(Form):
-    user = TextField('user', validators=[Required()])
-    key = PasswordField('key', validators=[Required()])
+    user = StringField('user', validators=[DataRequired()])
+    password = PasswordField('password', validators=[DataRequired()])
 
     def get_user(self):
-        return db.session.query(User).filter_by(user=self.user.data.lower(), key=hashlib.md5(self.key.data.encode('utf-8')).hexdigest()).first()
+        return db_session.query(User).filter_by(user=self.user.data.lower(), password=hashlib.md5(self.password.data.encode('utf-8')).hexdigest()).first()
 
 
 class RegisterForm(Form):
-    user = TextField('user', validators=[Required()])
-    key = PasswordField('key', validators=[Required()])
-    email = TextField('email')
+    user = StringField('user', validators=[DataRequired()])
+    password = PasswordField('password', validators=[DataRequired()])
+    email = StringField('email')
 
+
+#
+# Creating routes #
+#
 
 @lm.user_loader
 def load_user(id):
-    return db.session.query(User).filter_by(_id=id).first()
+    return db_session.query(User).filter_by(_id=id).first()
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        user = db.session.query(User).filter_by(
-            user=form.user.data.lower()).first()
+        user = db_session.query(User).filter_by(user=form.user.data.lower()).first()
         if user:
             flash('User exists.')
         else:
-            user = User(form.user.data.lower(), form.key.data, form.email.data)
-            db.session.add(user)
-            db.session.commit()
+            user = User(form.user.data.lower(), form.password.data, form.email.data)
+            db_session.add(user)
+            db_session.commit()
 
             login_user(user)
 
@@ -148,10 +129,6 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('login'))
-
-#
-# Creating routes #
-#
 
 
 @app.route('/', methods=['GET'])
@@ -1399,5 +1376,5 @@ if __name__ == '__main__':
     else:
         debug = True
 
-
+    init_db()
     app.run(host='0.0.0.0', port=port, debug=debug)
