@@ -27,7 +27,7 @@ class User(Base):
         return self._id
 
     def __repr__(self):
-        return '<User %r>' % (self.name)
+        return '<User %r>' % (self.user)
 
 
 class Setting(Base):
@@ -54,8 +54,30 @@ class Setting(Base):
     farsightinfo = Column('farsightinfo', String)
     farsightkey = Column('farsightkey', String)
 
-    def __init__(self, user, key, email):
-       pass
+    def __init__(self, apikey, odnskey, vtinfo, whoisinfo, odnsinfo, httpproxy, httpsproxy, threatcrowd, vtfile,
+                 circlinfo, circlusername, circlpassword, circlssl, ptinfo, ptkey, cuckoo, cuckoohost,
+                 cuckooapiport, farsightinfo, farsightkey):
+        self.apikey = apikey
+        self.odnskey = odnskey
+        self.vtinfo = vtinfo
+        self.whoisinfo = whoisinfo
+        self.odnsinfo = odnsinfo
+        self.httpproxy = httpproxy
+        self.httpsproxy = httpsproxy
+        self.threatcrowd = threatcrowd
+        self.vtfile = vtfile
+        self.circlinfo = circlinfo
+        self.circlusername = circlusername
+        self.circlpassword = circlpassword
+        self.circlssl = circlssl
+        self.ptinfo = ptinfo
+        self.ptkey = ptkey
+        self.cuckoo = cuckoo
+        self.cuckoohost = cuckoohost
+        self.cuckooapiport = cuckooapiport
+        self.farsightinfo = farsightinfo
+        self.farsightkey = farsightkey
+
 
 
 class Indicator(Base):
