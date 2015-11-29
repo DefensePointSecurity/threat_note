@@ -50,7 +50,7 @@ from wtforms.validators import DataRequired
 from libs.models import User, Setting, Indicator
 from libs.database import db_session
 from libs.database import init_db
-from sqlalchemy import distinct
+#from sqlalchemy import distinct
 
 #
 # Configuration #
@@ -325,7 +325,13 @@ def campaigns():
 @login_required
 def settings():
     try:
-        settings = Setting.query.all()
+        settings = Setting.query.filter_by(_id=1).all()
+        if settings == []:
+            settings = Setting('', '', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off',
+                               'off', 'off', 'off', 'off', 'off', 'off')
+            db_session.add(settings)
+            db_session.commit()
+
         #con = libs.helpers.db_connection()
         #with con:
         #    cur = con.cursor()
@@ -609,66 +615,63 @@ def updatesettings():
         something = request.form
         imd = ImmutableMultiDict(something)
         newdict = libs.helpers.convert(imd)
-        s = Setting(None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None)
-        db_session.add(s)
-        db_session.commit()
-
+        settings = Setting.query.filter_by(_id=1).first()
 
         # Make sure we're updating the settings instead of overwriting them
         if 'threatcrowd' in newdict.keys():
-            Setting.threatcrowd = 'on'
+            settings.threatcrowd = 'on'
         else:
-           Setting.threatcrowd = 'off'
+           settings.threatcrowd = 'off'
         if 'ptinfo' in newdict.keys():
-            Setting.ptinfo = 'on'
+            settings.ptinfo = 'on'
         else:
-            Setting.ptinfo = 'off'
+            settings.ptinfo = 'off'
         if 'cuckoo' in newdict.keys():
-            Setting.cuckoo = 'on'
+            settings.cuckoo = 'on'
         else:
-            Setting.cuckoo = 'off'
+            settings.cuckoo = 'off'
         if 'vtinfo' in newdict.keys():
-            Setting.vtinfo = 'on'
+            settings.vtinfo = 'on'
         else:
-            Setting.vtinfo = 'off'
+            settings.vtinfo = 'off'
         if 'vtfile' in newdict.keys():
-            Setting.vtfile = 'on'
+            settings.vtfile = 'on'
         else:
-            Setting.vtfile = 'off'
+            settings.vtfile = 'off'
         if 'circlinfo' in newdict.keys():
-            Setting.circlinfo = 'on'
+            settings.circlinfo = 'on'
         else:
-            Setting.circlinfo = 'off'
+            settings.circlinfo = 'off'
         if 'circlssl' in newdict.keys():
-            Setting.circlssl = 'on'
+            settings.circlssl = 'on'
         else:
-            Setting.circlssl = 'off'
+            settings.circlssl = 'off'
         if 'whoisinfo' in newdict.keys():
-            Setting.whoisinfo = 'on'
+            settings.whoisinfo = 'on'
         else:
-            Setting.whoisinfo = 'off'
+            settings.whoisinfo = 'off'
         if 'farsightinfo' in newdict.keys():
-            Setting.farsightinfo = 'on'
+            settings.farsightinfo = 'on'
         else:
-            Setting.farsightinfo = 'off'
+            settings.farsightinfo = 'off'
         if 'odnsinfo' in newdict.keys():
-            Setting.odnsinfo = 'on'
+            settings.odnsinfo = 'on'
         else:
-            Setting.odnsinfo = 'off'
+            settings.odnsinfo = 'off'
 
-        Setting.farsightkey = newdict['farsightkey']
-        Setting.apikey = newdict['apikey']
-        Setting.odnskey = newdict['odnskey']
-        Setting.httpproxy = newdict['httpproxy']
-        Setting.httpsproxy = newdict['httpsproxy']
-        Setting.cuckoohost = newdict['cuckoohost']
-        Setting.cuckooapiport = newdict['cuckooapiport']
-        Setting.circlusername = newdict['circlusername']
-        Setting.circlpassword = newdict['circlpassword']
-        Setting.ptkey = newdict['ptkey']
+        settings.farsightkey = newdict['farsightkey']
+        settings.apikey = newdict['apikey']
+        settings.odnskey = newdict['odnskey']
+        settings.httpproxy = newdict['httpproxy']
+        settings.httpsproxy = newdict['httpsproxy']
+        settings.cuckoohost = newdict['cuckoohost']
+        settings.cuckooapiport = newdict['cuckooapiport']
+        settings.circlusername = newdict['circlusername']
+        settings.circlpassword = newdict['circlpassword']
+        settings.ptkey = newdict['ptkey']
 
         db_session.commit()
-        settings = Setting.query.all()
+        settings = Setting.query.first()
 
         return render_template('settings.html', records=settings)
     except Exception as e:
