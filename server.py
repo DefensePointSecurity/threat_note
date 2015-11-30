@@ -334,21 +334,15 @@ def settings():
 @login_required
 def campaignsummary(uid):
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute(
-                "SELECT * from indicators where object='" + str(uid) + "'")
-            http = cur.fetchall()
-            http = http[0]
+        http = Indicator.query.filter(IndexError.object == uid).first()
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http.type) == "IPv4" or str(http.type) == "IPv6" or str(
                 http.type) == "Domain" or str(http.type) == "Network":
-            return redirect(url_for('objectsummary', uid=str(http['id'])))
+            return redirect(url_for('objectsummary', uid=http.object))
         elif str(http.type) == "Hash":
-            return redirect(url_for('filesobject', uid=str(http['id'])))
+            return redirect(url_for('filesobject', uid=http.object))
         else:
-            return redirect(url_for('threatactorobject', uid=str(http['id'])))
+            return redirect(url_for('threatactorobject', uid=http.object))
     except Exception as e:
         return render_template('error.html', error=e)
 
