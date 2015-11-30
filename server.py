@@ -7,7 +7,6 @@
 # October 26, 2015                                      #
 #
 
-
 import csv
 import hashlib
 import io
@@ -23,6 +22,7 @@ import libs.farsight
 import libs.helpers
 import libs.investigate
 import libs.passivetotal
+import libs.shodan
 import libs.whoisinfo
 import libs.virustotal
 
@@ -47,10 +47,10 @@ from wtforms import PasswordField
 from wtforms import TextField
 from wtforms.validators import Required
 
-
 #
 # Configuration #
 #
+
 db_file = 'threatnote.db'
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yek_terces'
@@ -753,12 +753,21 @@ def updatesettings():
             else:
                 with con:
                     cur.execute("UPDATE settings SET farsightinfo = 'off'")
+            if 'shodaninfo' in newdict.keys():
+                with con:
+                    cur.execute("UPDATE settings SET shodaninfo = 'on'")
+            else:
+                with con:
+                    cur.execute("UPDATE settings SET shodaninfo = 'off'")       
             with con:
                 cur.execute(
                     "UPDATE settings SET farsightkey = '" + newdict['farsightkey'] + "'")
             with con:
                 cur.execute(
                     "UPDATE settings SET apikey = '" + newdict['apikey'] + "'")
+            with con:
+                cur.execute(
+                    "UPDATE settings SET shodankey = '" + newdict['shodankey'] + "'")
             if 'odnsinfo' in newdict.keys():
                 with con:
                     cur.execute("UPDATE settings SET odnsinfo = 'on'")
@@ -789,8 +798,6 @@ def updatesettings():
             with con:
                 cur.execute(
                     "UPDATE settings SET ptkey = '" + newdict['ptkey'] + "'")  
-
-        #con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
             cur.execute("SELECT * from settings")
@@ -809,7 +816,6 @@ def updateobject():
         something = request.form
         imd = ImmutableMultiDict(something)
         records = libs.helpers.convert(imd)
-        #newdict = {}
         tempdict = {}
         taglist = records['tags'].split(",")
         con = libs.helpers.db_connection()
@@ -904,6 +910,7 @@ def objectsummary(uid):
         circlssl = ""
         ptdata = ""
         farsightdata = ""
+        shodandata = ""
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
             if settingsvars['vtinfo'] == "on":
@@ -920,6 +927,8 @@ def objectsummary(uid):
                 ptdata = libs.passivetotal.pt(str(http['object']))
             if settingsvars['farsightinfo'] == "on":
                 farsightdata = libs.farsight.farsightip(str(http['object']))
+            if settingsvars['shodaninfo'] == "on":
+                shodandata = libs.shodan.shodan(str(http['object']))   
         elif str(http['type']) == "Domain":
             if settingsvars['whoisinfo'] == "on":
                 whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
@@ -933,6 +942,8 @@ def objectsummary(uid):
                 ptdata = libs.passivetotal.pt(str(http['object']))
             if settingsvars['farsightinfo'] == "on":
                 farsightdata = libs.farsight.farsightdomain(str(http['object']))
+            if settingsvars['shodaninfo'] == "on":
+                shodandata = libs.shodan.shodan(str(http['object']))
         if settingsvars['whoisinfo'] == "on":
             if str(http['type']) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
@@ -943,7 +954,7 @@ def objectsummary(uid):
             address = "Information about " + str(http['object'])
         return render_template(
             'networkobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, settingsvars=settingsvars, address=address, ptdata=ptdata, temprel=temprel, circldata=circldata, circlssl=circlssl, reldata=reldata, taglist=taglist, farsightdata=farsightdata)
+            odnsdata=odnsdata, settingsvars=settingsvars, address=address, ptdata=ptdata, temprel=temprel, circldata=circldata, circlssl=circlssl, reldata=reldata, taglist=taglist, farsightdata=farsightdata, shodandata=shodandata)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -1129,6 +1140,7 @@ def victimobject(uid):
         circlssl = ""
         ptdata = ""
         farsightdata = ""
+        shodaninfo = ""
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
             if settingsvars['vtinfo'] == "on":
@@ -1145,6 +1157,8 @@ def victimobject(uid):
                 ptdata = libs.passivetotal.pt(str(http['object']))
             if settingsvars['farsightinfo'] == "on":
                 farsightdata = libs.farsight.farsightip(str(http['object']))
+            if settingsvars['shodaninfo'] == "on":
+                shodandata = libs.shodan.shodan(str(http['object']))
         elif str(http['type']) == "Domain":
             if settingsvars['whoisinfo'] == "on":
                 whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
@@ -1157,6 +1171,8 @@ def victimobject(uid):
                 circldata = libs.circl.circlquery(str(http['object']))
             if settingsvars['ptinfo'] == "on":
                 ptdata = libs.passivetotal.pt(str(http['object']))
+            if settingsvars['shodaninfo'] == "on":
+                shodandata = libs.shodan.shodan(str(http['object']))
         if settingsvars['whoisinfo'] == "on":
             if str(http['type']) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(
@@ -1168,7 +1184,7 @@ def victimobject(uid):
             address = "Information about " + str(http['object'])
         return render_template(
             'victimobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, circldata=circldata, circlssl=circlssl, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, taglist=taglist, ptdata=ptdata, farsightdata=farsightdata)
+            odnsdata=odnsdata, circldata=circldata, circlssl=circlssl, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, taglist=taglist, ptdata=ptdata, farsightdata=farsightdata, shodandata=shodandata)
     except Exception as e:
         return render_template('error.html', error=e)
 
