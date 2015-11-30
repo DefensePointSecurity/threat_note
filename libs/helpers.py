@@ -44,6 +44,15 @@ def db_connection(db_file='threatnote.db'):
     return con
 
 
+def row_to_dict(row):
+    d = {}
+    for column in row.__table__.columns:
+        if '_id' not in column.name:
+            d[column.name] = str(getattr(row, column.name))
+
+    return d
+
+
 def get_proxy():
     try:
         con = lite.connect('threatnote.db')
