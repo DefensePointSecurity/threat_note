@@ -414,75 +414,53 @@ def newobject():
             for newobject in newdict['inputobject']:
                 if newdict['inputtype'] == "IPv4":
                     if ipregex:
-                        con = libs.helpers.db_connection()
-                        with con:
-                            cur = con.cursor()
-                            cur.execute(
-                                "SELECT object from indicators WHERE object = '" + newobject + "'")
-                            object = cur.fetchall()
-                            cur = con.cursor()
-                            cur.execute("SELECT * from indicators")
-                            names = [description[0]
-                                     for description in cur.description]
-                            lennames = len(names) - int(10)
-                            if len(object) > 0:
-                                errormessage = "Entry already exists in database."
-                                return render_template(
-                                    'newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
-                                    inputobject=newobject, inputfirstseen=newdict[
-                                        'inputfirstseen'],
-                                    inputlastseen=newdict[
-                                        'inputlastseen'],
-                                    inputcampaign=newdict[
-                                        'inputcampaign'],
-                                    comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],
-                                    tags=newdict['tags'])
-                            else:
-                                ipv4 = Indicator(newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'],
-                                         newdict['inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'],
-                                         newdict['confidence'], newdict['comments'], newdict['tags'], None)
-                                db_session.add(ipv4)
-                                db_session.commit()
-                                network = Indicator.query.filter(Indicator.type.in_(('IPv4', 'IPv6', 'Domain', 'Network'))).all()
+                        object = Indicator.query.filter_by(object=newobject).first()
+                        if object is None:
+                            ipv4_indicator = Indicator(newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'],
+                                     newdict['inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'],
+                                     newdict['confidence'], newdict['comments'], newdict['tags'], None)
+                            db_session.add(ipv4_indicator)
+                            db_session.commit()
+                            network = Indicator.query.filter(Indicator.type.in_(('IPv4', 'IPv6', 'Domain', 'Network'))).all()
+                        else:
+                            errormessage = "Entry already exists in database."
+                            return render_template('newobject.html', errormessage=errormessage,
+                                                   inputtype=newdict['inputtype'], inputobject=newobject,
+                                                   inputfirstseen=newdict['inputfirstseen'],
+                                                   inputlastseen=newdict['inputlastseen'],
+                                                   inputcampaign=newdict['inputcampaign'],
+                                                   comments=newdict['comments'],
+                                                   diamondmodel=newdict['diamondmodel'],
+                                                   tags=newdict['tags'])
+
                     else:
                         errormessage = "Not a valid IP Address."
                         newobject = ', '.join(newdict['inputobject'])
-                        return render_template(
-                            'newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
-                            inputobject=newobject, inputfirstseen=newdict[
-                                'inputfirstseen'],
-                            inputlastseen=newdict['inputlastseen'], confidence=newdict[
-                                'confidence'], inputcampaign=newdict['inputcampaign'],
-                            comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],tags=newdict['tags'])
+                        return render_template('newobject.html', errormessage=errormessage,
+                                               inputtype=newdict['inputtype'],
+                                               inputobject=newobject, inputfirstseen=newdict['inputfirstseen'],
+                                               inputlastseen=newdict['inputlastseen'],
+                                               confidence=newdict['confidence'], inputcampaign=newdict['inputcampaign'],
+                                               comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],
+                                               tags=newdict['tags'])
                 else:
-                    con = libs.helpers.db_connection()
-                    with con:
-                        cur = con.cursor()
-                        cur.execute(
-                            "SELECT object from indicators WHERE object = '" + newobject + "'")
-                        object = cur.fetchall()
-                        cur = con.cursor()
-                        cur.execute("SELECT * from indicators")
-                        names = [description[0] for description in cur.description]
-                        lennames = len(names) - int(10)
-                        if len(object) > 0:
-                            errormessage = "Entry already exists in database."
-                            return render_template(
-                                'newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
-                                inputobject=newobject, inputfirstseen=newdict[
-                                    'inputfirstseen'],
-                                inputlastseen=newdict[
-                                    'inputlastseen'],
-                                inputcampaign=newdict[
-                                    'inputcampaign'],
-                                comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],tags=newdict['tags'])
-                        else:
-                            object = Indicator(newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'],
-                                         newdict['inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'],
-                                         newdict['confidence'], newdict['comments'], newdict['tags'], None)
-                            db_session.add(object)
-                            db_session.commit()
-                            network = Indicator.query.filter(Indicator.type.in_(('IPv4', 'IPv6', 'Domain', 'Network'))).all()
+                    object = Indicator.query.filter_by(object=newobject).first()
+                    if object is None:
+                        indicator = Indicator(newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'],
+                                 newdict['inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'],
+                                 newdict['confidence'], newdict['comments'], newdict['tags'], None)
+                        db_session.add(indicator)
+                        db_session.commit()
+                    else:
+                        errormessage = "Entry already exists in database."
+                        return render_template('newobject.html', errormessage=errormessage,
+                                               inputtype=newdict['inputtype'], inputobject=newobject,
+                                               inputfirstseen=newdict['inputfirstseen'],
+                                               inputlastseen=newdict['inputlastseen'],
+                                               inputcampaign=newdict['inputcampaign'],
+                                               comments=newdict['comments'],
+                                               diamondmodel=newdict['diamondmodel'],
+                                               tags=newdict['tags'])
 
             # TODO: Change 'network' to 'object' in HTML templates to standardize on verbiage
             if newdict['inputtype'] == "IPv4" or newdict['inputtype'] == "Domain" or newdict[
@@ -522,12 +500,9 @@ def editobject(uid):
 @login_required
 def deletenetworkobject(uid):
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
-            cur.execute("SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
-            network = cur.fetchall()
+        Indicator.query.filter_by(object=uid).delete()
+        db_session.commit()
+        network = Indicator.query.filter(Indicator.type.in_(('IPv4', 'IPv6', 'Domain', 'Network'))).all()
         return render_template('networks.html', network=network)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -537,12 +512,9 @@ def deletenetworkobject(uid):
 @login_required
 def deletethreatactorobject(uid):
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
-            cur.execute("SELECT * FROM indicators where type='Threat Actor'")
-            threatactors = cur.fetchall()
+        Indicator.query.filter_by(object=uid).delete()
+        db_session.commit()
+        threatactors = Indicator.query.filter_by(type='Threat Actor')
         return render_template('threatactors.html', network=threatactors)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -552,15 +524,10 @@ def deletethreatactorobject(uid):
 @login_required
 def deletevictimobject(uid):
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
-            cur = con.cursor()
-            cur.execute(
-                "SELECT * FROM indicators where type='Threat Actor'")
-            network = cur.fetchall()
-        return render_template('threatactors.html', network=network)
+        Indicator.query.filter_by(object=uid).delete()
+        db_session.commit()
+        victims = Indicator.query.filter_by(diamondmodel='Victim')
+        return render_template('victims.html', network=victims)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -569,12 +536,11 @@ def deletevictimobject(uid):
 @login_required
 def deletefilesobject(uid):
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
-            cur.execute("SELECT * FROM indicators where type='Hash'")
-            cur.fetchall()
+        Indicator.query.filter_by(object=uid).delete()
+        db_session.commit()
+        files = Indicator.query.filter_by(type='Hash')
+
+        return render_template('victims.html', network=files)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -658,7 +624,7 @@ def updateobject():
         records = libs.helpers.convert(imd)
         taglist = records['tags'].split(",")
 
-        indicator = Indicator.query.filter(Indicator.object == records['id']).first()
+        indicator = Indicator.query.filter_by(object=records['id']).first()
         for r in records:
             print r
 
@@ -800,58 +766,45 @@ def threatactorobject(uid):
 @login_required
 def relationships(uid):
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * from indicators where id='" + uid + "'")
-            http = cur.fetchall()
-            http = http[0]
-            cur = con.cursor()
-            cur.execute("SELECT * from indicators")
-            indicators = cur.fetchall()
-            cur.execute("SELECT relationships from indicators where id='" + uid + "'")
-            rels = cur.fetchall()
-            rels = rels[0][0]
-        rellist = rels.split(",")
-        temprel = {}
-        for rel in rellist:
-            try:
-                with con:
-                    cur = con.cursor()
-                    cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
-                    reltype = cur.fetchall()
-                    reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
-            except:
-                pass
-        reldata = len(temprel)
+        http = Indicator.query.filter_by(object=uid).first()
+        indicators = Indicator.query.all()
+        rels = Indicator.query.filter_by(object=uid).first()
+        if http.relationships:
+            rellist = rels.split(",")
+            temprel = {}
+            for rel in rellist:
+                reltype = Indicator.query.filter_by(object=rel).first()
+                temprel[reltype['object']] = reltype['type']
         return render_template('addrelationship.html', records=http, indicators=indicators)
     except Exception as e:
         return render_template('error.html', error=e)
 
 
-@app.route('/addrelationship', methods=['GET','POST'])
+@app.route('/addrelationship', methods=['GET', 'POST'])
 @login_required
 def addrelationship():
     try:
         something = request.form
         imd = ImmutableMultiDict(something)
         records = libs.helpers.convert(imd)
-        newdict = {}
-        for i in records:
-            newdict[i] = records[i]
+        #newdict = {}
+        #for i in records:
+        #    newdict[i] = records[i]
+
         con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
-            cur.execute("UPDATE indicators SET relationships=relationships || '" + newdict['indicator'] + ",' WHERE id='" + newdict['id'] + "'")
-        if newdict['type'] == "IPv4" or newdict['type'] == "IPv6" or newdict['type'] == "Domain" or newdict['type'] == "Network":
-            return redirect(url_for('objectsummary', uid=str(newdict['id'])))
-        elif newdict['type'] ==  "Hash":
-            return redirect(url_for('filesobject', uid=str(newdict['id'])))
-        elif newdict['type'] == "Entity":
-            return redirect(url_for('victimobject', uid=str(newdict['id'])))
-        elif newdict['type'] == "Threat Actor":
-            return redirect(url_for('threatactorobject', uid=str(newdict['id'])))  
+            cur.execute("UPDATE indicators SET relationships=relationships || '" + records['indicator'] + ",' WHERE object='" + records['id'] + "'")
+
+
+        if records['type'] == "IPv4" or records['type'] == "IPv6" or records['type'] == "Domain" or records['type'] == "Network":
+            return redirect(url_for('objectsummary', uid=str(records['id'])))
+        elif records['type'] ==  "Hash":
+            return redirect(url_for('filesobject', uid=str(records['id'])))
+        elif records['type'] == "Entity":
+            return redirect(url_for('victimobject', uid=str(records['id'])))
+        elif records['type'] == "Threat Actor":
+            return redirect(url_for('threatactorobject', uid=str(records['id'])))
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -860,12 +813,12 @@ def addrelationship():
 @login_required
 def profile():
     try:
+        http = db_session.query(User.password).filter_by(user=current_user.user).lower()
         con = libs.helpers.db_connection()
         with con:
             tempdict = {}
             cur = con.cursor()
-            cur.execute("SELECT key from users where user='" + str(
-                current_user.user).lower() + "'")
+            cur.execute("SELECT key from users where user='" + str(current_user.user).lower() + "'")
             http = cur.fetchall()
             http = http[0]
             names = [description[0] for description in cur.description]
