@@ -651,6 +651,67 @@
                     </div>
                     {% endif %}
 
+
+                    {% if settingsvars['shodaninfo'] == "on" %}
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="card">
+                      <div class="header">
+                        <h4 class="title">Shodan Information</h4>
+                        <p class="category">More information can be found at <a href="https://www.shodan.io/" target="_blank">Shodan.io</a></p>
+                      </div>
+                      <div class="content">
+                       <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Attribute</th>
+                        <th>Value</th>
+                      </thead>
+                      <tbody>
+                     {% for result in shodandata %}
+                      <tr>
+                      {% if result == "city" or result == "region_code" or result == "vulns" or result == "isp" or result == "longitude" or result == "latitude" or result == "country_name" or result == "hostnames" or result == "ports" %}
+                      <td><span class="text-capitalize">{{ result }}</span></td>
+                      {% if shodandata[result] == [] or shodandata[result] == None %}
+                      <div></div>
+                      {% else %}
+                      <td style="max-width:150px;">{{ shodandata[result] }}</td>
+                      {% endif %}
+                      {% else %}
+                      <tr></tr>
+                      {% endif %}
+                      {% endfor %}
+
+                            <tr>
+                            </tbody>
+                            </table>
+                            <h4>Open Ports</h4>
+                            <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Port</th>
+                        <th>Data</th>
+                      </thead>
+                      <tbody>
+                     {% for result in shodandata %}
+                      <tr>
+                      {% if result == "city" or result == "region_code" or result == "vulns" or result == "isp" or result == "longitude" or result == "latitude" or result == "country_name" or result == "hostnames" or result == "ports" %}
+                      <tr></tr>
+                      {% else %}
+                      <td>{{ result }}</td>
+                      <td style="max-width:150px;">{% for line in shodandata[result] %}{% if line == "html" or line == "location" or line == "_shodan" or line == "ip_str" or line == "opts" or line == "ip" or line == "isp" or shodandata[result][line] == [] or shodandata[result][line] == None %}<div></div>{% else %}<b><span class="text-uppercase">{{ line }}</b>: {{ shodandata[result][line] }}</span></br>{% endif %}{% endfor %}</td>
+                      {% endif %}
+                      </tr>
+                      {% endfor %}
+
+                            <tr>
+                            </tbody>
+                            </table>
+                      </div>
+                    </div>
+                    </div>
+                    </div>
+                    {% endif %}
+
+
                     {% if settingsvars['farsightinfo'] == "on" %}
                     {% if records['type'] == "IPv4" %}
                 <div class="row">

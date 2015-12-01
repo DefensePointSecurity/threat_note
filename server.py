@@ -7,7 +7,6 @@
 # October 26, 2015                                      #
 #
 
-
 import csv
 import hashlib
 import io
@@ -23,6 +22,7 @@ import libs.farsight
 import libs.helpers
 import libs.investigate
 import libs.passivetotal
+import libs.shodan
 import libs.whoisinfo
 import libs.virustotal
 
@@ -52,9 +52,11 @@ from libs.database import db_session
 from libs.database import init_db
 #from sqlalchemy import distinct
 
+
 #
 # Configuration #
 #
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yek_terces'
@@ -699,6 +701,7 @@ def objectsummary(uid):
         circlssl = ""
         ptdata = ""
         farsightdata = ""
+        shodandata = ""
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http.type) == "IPv4" or str(http.type) == "IPv6":
             if settings.vtinfo == "on":
@@ -880,6 +883,7 @@ def victimobject(uid):
         circlssl = ""
         ptdata = ""
         farsightdata = ""
+        shodaninfo = ""
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http.type) == "IPv4" or str(http.type) == "IPv6":
             if settings.vtinfo == "on":
