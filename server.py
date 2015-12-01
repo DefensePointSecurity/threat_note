@@ -797,6 +797,7 @@ def addrelationship():
         con = libs.helpers.db_connection()
         with con:
             cur = con.cursor()
+            stm = "UPDATE indicators SET relationships=relationships || '" + records['indicator'] + ",' WHERE object='" + records['id'] + "'"
             cur.execute("UPDATE indicators SET relationships=relationships || '" + records['indicator'] + ",' WHERE object='" + records['id'] + "'")
 
 
@@ -816,38 +817,18 @@ def addrelationship():
 @login_required
 def profile():
     try:
-        http = db_session.query(User.password).filter_by(user=current_user.user).lower()
-        con = libs.helpers.db_connection()
-        with con:
-            tempdict = {}
-            cur = con.cursor()
-            cur.execute("SELECT key from users where user='" + str(current_user.user).lower() + "'")
-            http = cur.fetchall()
-            http = http[0]
-            names = [description[0] for description in cur.description]
-            for i in names:
-                if i is None:
-                    tempdict[i] == ""
-                else:
-                    tempdict[i] = http[i]
+        user = User.query.filter_by(user=current_user.user.lower()).first()
         something = request.form
         imd = ImmutableMultiDict(something)
         records = libs.helpers.convert(imd)
-        newdict = {}
-        for i in records:
-            newdict[i] = records[i]
-        if 'currentpw' in newdict:
-            if hashlib.md5(newdict['currentpw'].encode('utf-8')).hexdigest() == tempdict['key']:
-                if newdict['newpw'] == newdict['newpwvalidation']:
-                    with con:
-                        try:
-                            cur = con.cursor()
-                            cur.execute("UPDATE users SET key='" + hashlib.md5(newdict['newpw'].encode(
-                                'utf-8')).hexdigest() + "' WHERE user='" + str(current_user.user).lower() + "'")
-                            errormessage = "Password updated successfully."
-                            return render_template('profile.html', errormessage=errormessage)
-                        except lite.Error as er:
-                            print 'er:', er.__dict__
+
+        if 'currentpw' in records:
+            if hashlib.md5(records['currentpw'].encode('utf-8')).hexdigest() == user.password:
+                if records['newpw'] == records['newpwvalidation']:
+                    user.password = hashlib.md5(records['newpw'].encode('utf-8')).hexdigest()
+                    db_session.commit()
+                    errormessage = "Password updated successfully."
+                    return render_template('profile.html', errormessage=errormessage)
                 else:
                     errormessage = "New passwords don't match."
                     return render_template('profile.html', errormessage=errormessage)
