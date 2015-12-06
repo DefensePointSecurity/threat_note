@@ -284,32 +284,23 @@ def files():
 def campaigns():
     try:
         # Grab campaigns
-        #campaignents = Indicator.query.filter(Indicator.type == ('Threat Actor')).all()
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT DISTINCT campaign FROM indicators")
-            campaigns = cur.fetchall()
-        campaignents = {}
-        for camp in campaigns:
-            if camp[0] == "":
-                entlist = []
-                cur = con.cursor()
-                cur.execute(
-                    "SELECT DISTINCT * FROM indicators WHERE length(campaign) < 1")
-                camps = cur.fetchall()
-                for ent in camps:
-                    entlist.append(ent)
-                campaignents["Unknown"] = entlist
+        campaignents = dict()
+        rows = Indicator.query.group_by(Indicator.campaign).all()
+        for c in rows:
+            if c.campaign == '':
+                name = 'Unknown'
             else:
-                entlist = []
-                cur = con.cursor()
-                cur.execute(
-                    "SELECT DISTINCT * FROM indicators WHERE campaign = '" + str(camp[0]) + "'")
-                camps = cur.fetchall()
-                for ent in camps:
-                    entlist.append(ent)
-                campaignents[str(camp[0])] = entlist
+                name = c.campaign
+            campaignents[name] = list()
+        # Match indicators to campaigns
+        for camp, indicators in campaignents.iteritems():
+            if camp == 'Unknown':
+                camp = ''
+            rows = Indicator.query.filter(Indicator.campaign == camp).all()
+            tmp = {}
+            for i in rows:
+                tmp[i.object] = i.type
+                indicators.append(tmp)
         return render_template('campaigns.html', campaignents=campaignents)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -336,7 +327,7 @@ def settings():
 @login_required
 def campaignsummary(uid):
     try:
-        http = Indicator.query.filter(IndexError.object == uid).first()
+        http = Indicator.query.filter_by(object=uid).first()
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http.type) == "IPv4" or str(http.type) == "IPv6" or str(
                 http.type) == "Domain" or str(http.type) == "Network":
@@ -371,34 +362,66 @@ def newobject():
             newdict[i] = records[i]
 
         # Import indicators from Cuckoo for the selected analysis task
+
         if records.has_key('type') and 'cuckoo' in records['type']:
             con = libs.helpers.db_connection()
 
             host_data, dns_data, sha1, firstseen = libs.cuckoo.report_data(records['cuckoo_task_id'])
             if not None in (host_data, dns_data, sha1, firstseen):
-                with con:
-                    cur = con.cursor()
-                    for ip in host_data:
-                        cur.execute('SELECT object FROM indicators WHERE object = ?', (ip,))
-                        if not cur.fetchone():
-                            intodb = (None, ip, 'IPv4', firstseen, '', 'Infrastructure', records['campaign'], 'Low', '',
-                                      records['tags'], '')
-                            with con:
-                                cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?,?,?)', intodb)
-
+                # Import IP Indicators from Cuckoo Task
+                for ip in host_data:
+                    object = Indicator.query.filter_by(object=ip).first()
+                    if object is None:
+                        indicator = Indicator(ip.strip(), 'IPv4', firstseen, '', 'Infrastructure', records['campaign'],
+                                 'Low', '', newdict['tags'], '')
+                        db_session.add(indicator)
+                        db_session.commit()
+                    else:
+                        errormessage = "Entry already exists in database."
+                        return render_template('newobject.html', errormessage=errormessage,
+                                               inputtype=newdict['inputtype'], inputobject=ip,
+                                               inputfirstseen=newdict['inputfirstseen'],
+                                               inputlastseen=newdict['inputlastseen'],
+                                               inputcampaign=newdict['inputcampaign'],
+                                               comments=newdict['comments'],
+                                               diamondmodel=newdict['diamondmodel'],
+                                               tags=newdict['tags'])
+                    # Import Domain Indicators from Cuckoo Task
                     for dns in dns_data:
-                        cur.execute('SELECT object FROM indicators WHERE object = ?', (dns['request'],))
-                        if not cur.fetchone():
-                            intodb = (None, dns['request'], 'Domain', firstseen, '', 'Infrastructure', records['campaign'],
-                                      'Low', '', records['tags'], '')
-                            with con:
-                                cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?,?,?)', intodb)
-                    cur.execute('SELECT object FROM indicators WHERE object = ?', (sha1,))
-                    if not cur.fetchone():
-                        intodb = (None, sha1, 'Hash', firstseen, '', 'Capability', records['campaign'], 'Low', '',
-                                  records['tags'], '')
-                        with con:
-                            cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?,?,?)', intodb)
+                        object = Indicator.query.filter_by(object=dns['requst']).first()
+                        if object is None:
+                            indicator = Indicator(dns['request'], 'Domain', firstseen, '', 'Infrastructure',
+                                                  records['campaign'], 'Low', '', newdict['tags'], '')
+                            db_session.add(indicator)
+                            db_session.commit()
+                        else:
+                            errormessage = "Entry already exists in database."
+                            return render_template('newobject.html', errormessage=errormessage,
+                                                   inputtype=newdict['inputtype'], inputobject=ip,
+                                                   inputfirstseen=newdict['inputfirstseen'],
+                                                   inputlastseen=newdict['inputlastseen'],
+                                                   inputcampaign=newdict['inputcampaign'],
+                                                   comments=newdict['comments'],
+                                                   diamondmodel=newdict['diamondmodel'],
+                                                   tags=newdict['tags'])
+                    # Import File/Hash Indicators from Cuckoo Task
+                    object = Indicator.query.filter_by(object=sha1).first()
+                    if object is None:
+                        indicator = Indicator(sha1, 'Hash', firstseen, '', 'Capability',
+                                              records['campaign'], 'Low', '', newdict['tags'], '')
+                        db_session.add(indicator)
+                        db_session.commit()
+                    else:
+                        errormessage = "Entry already exists in database."
+                        return render_template('newobject.html', errormessage=errormessage,
+                                               inputtype=newdict['inputtype'], inputobject=ip,
+                                               inputfirstseen=newdict['inputfirstseen'],
+                                               inputlastseen=newdict['inputlastseen'],
+                                               inputcampaign=newdict['inputcampaign'],
+                                               comments=newdict['comments'],
+                                               diamondmodel=newdict['diamondmodel'],
+                                               tags=newdict['tags'])
+
                 # Redirect to Dashboard after successful import
                 return redirect(url_for('home'))
             else:
@@ -410,8 +433,7 @@ def newobject():
             # address.
             ipregex = re.match(
                 r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', newdict['inputobject'])
-            # Convert the inputobject of IP or Domain to a list for Bulk Add
-            # functionality.
+            # Convert the inputobject of IP or Domain to a list for Bulk Add functionality.
             newdict['inputobject'] = newdict['inputobject'].split(',')
             for newobject in newdict['inputobject']:
                 if newdict['inputtype'] == "IPv4":
@@ -626,33 +648,38 @@ def updateobject():
         records = libs.helpers.convert(imd)
         taglist = records['tags'].split(",")
 
-        indicator = Indicator.query.filter_by(object=records['id']).first()
-        for r in records:
-            print r
+        indicator = Indicator.query.filter_by(object=records['object']).first()
 
-        con = libs.helpers.db_connection()
-        with con:
-            for t in records:
-                if t == "id":
-                    pass
-                else:
-                    try:
-                        cur = con.cursor()
-                        cur.execute("UPDATE indicators SET " + t + "= '" + records[t] + "' WHERE id = '" + records['id'] + "'")
-                    except:
-                        cur = con.cursor()
-                        cur.execute(
-                            "ALTER TABLE indicators ADD COLUMN " + t + " TEXT DEFAULT ''")
-                        cur.execute("UPDATE indicators SET " + t + "= '" + records[
-                                    t] + "' WHERE id = '" + records['id'] + "'")
+
+        try:
+            Indicator.query.filter_by(object=records['object']).update(records)
+        except Exception as e:
+            # SQLAlchemy does not outright support altering tables.
+            for k,v in records.iteritems():
+                if Indicator.query.group_by(k).first() is None:
+                    print 'ALTER Table'
+                    #db_session.engine.execute("ALTER TABLE indicators ADD COLUMN " + k + " TEXT DEFAULT ''")
+
+        db_session.commit()
+
+           # db_session.execute('ALTER  TABLE indicators ADD COLUMN')
+
+        #con = libs.helpers.db_connection()
+        #with con:
+        #    cur = con.cursor()
+        #    cur.execute(
+        #        "ALTER TABLE indicators ADD COLUMN " + t + " TEXT DEFAULT ''")
+        #    cur.execute("UPDATE indicators SET " + t + "= '" + records[
+        #                t] + "' WHERE id = '" + records['id'] + "'")
+
         if records['type'] == "IPv4" or records['type'] == "IPv6" or records['type'] == "Domain" or records['type'] == "Network":
-            return redirect(url_for('objectsummary', uid=str(records['id'])))
+            return redirect(url_for('objectsummary', uid=str(records['object'])))
         elif records['type'] ==  "Hash":
-            return redirect(url_for('filesobject', uid=str(records['id'])))
+            return redirect(url_for('filesobject', uid=str(records['object'])))
         elif records['type'] == "Entity":
-            return redirect(url_for('victimobject', uid=str(records['id'])))
+            return redirect(url_for('victimobject', uid=str(records['object'])))
         elif records['type'] == "Threat Actor":
-            return redirect(url_for('threatactorobject', uid=str(records['id'])))  
+            return redirect(url_for('threatactorobject', uid=str(records['object'])))
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -950,6 +977,7 @@ def download(uid):
     if uid == 'unknown':
         uid = ""
     file = io.BytesIO()
+
     con = libs.helpers.db_connection()
     indlist = []
     with con:
