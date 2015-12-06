@@ -50,8 +50,6 @@ from wtforms.validators import DataRequired
 from libs.models import User, Setting, Indicator
 from libs.database import db_session
 from libs.database import init_db
-#from sqlalchemy import distinct
-
 
 #
 # Configuration #
@@ -69,7 +67,8 @@ class LoginForm(Form):
     password = PasswordField('password', validators=[DataRequired()])
 
     def get_user(self):
-        return db_session.query(User).filter_by(user=self.user.data.lower(), password=hashlib.md5(self.password.data.encode('utf-8')).hexdigest()).first()
+        return db_session.query(User).filter_by(user=self.user.data.lower(), password=hashlib.md5(
+            self.password.data.encode('utf-8')).hexdigest()).first()
 
 
 class RegisterForm(Form):
@@ -311,7 +310,7 @@ def campaigns():
 def settings():
     try:
         settings = Setting.query.filter_by(_id=1).all()
-        if settings == []:
+        if settings is []:
             settings = Setting('', '', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off',
                                'off', 'off', 'off', 'off', 'off', 'off')
             db_session.add(settings)
@@ -710,7 +709,7 @@ def insertnewfield():
 @login_required
 def objectsummary(uid):
     try:
-        http = Indicator.query.filter(Indicator.object == uid).first()
+        http = Indicator.query.filter_by(object=uid).first()
         newdict = libs.helpers.row_to_dict(http)
         settings = Setting.query.filter_by(_id=1).first()
         taglist = http.tags.split(",")
@@ -719,8 +718,8 @@ def objectsummary(uid):
         if http.relationships:
             rellist = http.relationships.split(",")
             for rel in rellist:
-                reltype = Indicator.query.filter(Indicator.object == rel)
-                temprel[reltype.object] = reltype.type
+                row = Indicator.query.filter_by(object=rel).first()
+                temprel[row.object] = row.type
 
         reldata = len(temprel)
         jsonvt = ""
@@ -823,11 +822,14 @@ def addrelationship():
         #for i in records:
         #    newdict[i] = records[i]
 
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            stm = "UPDATE indicators SET relationships=relationships || '" + records['indicator'] + ",' WHERE object='" + records['id'] + "'"
-            cur.execute("UPDATE indicators SET relationships=relationships || '" + records['indicator'] + ",' WHERE object='" + records['id'] + "'")
+        row = Indicator.query.filter_by(object=records['id']).first()
+        row.relationships = records['indicator']
+        db_session.commit()
+
+        #con = libs.helpers.db_connection()
+        #with con:
+        #    cur = con.cursor()
+        #    cur.execute("UPDATE indicators SET relationships=relationships || '" + records['indicator'] + ",' WHERE object='" + records['id'] + "'")
 
 
         if records['type'] == "IPv4" or records['type'] == "IPv6" or records['type'] == "Domain" or records['type'] == "Network":
