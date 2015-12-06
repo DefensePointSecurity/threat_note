@@ -575,6 +575,8 @@ def updatesettings():
         something = request.form
         imd = ImmutableMultiDict(something)
         newdict = libs.helpers.convert(imd)
+
+        # Query the first set of settings, could query custom settings for individual users
         settings = Setting.query.filter_by(_id=1).first()
 
         # Make sure we're updating the settings instead of overwriting them
@@ -582,7 +584,7 @@ def updatesettings():
             settings.threatcrowd = 'on'
         else:
            settings.threatcrowd = 'off'
-        if 'ptinfo' in newdict.keys():
+        if 'ptinfo' in newdict.keys() and newdict['ptkey'] is not '':
             settings.ptinfo = 'on'
         else:
             settings.ptinfo = 'off'
@@ -590,19 +592,19 @@ def updatesettings():
             settings.cuckoo = 'on'
         else:
             settings.cuckoo = 'off'
-        if 'vtinfo' in newdict.keys():
+        if 'vtinfo' in newdict.keys() and newdict['apikey'] is not '':
             settings.vtinfo = 'on'
         else:
             settings.vtinfo = 'off'
-        if 'vtfile' in newdict.keys():
+        if 'vtfile' in newdict.keys() and newdict['apikey'] is not '':
             settings.vtfile = 'on'
         else:
             settings.vtfile = 'off'
-        if 'circlinfo' in newdict.keys():
+        if 'circlinfo' in newdict.keys() and newdict['circlusername'] is not '':
             settings.circlinfo = 'on'
         else:
             settings.circlinfo = 'off'
-        if 'circlssl' in newdict.keys():
+        if 'circlssl' in newdict.keys() and newdict['circlusername'] is not '':
             settings.circlssl = 'on'
         else:
             settings.circlssl = 'off'
@@ -610,11 +612,11 @@ def updatesettings():
             settings.whoisinfo = 'on'
         else:
             settings.whoisinfo = 'off'
-        if 'farsightinfo' in newdict.keys():
+        if 'farsightinfo' in newdict.keys() and newdict['farsightkey'] is not '':
             settings.farsightinfo = 'on'
         else:
             settings.farsightinfo = 'off'
-        if 'odnsinfo' in newdict.keys():
+        if 'odnsinfo' in newdict.keys() and newdict['odnskey'] is not '':
             settings.odnsinfo = 'on'
         else:
             settings.odnsinfo = 'off'
