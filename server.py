@@ -818,19 +818,10 @@ def addrelationship():
         something = request.form
         imd = ImmutableMultiDict(something)
         records = libs.helpers.convert(imd)
-        #newdict = {}
-        #for i in records:
-        #    newdict[i] = records[i]
 
         row = Indicator.query.filter_by(object=records['id']).first()
         row.relationships = records['indicator']
         db_session.commit()
-
-        #con = libs.helpers.db_connection()
-        #with con:
-        #    cur = con.cursor()
-        #    cur.execute("UPDATE indicators SET relationships=relationships || '" + records['indicator'] + ",' WHERE object='" + records['id'] + "'")
-
 
         if records['type'] == "IPv4" or records['type'] == "IPv6" or records['type'] == "Domain" or records['type'] == "Network":
             return redirect(url_for('objectsummary', uid=str(records['id'])))
@@ -978,12 +969,15 @@ def import_indicators():
 @app.route('/download/<uid>', methods=['GET'])
 @login_required
 def download(uid):
+
     if uid == 'unknown':
         uid = ""
-    file = io.BytesIO()
+    rows = Indicator.query.filter_by(campaign=uid).all()
+    for row in rows:
+        print row
+
 
     con = libs.helpers.db_connection()
-    indlist = []
     with con:
         cur = con.cursor()
         cur.execute(
@@ -992,6 +986,7 @@ def download(uid):
         cur.execute("SELECT * from indicators")
         fieldnames = [description[0] for description in cur.description]
 
+    indlist = []
     for i in http:
         indicators = []
         for item in i:
@@ -1000,12 +995,12 @@ def download(uid):
             else:
                 indicators.append(str(item))
         indlist.append(indicators)
-
-    w = csv.writer(file)
     try:
+        out_file = io.BytesIO()
+        w = csv.writer(out_file)
         w.writerow(fieldnames)
         w.writerows(indlist)
-        response = make_response(file.getvalue())
+        response = make_response(out_file.getvalue())
         response.headers[
             "Content-Disposition"] = "attachment; filename=" + uid + "-campaign.csv"
         response.headers["Content-type"] = "text/csv"
@@ -1164,6 +1159,11 @@ if __name__ == '__main__':
         debug = False
     else:
         debug = True
+
+    if not args.database:
+        db_file = 'threatnote.db'
+    else:
+        db_file = args.database
 
     init_db()
     app.run(host='0.0.0.0', port=port, debug=debug)
