@@ -97,12 +97,10 @@ def register():
             user = User(form.user.data.lower(), form.password.data, form.email.data)
             db_session.add(user)
             db_session.commit()
-
             login_user(user)
 
     if current_user.is_authenticated:
         return redirect(url_for('home'))
-
     return render_template('register.html', form=form, title='Register')
 
 
@@ -133,20 +131,10 @@ def logout():
 def home():
     try:
         counts = Indicator.query.distinct(Indicator._id).count()
-        types = Indicator.query.distinct(Indicator.type).group_by(Indicator.type).all()
+        types = Indicator.query.group_by(Indicator.type).all()
         network = Indicator.query.order_by(Indicator._id).limit(5).all()
-        campaigns = Indicator.query.distinct(Indicator.campaign).all()
+        campaigns = Indicator.query.group_by(Indicator.campaign).all()
         taglist = Indicator.query.distinct(Indicator.tags).all()
-
-        #cur.execute("SELECT count(DISTINCT id) AS number FROM indicators")
-        #counts = cur.fetchall()
-
-        #cur.execute( "SELECT type, COUNT(*) AS `num` FROM indicators GROUP BY type")
-        #types = cur.fetchall()
-
-        #cur.execute("SELECT DISTINCT campaign FROM indicators")
-        #networks = cur.fetchall()
-
 
         # Generate Tag Cloud
         tags = []
@@ -156,10 +144,6 @@ def home():
             else:
                 for tag in object.tags.split(","):
                     tags.append(tag.strip())
-        newtags = []
-        for i in tags:
-              if i not in newtags:
-                   newtags.append(i.strip())
 
         dictcount = {}
         dictlist = []
@@ -167,28 +151,24 @@ def home():
         typelist = []
 
         # Generate Campaign Statistics Graph
-        test = {}
         for object in campaigns:
-            campcount = Indicator.query.filter(Indicator.campaign == object.campaign).count()
-            #cur.execute(
-            #    "select count(_id) FROM indicators WHERE campaign = '" + object.campaign + "'")
-
-
+            c = Indicator.query.filter_by(campaign=object.campaign).count()
             if object.campaign == '':
                 dictcount["category"] = "Unknown"
-                tempx = (float(campcount) / float(counts)) * 100
+                tempx = (float(c) / float(counts)) * 100
                 dictcount["value"] = round(tempx, 2)
             else:
                 dictcount["category"] = object.campaign
-                tempx = (float(campcount) / float(counts)) * 100
+                tempx = (float(c) / float(counts)) * 100
                 dictcount["value"] = round(tempx, 2)
 
             dictlist.append(dictcount.copy())
 
         # Generate Indicator Type Graph
         for t in types:
+            c = Indicator.query.filter_by(type=t.type).count()
             typecount["category"] = t.type
-            tempx = float(len(types)) / float(counts)
+            tempx = float(c) / float(counts)
             newtemp = tempx * 100
             typecount["value"] = round(newtemp, 2)
             typelist.append(typecount.copy())
@@ -202,7 +182,7 @@ def home():
             importsetting = False
 
         return render_template('dashboard.html', networks=dictlist, network=network, favs=favs, typelist=typelist,
-                               taglist=newtags, importsetting=importsetting)
+                               taglist=tags, importsetting=importsetting)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -212,26 +192,28 @@ def home():
 def about():
     return render_template('about.html')
 
+
 @app.route('/tags', methods=['GET'])
 @login_required
 def tags():
     try:
-        tags = []
-        taglist = Indicator.query.distinct(Indicator.tags).all()
-        for object in taglist:
-            if object.tags == "":
-                pass
-            else:
-                for tag in object.tags.split(","):
-                    tags.append(tag.strip())
-        campaignents = {}
-        for tag in tags:
-            entlist = []
-            camps = Indicator.query.filter(Indicator.tags.in_((tag)))
-            for ent in camps:
-                entlist.append(ent)
-            campaignents[str(tag)] = entlist
-        return render_template('tags.html', tags=campaignents)
+        # Grab tags
+        taglist = dict()
+        rows = Indicator.query.distinct(Indicator.tags).all()
+        for row in rows:
+            if row.tags:
+                for tag in row.tags.split(','):
+                    taglist[tag] = list()
+        # Match indicators to tags
+        del rows, row
+        for tag, indicators in taglist.iteritems():
+            rows = Indicator.query.filter(Indicator.tags.like('%' + tag + '%')).all()
+            tmp = {}
+            for row in rows:
+                tmp[row.object] = row.type
+                indicators.append(tmp)
+
+        return render_template('tags.html', tags=taglist)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -356,15 +338,9 @@ def newobject():
         something = request.form
         imd = ImmutableMultiDict(something)
         records = libs.helpers.convert(imd)
-        newdict = {}
-        for i in records:
-            newdict[i] = records[i]
 
         # Import indicators from Cuckoo for the selected analysis task
-
         if records.has_key('type') and 'cuckoo' in records['type']:
-            con = libs.helpers.db_connection()
-
             host_data, dns_data, sha1, firstseen = libs.cuckoo.report_data(records['cuckoo_task_id'])
             if not None in (host_data, dns_data, sha1, firstseen):
                 # Import IP Indicators from Cuckoo Task
@@ -372,54 +348,54 @@ def newobject():
                     object = Indicator.query.filter_by(object=ip).first()
                     if object is None:
                         indicator = Indicator(ip.strip(), 'IPv4', firstseen, '', 'Infrastructure', records['campaign'],
-                                 'Low', '', newdict['tags'], '')
+                                 'Low', '', records['tags'], '')
                         db_session.add(indicator)
                         db_session.commit()
                     else:
                         errormessage = "Entry already exists in database."
                         return render_template('newobject.html', errormessage=errormessage,
-                                               inputtype=newdict['inputtype'], inputobject=ip,
-                                               inputfirstseen=newdict['inputfirstseen'],
-                                               inputlastseen=newdict['inputlastseen'],
-                                               inputcampaign=newdict['inputcampaign'],
-                                               comments=newdict['comments'],
-                                               diamondmodel=newdict['diamondmodel'],
-                                               tags=newdict['tags'])
+                                               inputtype=records['inputtype'], inputobject=ip,
+                                               inputfirstseen=records['inputfirstseen'],
+                                               inputlastseen=records['inputlastseen'],
+                                               inputcampaign=records['inputcampaign'],
+                                               comments=records['comments'],
+                                               diamondmodel=records['diamondmodel'],
+                                               tags=records['tags'])
                     # Import Domain Indicators from Cuckoo Task
                     for dns in dns_data:
                         object = Indicator.query.filter_by(object=dns['requst']).first()
                         if object is None:
                             indicator = Indicator(dns['request'], 'Domain', firstseen, '', 'Infrastructure',
-                                                  records['campaign'], 'Low', '', newdict['tags'], '')
+                                                  records['campaign'], 'Low', '', records['tags'], '')
                             db_session.add(indicator)
                             db_session.commit()
                         else:
                             errormessage = "Entry already exists in database."
                             return render_template('newobject.html', errormessage=errormessage,
-                                                   inputtype=newdict['inputtype'], inputobject=ip,
-                                                   inputfirstseen=newdict['inputfirstseen'],
-                                                   inputlastseen=newdict['inputlastseen'],
-                                                   inputcampaign=newdict['inputcampaign'],
-                                                   comments=newdict['comments'],
-                                                   diamondmodel=newdict['diamondmodel'],
-                                                   tags=newdict['tags'])
+                                                   inputtype=records['inputtype'], inputobject=ip,
+                                                   inputfirstseen=records['inputfirstseen'],
+                                                   inputlastseen=records['inputlastseen'],
+                                                   inputcampaign=records['inputcampaign'],
+                                                   comments=records['comments'],
+                                                   diamondmodel=records['diamondmodel'],
+                                                   tags=records['tags'])
                     # Import File/Hash Indicators from Cuckoo Task
                     object = Indicator.query.filter_by(object=sha1).first()
                     if object is None:
                         indicator = Indicator(sha1, 'Hash', firstseen, '', 'Capability',
-                                              records['campaign'], 'Low', '', newdict['tags'], '')
+                                              records['campaign'], 'Low', '', records['tags'], '')
                         db_session.add(indicator)
                         db_session.commit()
                     else:
                         errormessage = "Entry already exists in database."
                         return render_template('newobject.html', errormessage=errormessage,
-                                               inputtype=newdict['inputtype'], inputobject=ip,
-                                               inputfirstseen=newdict['inputfirstseen'],
-                                               inputlastseen=newdict['inputlastseen'],
-                                               inputcampaign=newdict['inputcampaign'],
-                                               comments=newdict['comments'],
-                                               diamondmodel=newdict['diamondmodel'],
-                                               tags=newdict['tags'])
+                                               inputtype=records['inputtype'], inputobject=ip,
+                                               inputfirstseen=records['inputfirstseen'],
+                                               inputlastseen=records['inputlastseen'],
+                                               inputcampaign=records['inputcampaign'],
+                                               comments=records['comments'],
+                                               diamondmodel=records['diamondmodel'],
+                                               tags=records['tags'])
 
                 # Redirect to Dashboard after successful import
                 return redirect(url_for('home'))
@@ -431,71 +407,71 @@ def newobject():
             # Makes sure if you submit an IPv4 indicator, it's an actual IP
             # address.
             ipregex = re.match(
-                r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', newdict['inputobject'])
+                r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', records['inputobject'])
             # Convert the inputobject of IP or Domain to a list for Bulk Add functionality.
-            newdict['inputobject'] = newdict['inputobject'].split(',')
-            for newobject in newdict['inputobject']:
-                if newdict['inputtype'] == "IPv4":
+            records['inputobject'] = records['inputobject'].split(',')
+            for newobject in records['inputobject']:
+                if records['inputtype'] == "IPv4":
                     if ipregex:
                         object = Indicator.query.filter_by(object=newobject).first()
                         if object is None:
-                            ipv4_indicator = Indicator(newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'],
-                                     newdict['inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'],
-                                     newdict['confidence'], newdict['comments'], newdict['tags'], None)
+                            ipv4_indicator = Indicator(newobject.strip(), records['inputtype'], records['inputfirstseen'],
+                                     records['inputlastseen'], records['diamondmodel'], records['inputcampaign'],
+                                     records['confidence'], records['comments'], records['tags'], None)
                             db_session.add(ipv4_indicator)
                             db_session.commit()
                             network = Indicator.query.filter(Indicator.type.in_(('IPv4', 'IPv6', 'Domain', 'Network'))).all()
                         else:
                             errormessage = "Entry already exists in database."
                             return render_template('newobject.html', errormessage=errormessage,
-                                                   inputtype=newdict['inputtype'], inputobject=newobject,
-                                                   inputfirstseen=newdict['inputfirstseen'],
-                                                   inputlastseen=newdict['inputlastseen'],
-                                                   inputcampaign=newdict['inputcampaign'],
-                                                   comments=newdict['comments'],
-                                                   diamondmodel=newdict['diamondmodel'],
-                                                   tags=newdict['tags'])
+                                                   inputtype=records['inputtype'], inputobject=newobject,
+                                                   inputfirstseen=records['inputfirstseen'],
+                                                   inputlastseen=records['inputlastseen'],
+                                                   inputcampaign=records['inputcampaign'],
+                                                   comments=records['comments'],
+                                                   diamondmodel=records['diamondmodel'],
+                                                   tags=records['tags'])
 
                     else:
                         errormessage = "Not a valid IP Address."
-                        newobject = ', '.join(newdict['inputobject'])
+                        newobject = ', '.join(records['inputobject'])
                         return render_template('newobject.html', errormessage=errormessage,
-                                               inputtype=newdict['inputtype'],
-                                               inputobject=newobject, inputfirstseen=newdict['inputfirstseen'],
-                                               inputlastseen=newdict['inputlastseen'],
-                                               confidence=newdict['confidence'], inputcampaign=newdict['inputcampaign'],
-                                               comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],
-                                               tags=newdict['tags'])
+                                               inputtype=records['inputtype'],
+                                               inputobject=records, inputfirstseen=records['inputfirstseen'],
+                                               inputlastseen=records['inputlastseen'],
+                                               confidence=records['confidence'], inputcampaign=records['inputcampaign'],
+                                               comments=records['comments'], diamondmodel=records['diamondmodel'],
+                                               tags=records['tags'])
                 else:
                     object = Indicator.query.filter_by(object=newobject).first()
                     if object is None:
-                        indicator = Indicator(newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'],
-                                 newdict['inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'],
-                                 newdict['confidence'], newdict['comments'], newdict['tags'], None)
+                        indicator = Indicator(newobject.strip(), records['inputtype'], records['inputfirstseen'],
+                                 records['inputlastseen'], records['diamondmodel'], records['inputcampaign'],
+                                 records['confidence'], records['comments'], records['tags'], None)
                         db_session.add(indicator)
                         db_session.commit()
                     else:
                         errormessage = "Entry already exists in database."
                         return render_template('newobject.html', errormessage=errormessage,
-                                               inputtype=newdict['inputtype'], inputobject=newobject,
-                                               inputfirstseen=newdict['inputfirstseen'],
-                                               inputlastseen=newdict['inputlastseen'],
-                                               inputcampaign=newdict['inputcampaign'],
-                                               comments=newdict['comments'],
-                                               diamondmodel=newdict['diamondmodel'],
-                                               tags=newdict['tags'])
+                                               inputtype=records['inputtype'], inputobject=newobject,
+                                               inputfirstseen=records['inputfirstseen'],
+                                               inputlastseen=records['inputlastseen'],
+                                               inputcampaign=records['inputcampaign'],
+                                               comments=records['comments'],
+                                               diamondmodel=records['diamondmodel'],
+                                               tags=records['tags'])
 
             # TODO: Change 'network' to 'object' in HTML templates to standardize on verbiage
-            if newdict['inputtype'] == "IPv4" or newdict['inputtype'] == "Domain" or newdict[
-                    'inputtype'] == "Network" or newdict['inputtype'] == "IPv6":
+            if records['inputtype'] == "IPv4" or records['inputtype'] == "Domain" or records['inputtype'] == "Network"\
+                    or records['inputtype'] == "IPv6":
                 network = Indicator.query.filter(Indicator.type.in_(('IPv4', 'IPv6', 'Domain', 'Network'))).all()
                 return render_template('networks.html', network=network)
 
-            elif newdict['diamondmodel'] == "Victim":
+            elif records['diamondmodel'] == "Victim":
                 victims = Indicator.query.filter(Indicator.diamondmodel == ('Victim')).all()
                 return render_template('victims.html', network=victims)
 
-            elif newdict['inputtype'] == "Hash":
+            elif records['inputtype'] == "Hash":
                 files = Indicator.query.filter(Indicator.type == ('Hash')).all()
                 return render_template('files.html', network=files)
 
@@ -511,7 +487,7 @@ def newobject():
 @login_required
 def editobject(uid):
     try:
-        http = Indicator.query.filter(Indicator.object == uid).first()
+        http = Indicator.query.filter_by(object=uid).first()
         newdict = libs.helpers.row_to_dict(http)
 
         return render_template('neweditobject.html', entry=newdict)
