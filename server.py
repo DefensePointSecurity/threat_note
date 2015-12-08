@@ -11,11 +11,9 @@ import csv
 import hashlib
 import io
 import re
-import sqlite3 as lite
 import time
 import urllib
 import argparse
-
 import libs.circl
 import libs.cuckoo
 import libs.farsight
@@ -293,8 +291,8 @@ def settings():
     try:
         settings = Setting.query.filter_by(_id=1).all()
         if settings is []:
-            settings = Setting('', '', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off',
-                               'off', 'off', 'off', 'off', 'off', 'off')
+            settings = Setting('', '', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off',
+                               'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off')
             db_session.add(settings)
             db_session.commit()
         settings = Setting.query.filter_by(_id=1).first()
@@ -310,8 +308,8 @@ def campaignsummary(uid):
     try:
         http = Indicator.query.filter_by(object=uid).first()
         # Run ipwhois or domainwhois based on the type of indicator
-        if str(http.type) == "IPv4" or str(http.type) == "IPv6" or str(
-                http.type) == "Domain" or str(http.type) == "Network":
+        if str(http.type) == "IPv4" or str(http.type) == "IPv6" or str(http.type) == "Domain" or \
+                        str(http.type) == "Network":
             return redirect(url_for('objectsummary', uid=http.object))
         elif str(http.type) == "Hash":
             return redirect(url_for('filesobject', uid=http.object))
@@ -415,12 +413,14 @@ def newobject():
                     if ipregex:
                         object = Indicator.query.filter_by(object=newobject).first()
                         if object is None:
-                            ipv4_indicator = Indicator(newobject.strip(), records['inputtype'], records['inputfirstseen'],
-                                     records['inputlastseen'], records['diamondmodel'], records['inputcampaign'],
-                                     records['confidence'], records['comments'], records['tags'], None)
+                            ipv4_indicator = Indicator(newobject.strip(), records['inputtype'],
+                                                       records['inputfirstseen'],records['inputlastseen'],
+                                                       records['diamondmodel'], records['inputcampaign'],
+                                                       records['confidence'], records['comments'], records['tags'], None)
                             db_session.add(ipv4_indicator)
                             db_session.commit()
-                            network = Indicator.query.filter(Indicator.type.in_(('IPv4', 'IPv6', 'Domain', 'Network'))).all()
+                            network = Indicator.query.filter(Indicator.type.in_(
+                                ('IPv4', 'IPv6', 'Domain', 'Network'))).all()
                         else:
                             errormessage = "Entry already exists in database."
                             return render_template('newobject.html', errormessage=errormessage,
@@ -624,9 +624,7 @@ def updateobject():
         imd = ImmutableMultiDict(something)
         records = libs.helpers.convert(imd)
         taglist = records['tags'].split(",")
-
         indicator = Indicator.query.filter_by(object=records['object']).first()
-
 
         try:
             Indicator.query.filter_by(object=records['object']).update(records)
@@ -649,7 +647,8 @@ def updateobject():
         #    cur.execute("UPDATE indicators SET " + t + "= '" + records[
         #                t] + "' WHERE id = '" + records['id'] + "'")
 
-        if records['type'] == "IPv4" or records['type'] == "IPv6" or records['type'] == "Domain" or records['type'] == "Network":
+        if records['type'] == "IPv4" or records['type'] == "IPv6" or records['type'] == "Domain" or \
+                        records['type'] == "Network":
             return redirect(url_for('objectsummary', uid=str(records['object'])))
         elif records['type'] ==  "Hash":
             return redirect(url_for('filesobject', uid=str(records['object'])))
@@ -744,8 +743,9 @@ def objectsummary(uid):
         else:
             address = "Information about " + str(http.object)
         return render_template('networkobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, settingsvars=settings, address=address, ptdata=ptdata, temprel=temprel, circldata=circldata,
-            circlssl=circlssl, reldata=reldata, taglist=taglist, farsightdata=farsightdata)
+                               odnsdata=odnsdata, settingsvars=settings, address=address,
+                               ptdata=ptdata, temprel=temprel, circldata=circldata, circlssl=circlssl, reldata=reldata,
+                               taglist=taglist, farsightdata=farsightdata)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -799,9 +799,10 @@ def addrelationship():
         row.relationships = records['indicator']
         db_session.commit()
 
-        if records['type'] == "IPv4" or records['type'] == "IPv6" or records['type'] == "Domain" or records['type'] == "Network":
+        if records['type'] == "IPv4" or records['type'] == "IPv6" or records['type'] == "Domain" or \
+                        records['type'] == "Network":
             return redirect(url_for('objectsummary', uid=str(records['id'])))
-        elif records['type'] ==  "Hash":
+        elif records['type'] == "Hash":
             return redirect(url_for('filesobject', uid=str(records['id'])))
         elif records['type'] == "Entity":
             return redirect(url_for('victimobject', uid=str(records['id'])))
@@ -900,10 +901,10 @@ def victimobject(uid):
                     whoisdata['nets'][0]['country'])
         else:
             address = "Information about " + str(http.object)
-        return render_template(
-            'victimobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, circldata=circldata, circlssl=circlssl, settingsvars=settings, address=address,
-            temprel=temprel, reldata=reldata, taglist=taglist, ptdata=ptdata, farsightdata=farsightdata)
+        return render_template('victimobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
+                               odnsdata=odnsdata, circldata=circldata, circlssl=circlssl, settingsvars=settings,
+                               address=address, temprel=temprel, reldata=reldata, taglist=taglist, ptdata=ptdata,
+                               farsightdata=farsightdata)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -951,7 +952,6 @@ def download(uid):
     rows = Indicator.query.filter_by(campaign=uid).all()
     for row in rows:
         print row
-
 
     con = libs.helpers.db_connection()
     with con:
