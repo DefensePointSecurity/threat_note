@@ -7,11 +7,11 @@ class User(Base):
     _id = Column('_id', Integer, primary_key=True, autoincrement=True)
     user = Column('user', String)
     email = Column('email', String)
-    password = Column('password', String)
+    key = Column('key', String)
 
-    def __init__(self, user, password, email):
+    def __init__(self, user, key, email):
         self.user = user.lower()
-        self.password = hashlib.md5(password.encode('utf-8')).hexdigest()
+        self.key = hashlib.md5(key.encode('utf-8')).hexdigest()
         self.email = email
 
     def is_authenticated(self):
@@ -54,9 +54,9 @@ class Setting(Base):
     farsightinfo = Column('farsightinfo', String)
     farsightkey = Column('farsightkey', String)
 
-    def __init__(self, apikey, odnskey, vtinfo, whoisinfo, odnsinfo, httpproxy, httpsproxy, threatcrowd, vtfile,
-                 circlinfo, circlusername, circlpassword, circlssl, ptinfo, ptkey, cuckoo, cuckoohost,
-                 cuckooapiport, farsightinfo, farsightkey):
+    def __init__(self, vtinfo, whoisinfo, odnsinfo, circlinfo, farsightinfo, ptinfo, circlssl, threatcrowd, vtfile,
+                 apikey, odnskey, circlusername, circlpassword, ptkey, farsightkey,
+                 cuckoo, cuckoohost, cuckooapiport, httpproxy, httpsproxy):
         self.apikey = apikey
         self.odnskey = odnskey
         self.vtinfo = vtinfo

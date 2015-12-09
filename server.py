@@ -53,7 +53,6 @@ from libs.database import init_db
 # Configuration #
 #
 
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yek_terces'
 lm = LoginManager()
@@ -62,16 +61,16 @@ lm.login_view = 'login'
 
 class LoginForm(Form):
     user = StringField('user', validators=[DataRequired()])
-    password = PasswordField('password', validators=[DataRequired()])
+    key = PasswordField('key', validators=[DataRequired()])
 
     def get_user(self):
-        return db_session.query(User).filter_by(user=self.user.data.lower(), password=hashlib.md5(
-            self.password.data.encode('utf-8')).hexdigest()).first()
+        return db_session.query(User).filter_by(user=self.user.data.lower(), key=hashlib.md5(
+            self.key.data.encode('utf-8')).hexdigest()).first()
 
 
 class RegisterForm(Form):
     user = StringField('user', validators=[DataRequired()])
-    password = PasswordField('password', validators=[DataRequired()])
+    key = PasswordField('key', validators=[DataRequired()])
     email = StringField('email')
 
 
@@ -92,8 +91,15 @@ def register():
         if user:
             flash('User exists.')
         else:
-            user = User(form.user.data.lower(), form.password.data, form.email.data)
+            user = User(form.user.data.lower(), form.key.data, form.email.data)
             db_session.add(user)
+
+            # Set up the settings table when the first user is registered.
+            if not Setting.query.filter_by(_id=1).first():
+                settings = Setting('off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', '', '', '',
+                                   '', '', '', '', '', '', '', '')
+                db_session.add(settings)
+            # Commit all database changes once they have been completed
             db_session.commit()
             login_user(user)
 
@@ -289,14 +295,7 @@ def campaigns():
 @login_required
 def settings():
     try:
-        settings = Setting.query.filter_by(_id=1).all()
-        if settings is []:
-            settings = Setting('', '', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off',
-                               'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off')
-            db_session.add(settings)
-            db_session.commit()
         settings = Setting.query.filter_by(_id=1).first()
-
         return render_template('settings.html', records=settings)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -338,7 +337,7 @@ def newobject():
         records = libs.helpers.convert(imd)
 
         # Import indicators from Cuckoo for the selected analysis task
-        if records.has_key('type') and 'cuckoo' in records['type']:
+        if 'type' in records and 'cuckoo' in records['type']:
             host_data, dns_data, sha1, firstseen = libs.cuckoo.report_data(records['cuckoo_task_id'])
             if not None in (host_data, dns_data, sha1, firstseen):
                 # Import IP Indicators from Cuckoo Task
@@ -346,7 +345,7 @@ def newobject():
                     object = Indicator.query.filter_by(object=ip).first()
                     if object is None:
                         indicator = Indicator(ip.strip(), 'IPv4', firstseen, '', 'Infrastructure', records['campaign'],
-                                 'Low', '', records['tags'], '')
+                                              'Low', '', records['tags'], '')
                         db_session.add(indicator)
                         db_session.commit()
                     else:
@@ -401,7 +400,7 @@ def newobject():
                 errormessage = 'Task is not a file analysis'
                 return redirect(url_for('import_indicators'))
 
-        if records.has_key('inputtype'):
+        if 'inputtype' in records:
             # Makes sure if you submit an IPv4 indicator, it's an actual IP
             # address.
             ipregex = re.match(
@@ -478,7 +477,6 @@ def newobject():
             else:
                 threatactors = Indicator.query.filter(Indicator.type == ('Threat Actors')).all()
                 return render_template('threatactors.html', network=threatactors)
-
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -489,7 +487,6 @@ def editobject(uid):
     try:
         http = Indicator.query.filter_by(object=uid).first()
         newdict = libs.helpers.row_to_dict(http)
-
         return render_template('neweditobject.html', entry=newdict)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -538,7 +535,6 @@ def deletefilesobject(uid):
         Indicator.query.filter_by(object=uid).delete()
         db_session.commit()
         files = Indicator.query.filter_by(type='Hash')
-
         return render_template('victims.html', network=files)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -684,14 +680,14 @@ def insertnewfield():
 @login_required
 def objectsummary(uid):
     try:
-        http = Indicator.query.filter_by(object=uid).first()
-        newdict = libs.helpers.row_to_dict(http)
+        row = Indicator.query.filter_by(object=uid).first()
+        newdict = libs.helpers.row_to_dict(row)
         settings = Setting.query.filter_by(_id=1).first()
-        taglist = http.tags.split(",")
+        taglist = row.tags.split(",")
 
         temprel = {}
-        if http.relationships:
-            rellist = http.relationships.split(",")
+        if row.relationships:
+            rellist = row.relationships.split(",")
             for rel in rellist:
                 row = Indicator.query.filter_by(object=rel).first()
                 temprel[row.object] = row.type
@@ -706,42 +702,42 @@ def objectsummary(uid):
         farsightdata = ""
         shodandata = ""
         # Run ipwhois or domainwhois based on the type of indicator
-        if str(http.type) == "IPv4" or str(http.type) == "IPv6":
+        if str(row.type) == "IPv4" or str(row.type) == "IPv6":
             if settings.vtinfo == "on":
-                jsonvt = libs.virustotal.vt_ipv4_lookup(str(http.object))
+                jsonvt = libs.virustotal.vt_ipv4_lookup(str(row.object))
             if settings.whoisinfo == "on":
-                whoisdata = libs.whoisinfo.ipwhois(str(http.object))
+                whoisdata = libs.whoisinfo.ipwhois(str(row.object))
             if settings.odnsinfo == "on":
-                odnsdata = libs.investigate.ip_query(str(http.object))
+                odnsdata = libs.investigate.ip_query(str(row.object))
             if settings.circlinfo == "on":
-                circldata = libs.circl.circlquery(str(http.object))
+                circldata = libs.circl.circlquery(str(row.object))
             if settings.circlssl == "on":
-                circlssl = libs.circl.circlssl(str(http.object))
+                circlssl = libs.circl.circlssl(str(row.object))
             if settings.ptinfo == "on":
-                ptdata = libs.passivetotal.pt(str(http.object))
+                ptdata = libs.passivetotal.pt(str(row.object))
             if settings.farsightinfo == "on":
-                farsightdata = libs.farsight.farsightip(str(http.object))
-        elif str(http.type) == "Domain":
+                farsightdata = libs.farsight.farsightip(str(row.object))
+        elif str(row.type) == "Domain":
             if settings.whoisinfo == "on":
-                whoisdata = libs.whoisinfo.domainwhois(str(http.object))
+                whoisdata = libs.whoisinfo.domainwhois(str(row.object))
             if settings.vtinfo == "on":
-                jsonvt = libs.virustotal.vt_domain_lookup(str(http.object))
+                jsonvt = libs.virustotal.vt_domain_lookup(str(row.object))
             if settings.odnsinfo == "on":
-                odnsdata = libs.investigate.domain_categories(str(http.object))
+                odnsdata = libs.investigate.domain_categories(str(row.object))
             if settings.circlinfo == "on":
-                circldata = libs.circl.circlquery(str(http.object))
+                circldata = libs.circl.circlquery(str(row.object))
             if settings.ptinfo == "on":
-                ptdata = libs.passivetotal.pt(str(http.object))
+                ptdata = libs.passivetotal.pt(str(row.object))
             if settings.farsightinfo == "on":
-                farsightdata = libs.farsight.farsightdomain(str(http.object))
+                farsightdata = libs.farsight.farsightdomain(str(row.object))
         if settings.whoisinfo == "on":
-            if str(http.type) == "Domain":
+            if str(row.type) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
             else:
                 address = str(whoisdata['nets'][0]['city']) + ", " + str(
                     whoisdata['nets'][0]['country'])
         else:
-            address = "Information about " + str(http.object)
+            address = "Information about " + str(row.object)
         return render_template('networkobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
                                odnsdata=odnsdata, settingsvars=settings, address=address,
                                ptdata=ptdata, temprel=temprel, circldata=circldata, circlssl=circlssl, reldata=reldata,
@@ -754,12 +750,12 @@ def objectsummary(uid):
 @login_required
 def threatactorobject(uid):
     try:
-        http = Indicator.query.filter(Indicator.object == uid).first()
-        newdict = libs.helpers.row_to_dict(http)
+        row = Indicator.query.filter(Indicator.object == uid).first()
+        newdict = libs.helpers.row_to_dict(row)
 
         temprel = {}
-        if http.relationships:
-            rellist = http.relationships.split(",")
+        if row.relationships:
+            rellist = row.relationships.split(",")
             for rel in rellist:
                 reltype = Indicator.query.filter(Indicator.object == rel)
                 temprel[reltype.object] = reltype.type
@@ -773,16 +769,15 @@ def threatactorobject(uid):
 @login_required
 def relationships(uid):
     try:
-        http = Indicator.query.filter_by(object=uid).first()
+        row = Indicator.query.filter_by(object=uid).first()
         indicators = Indicator.query.all()
-        rels = Indicator.query.filter_by(object=uid).first()
-        if http.relationships:
-            rellist = rels.split(",")
+        if row.relationships:
+            rellist = row.relationships.split(",")
             temprel = {}
             for rel in rellist:
                 reltype = Indicator.query.filter_by(object=rel).first()
-                temprel[reltype['object']] = reltype['type']
-        return render_template('addrelationship.html', records=http, indicators=indicators)
+                temprel[reltype.object] = reltype.type
+        return render_template('addrelationship.html', records=row, indicators=indicators)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -822,9 +817,9 @@ def profile():
         records = libs.helpers.convert(imd)
 
         if 'currentpw' in records:
-            if hashlib.md5(records['currentpw'].encode('utf-8')).hexdigest() == user.password:
+            if hashlib.md5(records['currentpw'].encode('utf-8')).hexdigest() == user.key:
                 if records['newpw'] == records['newpwvalidation']:
-                    user.password = hashlib.md5(records['newpw'].encode('utf-8')).hexdigest()
+                    user.key = hashlib.md5(records['newpw'].encode('utf-8')).hexdigest()
                     db_session.commit()
                     errormessage = "Password updated successfully."
                     return render_template('profile.html', errormessage=errormessage)
@@ -1124,8 +1119,6 @@ if __name__ == '__main__':
     parser.add_argument('-db', '--database', help="Path to sqlite database - Not Implemented")
     args = parser.parse_args()
 
-    libs.helpers.setup_db()
-
     if not args.port:
         port = 8888
     else:
@@ -1136,10 +1129,9 @@ if __name__ == '__main__':
     else:
         debug = True
 
-    if not args.database:
-        db_file = 'threatnote.db'
-    else:
-        db_file = args.database
+    if args.database:
+        # TODO
+        libs.database.db_file = args.database
 
     init_db()
     app.run(host='0.0.0.0', port=port, debug=debug)
