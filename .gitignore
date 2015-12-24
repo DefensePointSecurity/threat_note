@@ -12,3 +12,6 @@ vagrant/.vagrant/*
 static/uploads/*
 
 *.db
+
+# Common VirtualEnv Path
+# venv
