@@ -11,11 +11,9 @@ import csv
 import hashlib
 import io
 import re
-import sqlite3 as lite
 import time
 import urllib
 import argparse
-
 import libs.circl
 import libs.cuckoo
 import libs.farsight
@@ -25,6 +23,7 @@ import libs.passivetotal
 import libs.shodan
 import libs.whoisinfo
 import libs.virustotal
+
 
 from flask import Flask
 from flask import flash
@@ -39,92 +38,73 @@ from flask.ext.login import LoginManager
 from flask.ext.login import login_required
 from flask.ext.login import login_user
 from flask.ext.login import logout_user
-from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.wtf import Form
 
 from werkzeug.datastructures import ImmutableMultiDict
 from wtforms import PasswordField
-from wtforms import TextField
-from wtforms.validators import Required
+from wtforms import StringField
+from wtforms.validators import DataRequired
+
+from libs.models import User, Setting, Indicator
+from libs.database import db_session
+from libs.database import init_db
 
 #
 # Configuration #
 #
 
-db_file = 'threatnote.db'
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yek_terces'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_file
-
 lm = LoginManager()
 lm.init_app(app)
 lm.login_view = 'login'
 
-db = SQLAlchemy(app)
-
-
-class User(db.Model):
-    __tablename__ = 'users'
-    _id = db.Column('_id', db.Integer, primary_key=True, autoincrement=True)
-    user = db.Column('user', db.String)
-    email = db.Column('email', db.String)
-    key = db.Column('key', db.String)
-
-    def __init__(self, user, key, email):
-        self.user = user.lower()
-        self.key = hashlib.md5(key.encode('utf-8')).hexdigest()
-        self.email = email
-
-    def is_authenticated(self):
-        return True
-
-    def is_active(self):
-        return True
-
-    def is_anonymous(self):
-        return False
-
-    def get_id(self):
-        return self._id
-
-
 class LoginForm(Form):
-    user = TextField('user', validators=[Required()])
-    key = PasswordField('key', validators=[Required()])
+    user = StringField('user', validators=[DataRequired()])
+    key = PasswordField('key', validators=[DataRequired()])
 
     def get_user(self):
-        return db.session.query(User).filter_by(user=self.user.data.lower(), key=hashlib.md5(self.key.data.encode('utf-8')).hexdigest()).first()
+        return db_session.query(User).filter_by(user=self.user.data.lower(), key=hashlib.md5(
+            self.key.data.encode('utf-8')).hexdigest()).first()
 
 
 class RegisterForm(Form):
-    user = TextField('user', validators=[Required()])
-    key = PasswordField('key', validators=[Required()])
-    email = TextField('email')
+    user = StringField('user', validators=[DataRequired()])
+    key = PasswordField('key', validators=[DataRequired()])
+    email = StringField('email')
 
+
+#
+# Creating routes #
+#
 
 @lm.user_loader
 def load_user(id):
-    return db.session.query(User).filter_by(_id=id).first()
+    return db_session.query(User).filter_by(_id=id).first()
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        user = db.session.query(User).filter_by(
-            user=form.user.data.lower()).first()
+        user = db_session.query(User).filter_by(user=form.user.data.lower()).first()
         if user:
             flash('User exists.')
         else:
             user = User(form.user.data.lower(), form.key.data, form.email.data)
-            db.session.add(user)
-            db.session.commit()
+            db_session.add(user)
 
+            # Set up the settings table when the first user is registered.
+            if not Setting.query.filter_by(_id=1).first():
+                settings = Setting('off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', '', '', '',
+                                   '', '', '', '', '', '', '', '')
+                db_session.add(settings)
+            # Commit all database changes once they have been completed
+            db_session.commit()
             login_user(user)
 
     if current_user.is_authenticated:
         return redirect(url_for('home'))
-
     return render_template('register.html', form=form, title='Register')
 
 
@@ -149,88 +129,64 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
-#
-# Creating routes #
-#
-
 
 @app.route('/', methods=['GET'])
 @login_required
 def home():
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT count(DISTINCT id) AS number FROM indicators")
-            counts = cur.fetchall()
-            cur.execute(
-                "SELECT type, COUNT(*) AS `num` FROM indicators GROUP BY type")
-            types = cur.fetchall()
-            cur.execute("SELECT * FROM indicators ORDER BY id desc LIMIT 5")
-            network = cur.fetchall()
-            cur.execute("SELECT DISTINCT campaign FROM indicators")
-            networks = cur.fetchall()
-            cur.execute("SELECT count(DISTINCT id) AS number FROM indicators")
-            counts = cur.fetchall()
-            counts = counts[0][0]
-            tags = []
-            cur.execute("SELECT * FROM indicators")
-            taglist = cur.fetchall()
-            for tag in taglist:
-                if tag['tags'] == "":
-                    pass
-                else:
-                    fulllist = tag['tags'].split(",")
-                    for tag in fulllist:
-                        tags.append(tag.strip())
-            newtags = []
-            for i in tags:
-                  if i not in newtags:
-                        newtags.append(i.strip())
-            dictcount = {}
-            dictlist = []
-            typecount = {}
-            typelist = []
-            for net in networks:
-                cur = con.cursor()
-                cur.execute(
-                    "select count(id) FROM indicators WHERE campaign = '" + str(net[0]) + "'")
-                campcount = cur.fetchall()
-                campcount = campcount[0][0]
-                if net[0] == '':
-                    dictcount["category"] = "Unknown"
-                    tempx = float(campcount) / float(counts)
-                    newtemp = tempx * 100
-                    dictcount["value"] = round(newtemp, 2)
-                else:
-                    dictcount["category"] = net[0]
-                    tempx = float(campcount) / float(counts)
-                    newtemp = tempx * 100
-                    dictcount["value"] = round(newtemp, 2)
-                dictlist.append(dictcount.copy())
-            for t in types:
-                typecount["category"] = str(t[0])
-                tempx = float(t[1]) / float(counts)
-                newtemp = tempx * 100
-                typecount["value"] = round(newtemp, 2)
-                typelist.append(typecount.copy())
-            favs = []
-            # Add Import from Cuckoo button to Dashboard page
-            con = libs.helpers.db_connection()
-            with con:
-                cur = con.cursor()
-                cur.execute("SELECT cuckoo FROM settings")
-            try:
-                cuckoo_settings = cur.fetchall()[0]
-                if 'on' in cuckoo_settings[0]:
-                    importsetting = True
-                else:
-                    importsetting = False
-            except:
-                importsetting = False
+        counts = Indicator.query.distinct(Indicator._id).count()
+        types = Indicator.query.group_by(Indicator.type).all()
+        network = Indicator.query.order_by(Indicator._id).limit(5).all()
+        campaigns = Indicator.query.group_by(Indicator.campaign).all()
+        taglist = Indicator.query.distinct(Indicator.tags).all()
+
+        # Generate Tag Cloud
+        tags = []
+        for object in taglist:
+            if object.tags == "":
+                pass
+            else:
+                for tag in object.tags.split(","):
+                    tags.append(tag.strip())
+
+        dictcount = {}
+        dictlist = []
+        typecount = {}
+        typelist = []
+
+        # Generate Campaign Statistics Graph
+        for object in campaigns:
+            c = Indicator.query.filter_by(campaign=object.campaign).count()
+            if object.campaign == '':
+                dictcount["category"] = "Unknown"
+                tempx = (float(c) / float(counts)) * 100
+                dictcount["value"] = round(tempx, 2)
+            else:
+                dictcount["category"] = object.campaign
+                tempx = (float(c) / float(counts)) * 100
+                dictcount["value"] = round(tempx, 2)
+
+            dictlist.append(dictcount.copy())
+
+        # Generate Indicator Type Graph
+        for t in types:
+            c = Indicator.query.filter_by(type=t.type).count()
+            typecount["category"] = t.type
+            tempx = float(c) / float(counts)
+            newtemp = tempx * 100
+            typecount["value"] = round(newtemp, 2)
+            typelist.append(typecount.copy())
+        favs = []
+
+        # Add Import from Cuckoo button to Dashboard page
+        settings = Setting.query.filter_by(_id=1).first()
+        if 'on' in settings.cuckoo:
+            importsetting = True
+        else:
+            importsetting = False
 
         return render_template('dashboard.html', networks=dictlist, network=network, favs=favs, typelist=typelist,
-                               taglist=newtags, importsetting=importsetting)
+                               taglist=tags, importsetting=importsetting)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -240,35 +196,28 @@ def home():
 def about():
     return render_template('about.html')
 
+
 @app.route('/tags', methods=['GET'])
 @login_required
 def tags():
     try:
-        tags = []
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * FROM indicators")
-            taglist = cur.fetchall()
-            for tag in taglist:
-                if tag['tags'] == "":
-                    pass
-                else:
-                    fulllist = tag['tags'].split(",")
-                    for tag in fulllist:
-                        tags.append(tag.strip())
-        campaignents = {}
-        for tag in tags:
-            entlist = []
-            cur = con.cursor()
-            cur.execute(
-                "SELECT * FROM indicators WHERE tags LIKE '%" + tag + "%'")
-            camps = cur.fetchall()
-            #camps = camps[0]
-            for ent in camps:
-                entlist.append(ent)
-            campaignents[str(tag)] = entlist
-        return render_template('tags.html', tags=campaignents)
+        # Grab tags
+        taglist = dict()
+        rows = Indicator.query.distinct(Indicator.tags).all()
+        for row in rows:
+            if row.tags:
+                for tag in row.tags.split(','):
+                    taglist[tag] = list()
+        # Match indicators to tags
+        del rows, row
+        for tag, indicators in taglist.iteritems():
+            rows = Indicator.query.filter(Indicator.tags.like('%' + tag + '%')).all()
+            tmp = {}
+            for row in rows:
+                tmp[row.object] = row.type
+                indicators.append(tmp)
+
+        return render_template('tags.html', tags=taglist)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -277,12 +226,7 @@ def tags():
 def networks():
     try:
         # Grab only network indicators
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute(
-                "SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
-            network = cur.fetchall()
+        network = Indicator.query.filter(Indicator.type.in_(('IPv4', 'IPv6', 'Domain', 'Network'))).all()
         return render_template('networks.html', network=network)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -293,11 +237,7 @@ def networks():
 def threatactors():
     try:
         # Grab threat actors
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * FROM indicators where type='Threat Actor'")
-            threatactors = cur.fetchall()
+        threatactors = Indicator.query.filter(Indicator.type == ('Threat Actor')).all()
         return render_template('threatactors.html', network=threatactors)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -307,11 +247,8 @@ def threatactors():
 @login_required
 def victims():
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * FROM indicators where diamondmodel='Victim'")
-            victims = cur.fetchall()
+        # Grab victims
+        victims = Indicator.query.filter(Indicator.diamondmodel == ('Victim')).all()
         return render_template('victims.html', network=victims)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -320,11 +257,8 @@ def victims():
 @login_required
 def files():
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * FROM indicators where type='Hash'")
-            files = cur.fetchall()
+        # Grab files/hashes
+        files = Indicator.query.filter(Indicator.type == ('Hash')).all()
         return render_template('files.html', network=files)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -334,31 +268,24 @@ def files():
 @login_required
 def campaigns():
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT DISTINCT campaign FROM indicators")
-            campaigns = cur.fetchall()
-        campaignents = {}
-        for camp in campaigns:
-            if camp[0] == "":
-                entlist = []
-                cur = con.cursor()
-                cur.execute(
-                    "SELECT DISTINCT * FROM indicators WHERE length(campaign) < 1")
-                camps = cur.fetchall()
-                for ent in camps:
-                    entlist.append(ent)
-                campaignents["Unknown"] = entlist
+        # Grab campaigns
+        campaignents = dict()
+        rows = Indicator.query.group_by(Indicator.campaign).all()
+        for c in rows:
+            if c.campaign == '':
+                name = 'Unknown'
             else:
-                entlist = []
-                cur = con.cursor()
-                cur.execute(
-                    "SELECT DISTINCT * FROM indicators WHERE campaign = '" + str(camp[0]) + "'")
-                camps = cur.fetchall()
-                for ent in camps:
-                    entlist.append(ent)
-                campaignents[str(camp[0])] = entlist
+                name = c.campaign
+            campaignents[name] = list()
+        # Match indicators to campaigns
+        for camp, indicators in campaignents.iteritems():
+            if camp == 'Unknown':
+                camp = ''
+            rows = Indicator.query.filter(Indicator.campaign == camp).all()
+            tmp = {}
+            for i in rows:
+                tmp[i.object] = i.type
+                indicators.append(tmp)
         return render_template('campaigns.html', campaignents=campaignents)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -368,14 +295,8 @@ def campaigns():
 @login_required
 def settings():
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * from settings")
-            records = cur.fetchall()
-            records = records[0]
-
-        return render_template('settings.html', records=records)
+        settings = Setting.query.filter_by(_id=1).first()
+        return render_template('settings.html', records=settings)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -384,21 +305,15 @@ def settings():
 @login_required
 def campaignsummary(uid):
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute(
-                "SELECT * from indicators where object='" + str(uid) + "'")
-            http = cur.fetchall()
-            http = http[0]
+        http = Indicator.query.filter_by(object=uid).first()
         # Run ipwhois or domainwhois based on the type of indicator
-        if str(http['type']) == "IPv4" or str(http['type']) == "IPv6" or str(
-                http['type']) == "Domain" or str(http['type']) == "Network":
-            return redirect(url_for('objectsummary', uid=str(http['id'])))
-        elif str(http['type']) == "Hash":
-            return redirect(url_for('filesobject', uid=str(http['id'])))
+        if str(http.type) == "IPv4" or str(http.type) == "IPv6" or str(http.type) == "Domain" or \
+                        str(http.type) == "Network":
+            return redirect(url_for('objectsummary', uid=http.object))
+        elif str(http.type) == "Hash":
+            return redirect(url_for('filesobject', uid=http.object))
         else:
-            return redirect(url_for('threatactorobject', uid=str(http['id'])))
+            return redirect(url_for('threatactorobject', uid=http.object))
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -420,178 +335,147 @@ def newobject():
         something = request.form
         imd = ImmutableMultiDict(something)
         records = libs.helpers.convert(imd)
-        newdict = {}
-        for i in records:
-            newdict[i] = records[i]
 
         # Import indicators from Cuckoo for the selected analysis task
-        if records.has_key('type') and 'cuckoo' in records['type']:
-            con = libs.helpers.db_connection()
-
+        if 'type' in records and 'cuckoo' in records['type']:
             host_data, dns_data, sha1, firstseen = libs.cuckoo.report_data(records['cuckoo_task_id'])
             if not None in (host_data, dns_data, sha1, firstseen):
-                with con:
-                    cur = con.cursor()
-                    for ip in host_data:
-                        cur.execute('SELECT object FROM indicators WHERE object = ?', (ip,))
-                        if not cur.fetchone():
-                            intodb = (None, ip, 'IPv4', firstseen, '', 'Infrastructure', records['campaign'], 'Low', '',
-                                      records['tags'], '')
-                            with con:
-                                cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?,?,?)', intodb)
-
+                # Import IP Indicators from Cuckoo Task
+                for ip in host_data:
+                    object = Indicator.query.filter_by(object=ip).first()
+                    if object is None:
+                        indicator = Indicator(ip.strip(), 'IPv4', firstseen, '', 'Infrastructure', records['campaign'],
+                                              'Low', '', records['tags'], '')
+                        db_session.add(indicator)
+                        db_session.commit()
+                    else:
+                        errormessage = "Entry already exists in database."
+                        return render_template('newobject.html', errormessage=errormessage,
+                                               inputtype=records['inputtype'], inputobject=ip,
+                                               inputfirstseen=records['inputfirstseen'],
+                                               inputlastseen=records['inputlastseen'],
+                                               inputcampaign=records['inputcampaign'],
+                                               comments=records['comments'],
+                                               diamondmodel=records['diamondmodel'],
+                                               tags=records['tags'])
+                    # Import Domain Indicators from Cuckoo Task
                     for dns in dns_data:
-                        cur.execute('SELECT object FROM indicators WHERE object = ?', (dns['request'],))
-                        if not cur.fetchone():
-                            intodb = (None, dns['request'], 'Domain', firstseen, '', 'Infrastructure', records['campaign'],
-                                      'Low', '', records['tags'], '')
-                            with con:
-                                cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?,?,?)', intodb)
-                    cur.execute('SELECT object FROM indicators WHERE object = ?', (sha1,))
-                    if not cur.fetchone():
-                        intodb = (None, sha1, 'Hash', firstseen, '', 'Capability', records['campaign'], 'Low', '',
-                                  records['tags'], '')
-                        with con:
-                            cur.execute('insert into indicators values (?,?,?,?,?,?,?,?,?,?,?)', intodb)
+                        object = Indicator.query.filter_by(object=dns['requst']).first()
+                        if object is None:
+                            indicator = Indicator(dns['request'], 'Domain', firstseen, '', 'Infrastructure',
+                                                  records['campaign'], 'Low', '', records['tags'], '')
+                            db_session.add(indicator)
+                            db_session.commit()
+                        else:
+                            errormessage = "Entry already exists in database."
+                            return render_template('newobject.html', errormessage=errormessage,
+                                                   inputtype=records['inputtype'], inputobject=ip,
+                                                   inputfirstseen=records['inputfirstseen'],
+                                                   inputlastseen=records['inputlastseen'],
+                                                   inputcampaign=records['inputcampaign'],
+                                                   comments=records['comments'],
+                                                   diamondmodel=records['diamondmodel'],
+                                                   tags=records['tags'])
+                    # Import File/Hash Indicators from Cuckoo Task
+                    object = Indicator.query.filter_by(object=sha1).first()
+                    if object is None:
+                        indicator = Indicator(sha1, 'Hash', firstseen, '', 'Capability',
+                                              records['campaign'], 'Low', '', records['tags'], '')
+                        db_session.add(indicator)
+                        db_session.commit()
+                    else:
+                        errormessage = "Entry already exists in database."
+                        return render_template('newobject.html', errormessage=errormessage,
+                                               inputtype=records['inputtype'], inputobject=ip,
+                                               inputfirstseen=records['inputfirstseen'],
+                                               inputlastseen=records['inputlastseen'],
+                                               inputcampaign=records['inputcampaign'],
+                                               comments=records['comments'],
+                                               diamondmodel=records['diamondmodel'],
+                                               tags=records['tags'])
+
                 # Redirect to Dashboard after successful import
                 return redirect(url_for('home'))
             else:
                 errormessage = 'Task is not a file analysis'
                 return redirect(url_for('import_indicators'))
 
-        if records.has_key('inputtype'):
+        if 'inputtype' in records:
             # Makes sure if you submit an IPv4 indicator, it's an actual IP
             # address.
             ipregex = re.match(
-                r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', newdict['inputobject'])
-            # Convert the inputobject of IP or Domain to a list for Bulk Add
-            # functionality.
-            newdict['inputobject'] = newdict['inputobject'].split(',')
-            for newobject in newdict['inputobject']:
-                if newdict['inputtype'] == "IPv4":
+                r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', records['inputobject'])
+            # Convert the inputobject of IP or Domain to a list for Bulk Add functionality.
+            records['inputobject'] = records['inputobject'].split(',')
+            for newobject in records['inputobject']:
+                if records['inputtype'] == "IPv4":
                     if ipregex:
-                        con = libs.helpers.db_connection()
-                        with con:
-                            cur = con.cursor()
-                            cur.execute(
-                                "SELECT object from indicators WHERE object = '" + newobject + "'")
-                            object = cur.fetchall()
-                            cur = con.cursor()
-                            cur.execute("SELECT * from indicators")
-                            names = [description[0]
-                                     for description in cur.description]
-                            lennames = len(names) - int(10)
-                            if len(object) > 0:
-                                errormessage = "Entry already exists in database."
-                                return render_template(
-                                    'newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
-                                    inputobject=newobject, inputfirstseen=newdict[
-                                        'inputfirstseen'],
-                                    inputlastseen=newdict[
-                                        'inputlastseen'],
-                                    inputcampaign=newdict[
-                                        'inputcampaign'],
-                                    comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],
-                                    tags=newdict['tags'])
-                            else:
-                                con = libs.helpers.db_connection()
-                                first = [None, newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'],
-                                         newdict['inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'],
-                                         newdict['confidence'], newdict['comments'],newdict['tags']]
-                                for t in range(0, lennames):
-                                    first.append("")
-                                with con:
-                                    for t in [(first)]:
-                                        cur.execute(
-                                            'insert into indicators values (?,?,?,?,?,?,?,?,?,?' + ",?" * int(lennames) + ')', t)
-                                con = libs.helpers.db_connection()
-                                with con:
-                                    cur = con.cursor()
-                                    cur.execute(
-                                        "SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
-                                    network = cur.fetchall()
+                        object = Indicator.query.filter_by(object=newobject).first()
+                        if object is None:
+                            ipv4_indicator = Indicator(newobject.strip(), records['inputtype'],
+                                                       records['inputfirstseen'],records['inputlastseen'],
+                                                       records['diamondmodel'], records['inputcampaign'],
+                                                       records['confidence'], records['comments'], records['tags'], None)
+                            db_session.add(ipv4_indicator)
+                            db_session.commit()
+                            network = Indicator.query.filter(Indicator.type.in_(
+                                ('IPv4', 'IPv6', 'Domain', 'Network'))).all()
+                        else:
+                            errormessage = "Entry already exists in database."
+                            return render_template('newobject.html', errormessage=errormessage,
+                                                   inputtype=records['inputtype'], inputobject=newobject,
+                                                   inputfirstseen=records['inputfirstseen'],
+                                                   inputlastseen=records['inputlastseen'],
+                                                   inputcampaign=records['inputcampaign'],
+                                                   comments=records['comments'],
+                                                   diamondmodel=records['diamondmodel'],
+                                                   tags=records['tags'])
+
                     else:
                         errormessage = "Not a valid IP Address."
-                        newobject = ', '.join(newdict['inputobject'])
-                        return render_template(
-                            'newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
-                            inputobject=newobject, inputfirstseen=newdict[
-                                'inputfirstseen'],
-                            inputlastseen=newdict['inputlastseen'], confidence=newdict[
-                                'confidence'], inputcampaign=newdict['inputcampaign'],
-                            comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],tags=newdict['tags'])
+                        newobject = ', '.join(records['inputobject'])
+                        return render_template('newobject.html', errormessage=errormessage,
+                                               inputtype=records['inputtype'],
+                                               inputobject=records, inputfirstseen=records['inputfirstseen'],
+                                               inputlastseen=records['inputlastseen'],
+                                               confidence=records['confidence'], inputcampaign=records['inputcampaign'],
+                                               comments=records['comments'], diamondmodel=records['diamondmodel'],
+                                               tags=records['tags'])
                 else:
-                    con = libs.helpers.db_connection()
-                    with con:
-                        cur = con.cursor()
-                        cur.execute(
-                            "SELECT object from indicators WHERE object = '" + newobject + "'")
-                        object = cur.fetchall()
-                        cur = con.cursor()
-                        cur.execute("SELECT * from indicators")
-                        names = [description[0] for description in cur.description]
-                        lennames = len(names) - int(10)
-                        if len(object) > 0:
-                            errormessage = "Entry already exists in database."
-                            return render_template(
-                                'newobject.html', errormessage=errormessage, inputtype=newdict['inputtype'],
-                                inputobject=newobject, inputfirstseen=newdict[
-                                    'inputfirstseen'],
-                                inputlastseen=newdict[
-                                    'inputlastseen'],
-                                inputcampaign=newdict[
-                                    'inputcampaign'],
-                                comments=newdict['comments'], diamondmodel=newdict['diamondmodel'],tags=newdict['tags'])
-                        else:
-                            con = libs.helpers.db_connection()
-                            first = [None, newobject.strip(), newdict['inputtype'], newdict['inputfirstseen'], newdict[
-                                'inputlastseen'], newdict['diamondmodel'], newdict['inputcampaign'], newdict['confidence'], newdict['comments'], newdict['tags']]
-                            for t in range(0, lennames):
-                                first.append("")
-                            with con:
-                                for t in [(first)]:
-                                    cur.execute(
-                                        'insert into indicators values (?,?,?,?,?,?,?,?,?,?' + ",?" * int(lennames) + ')', t)
-                            con = libs.helpers.db_connection()
-                            with con:
-                                cur = con.cursor()
-                                cur.execute(
-                                    "SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
-                                network = cur.fetchall()
+                    object = Indicator.query.filter_by(object=newobject).first()
+                    if object is None:
+                        indicator = Indicator(newobject.strip(), records['inputtype'], records['inputfirstseen'],
+                                 records['inputlastseen'], records['diamondmodel'], records['inputcampaign'],
+                                 records['confidence'], records['comments'], records['tags'], None)
+                        db_session.add(indicator)
+                        db_session.commit()
+                    else:
+                        errormessage = "Entry already exists in database."
+                        return render_template('newobject.html', errormessage=errormessage,
+                                               inputtype=records['inputtype'], inputobject=newobject,
+                                               inputfirstseen=records['inputfirstseen'],
+                                               inputlastseen=records['inputlastseen'],
+                                               inputcampaign=records['inputcampaign'],
+                                               comments=records['comments'],
+                                               diamondmodel=records['diamondmodel'],
+                                               tags=records['tags'])
 
-            if newdict['inputtype'] == "IPv4" or newdict['inputtype'] == "Domain" or newdict[
-                    'inputtype'] == "Network" or newdict['inputtype'] == "IPv6":
-                con = libs.helpers.db_connection()
-                with con:
-                    cur = con.cursor()
-                    cur.execute(
-                        "SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
-                    network = cur.fetchall()
+            # TODO: Change 'network' to 'object' in HTML templates to standardize on verbiage
+            if records['inputtype'] == "IPv4" or records['inputtype'] == "Domain" or records['inputtype'] == "Network"\
+                    or records['inputtype'] == "IPv6":
+                network = Indicator.query.filter(Indicator.type.in_(('IPv4', 'IPv6', 'Domain', 'Network'))).all()
                 return render_template('networks.html', network=network)
 
-            elif newdict['diamondmodel'] == "Victim":
-                con = libs.helpers.db_connection()
-                with con:
-                    cur = con.cursor()
-                    cur.execute(
-                        "SELECT * FROM indicators where diamondmodel='Victim'")
-                    victims = cur.fetchall()
+            elif records['diamondmodel'] == "Victim":
+                victims = Indicator.query.filter(Indicator.diamondmodel == ('Victim')).all()
                 return render_template('victims.html', network=victims)
-            elif newdict['inputtype'] == "Hash":
-                con = libs.helpers.db_connection()
-                with con:
-                    cur = con.cursor()
-                    cur.execute(
-                        "SELECT * FROM indicators where type='Hash'")
-                    files = cur.fetchall()
+
+            elif records['inputtype'] == "Hash":
+                files = Indicator.query.filter(Indicator.type == ('Hash')).all()
                 return render_template('files.html', network=files)
+
             else:
-                con = libs.helpers.db_connection()
-                with con:
-                    cur = con.cursor()
-                    cur.execute(
-                        "SELECT * FROM indicators where type='Threat Actor'")
-                    threatactors = cur.fetchall()
+                threatactors = Indicator.query.filter(Indicator.type == ('Threat Actors')).all()
                 return render_template('threatactors.html', network=threatactors)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -601,19 +485,8 @@ def newobject():
 @login_required
 def editobject(uid):
     try:
-        con = libs.helpers.db_connection()
-        newdict = {}
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * from indicators where id='" + uid + "'")
-            http = cur.fetchall()
-            http = http[0]
-            names = [description[0] for description in cur.description]
-            for i in names:
-                if i is None:
-                    newdict[i] == ""
-                else:
-                    newdict[i] = http[i]
+        http = Indicator.query.filter_by(object=uid).first()
+        newdict = libs.helpers.row_to_dict(http)
         return render_template('neweditobject.html', entry=newdict)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -623,14 +496,9 @@ def editobject(uid):
 @login_required
 def deletenetworkobject(uid):
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
-            cur = con.cursor()
-            cur.execute(
-                "SELECT * FROM indicators where type='IPv4' OR type='IPv6' OR type='Domain' OR type='Network'")
-            network = cur.fetchall()
+        Indicator.query.filter_by(object=uid).delete()
+        db_session.commit()
+        network = Indicator.query.filter(Indicator.type.in_(('IPv4', 'IPv6', 'Domain', 'Network'))).all()
         return render_template('networks.html', network=network)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -640,13 +508,9 @@ def deletenetworkobject(uid):
 @login_required
 def deletethreatactorobject(uid):
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
-            cur = con.cursor()
-            cur.execute("SELECT * FROM indicators where type='Threat Actor'")
-            threatactors = cur.fetchall()
+        Indicator.query.filter_by(object=uid).delete()
+        db_session.commit()
+        threatactors = Indicator.query.filter_by(type='Threat Actor')
         return render_template('threatactors.html', network=threatactors)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -656,15 +520,10 @@ def deletethreatactorobject(uid):
 @login_required
 def deletevictimobject(uid):
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
-            cur = con.cursor()
-            cur.execute(
-                "SELECT * FROM indicators where type='Threat Actor'")
-            network = cur.fetchall()
-        return render_template('threatactors.html', network=network)
+        Indicator.query.filter_by(object=uid).delete()
+        db_session.commit()
+        victims = Indicator.query.filter_by(diamondmodel='Victim')
+        return render_template('victims.html', network=victims)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -673,13 +532,10 @@ def deletevictimobject(uid):
 @login_required
 def deletefilesobject(uid):
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("DELETE FROM indicators WHERE id=?", (uid,))
-            cur = con.cursor()
-            cur.execute("SELECT * FROM indicators where type='Hash'")
-            cur.fetchall()
+        Indicator.query.filter_by(object=uid).delete()
+        db_session.commit()
+        files = Indicator.query.filter_by(type='Hash')
+        return render_template('victims.html', network=files)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -689,121 +545,68 @@ def updatesettings():
     try:
         something = request.form
         imd = ImmutableMultiDict(something)
-        records = libs.helpers.convert(imd)
-        newdict = {}
-        for i in records:
-            newdict[i] = records[i]
+        newdict = libs.helpers.convert(imd)
+
+        # Query the first set of settings, could query custom settings for individual users
+        settings = Setting.query.filter_by(_id=1).first()
+
         # Make sure we're updating the settings instead of overwriting them
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * from settings")
-            cur.fetchall()
-            if 'threatcrowd' in newdict.keys():
-                with con:
-                    cur.execute("UPDATE settings SET threatcrowd = 'on'")
-            else:
-                with con:
-                    cur.execute("UPDATE settings SET threatcrowd = 'off'")
-            if 'ptinfo' in newdict.keys():
-                with con:
-                    cur.execute("UPDATE settings SET ptinfo = 'on'")
-            else:
-                with con:
-                    cur.execute("UPDATE settings SET ptinfo = 'off'")
-            if 'cuckoo' in newdict.keys():
-                with con:
-                    cur.execute("UPDATE settings SET cuckoo = 'on'")
-            else:
-                with con:
-                    cur.execute("UPDATE settings SET cuckoo = 'off'")
-            if 'vtinfo' in newdict.keys():
-                with con:
-                    cur.execute("UPDATE settings SET vtinfo = 'on'")
-            else:
-                with con:
-                    cur.execute("UPDATE settings SET vtinfo = 'off'")
-            if 'vtfile' in newdict.keys():
-                with con:
-                    cur.execute("UPDATE settings SET vtfile = 'on'")
-            else:
-                with con:
-                    cur.execute("UPDATE settings SET vtfile = 'off'")
-            if 'circlinfo' in newdict.keys():
-                with con:
-                    cur.execute("UPDATE settings SET circlinfo = 'on'")
-            else:
-                with con:
-                    cur.execute("UPDATE settings SET circlinfo = 'off'")
-            if 'circlssl' in newdict.keys():
-                with con:
-                    cur.execute("UPDATE settings SET circlssl = 'on'")
-            else:
-                with con:
-                    cur.execute("UPDATE settings SET circlssl = 'off'")
-            if 'whoisinfo' in newdict.keys():
-                with con:
-                    cur.execute("UPDATE settings SET whoisinfo = 'on'")
-            else:
-                with con:
-                    cur.execute("UPDATE settings SET whoisinfo = 'off'")
-            if 'farsightinfo' in newdict.keys():
-                with con:
-                    cur.execute("UPDATE settings SET farsightinfo = 'on'")
-            else:
-                with con:
-                    cur.execute("UPDATE settings SET farsightinfo = 'off'")
-            if 'shodaninfo' in newdict.keys():
-                with con:
-                    cur.execute("UPDATE settings SET shodaninfo = 'on'")
-            else:
-                with con:
-                    cur.execute("UPDATE settings SET shodaninfo = 'off'")       
-            with con:
-                cur.execute(
-                    "UPDATE settings SET farsightkey = '" + newdict['farsightkey'] + "'")
-            with con:
-                cur.execute(
-                    "UPDATE settings SET apikey = '" + newdict['apikey'] + "'")
-            with con:
-                cur.execute(
-                    "UPDATE settings SET shodankey = '" + newdict['shodankey'] + "'")
-            if 'odnsinfo' in newdict.keys():
-                with con:
-                    cur.execute("UPDATE settings SET odnsinfo = 'on'")
-            else:
-                with con:
-                    cur.execute("UPDATE settings SET odnsinfo = 'off'")
-            with con:
-                cur.execute(
-                    "UPDATE settings SET odnskey = '" + newdict['odnskey'] + "'")
-            with con:
-                cur.execute(
-                    "UPDATE settings SET httpproxy = '" + newdict['httpproxy'] + "'")
-            with con:
-                cur.execute(
-                    "UPDATE settings SET httpsproxy = '" + newdict['httpsproxy'] + "'")
-            with con:
-                cur.execute(
-                    "UPDATE settings SET cuckoohost = '" + newdict['cuckoohost'] + "'")
-            with con:
-                cur.execute(
-                    "UPDATE settings SET cuckooapiport = '" + newdict['cuckooapiport'] + "'")
-            with con:
-                cur.execute(
-                    "UPDATE settings SET circlusername = '" + newdict['circlusername'] + "'")
-            with con:
-                cur.execute(
-                    "UPDATE settings SET circlpassword = '" + newdict['circlpassword'] + "'")
-            with con:
-                cur.execute(
-                    "UPDATE settings SET ptkey = '" + newdict['ptkey'] + "'")  
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * from settings")
-            newrecords = cur.fetchall()
-            newrecords = newrecords[0]
-        return render_template('settings.html', records=newrecords)
+        if 'threatcrowd' in newdict.keys():
+            settings.threatcrowd = 'on'
+        else:
+           settings.threatcrowd = 'off'
+        if 'ptinfo' in newdict.keys() and newdict['ptkey'] is not '':
+            settings.ptinfo = 'on'
+        else:
+            settings.ptinfo = 'off'
+        if 'cuckoo' in newdict.keys():
+            settings.cuckoo = 'on'
+        else:
+            settings.cuckoo = 'off'
+        if 'vtinfo' in newdict.keys() and newdict['apikey'] is not '':
+            settings.vtinfo = 'on'
+        else:
+            settings.vtinfo = 'off'
+        if 'vtfile' in newdict.keys() and newdict['apikey'] is not '':
+            settings.vtfile = 'on'
+        else:
+            settings.vtfile = 'off'
+        if 'circlinfo' in newdict.keys() and newdict['circlusername'] is not '':
+            settings.circlinfo = 'on'
+        else:
+            settings.circlinfo = 'off'
+        if 'circlssl' in newdict.keys() and newdict['circlusername'] is not '':
+            settings.circlssl = 'on'
+        else:
+            settings.circlssl = 'off'
+        if 'whoisinfo' in newdict.keys():
+            settings.whoisinfo = 'on'
+        else:
+            settings.whoisinfo = 'off'
+        if 'farsightinfo' in newdict.keys() and newdict['farsightkey'] is not '':
+            settings.farsightinfo = 'on'
+        else:
+            settings.farsightinfo = 'off'
+        if 'odnsinfo' in newdict.keys() and newdict['odnskey'] is not '':
+            settings.odnsinfo = 'on'
+        else:
+            settings.odnsinfo = 'off'
+
+        settings.farsightkey = newdict['farsightkey']
+        settings.apikey = newdict['apikey']
+        settings.odnskey = newdict['odnskey']
+        settings.httpproxy = newdict['httpproxy']
+        settings.httpsproxy = newdict['httpsproxy']
+        settings.cuckoohost = newdict['cuckoohost']
+        settings.cuckooapiport = newdict['cuckooapiport']
+        settings.circlusername = newdict['circlusername']
+        settings.circlpassword = newdict['circlpassword']
+        settings.ptkey = newdict['ptkey']
+
+        db_session.commit()
+        settings = Setting.query.first()
+
+        return render_template('settings.html', records=settings)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -816,32 +619,39 @@ def updateobject():
         something = request.form
         imd = ImmutableMultiDict(something)
         records = libs.helpers.convert(imd)
-        tempdict = {}
         taglist = records['tags'].split(",")
-        con = libs.helpers.db_connection()
-        with con:
-            for t in records:
-                if t == "id":
-                    pass
-                else:
-                    try:
-                        cur = con.cursor()
-                        cur.execute("UPDATE indicators SET " + t + "= '" + records[
-                                    t] + "' WHERE id = '" + records['id'] + "'")
-                    except:
-                        cur = con.cursor()
-                        cur.execute(
-                            "ALTER TABLE indicators ADD COLUMN " + t + " TEXT DEFAULT ''")
-                        cur.execute("UPDATE indicators SET " + t + "= '" + records[
-                                    t] + "' WHERE id = '" + records['id'] + "'")
-        if records['type'] == "IPv4" or records['type'] == "IPv6" or records['type'] == "Domain" or records['type'] == "Network":
-            return redirect(url_for('objectsummary', uid=str(records['id'])))
+        indicator = Indicator.query.filter_by(object=records['object']).first()
+
+        try:
+            Indicator.query.filter_by(object=records['object']).update(records)
+        except Exception as e:
+            # SQLAlchemy does not outright support altering tables.
+            for k,v in records.iteritems():
+                if Indicator.query.group_by(k).first() is None:
+                    print 'ALTER Table'
+                    #db_session.engine.execute("ALTER TABLE indicators ADD COLUMN " + k + " TEXT DEFAULT ''")
+
+        db_session.commit()
+
+           # db_session.execute('ALTER  TABLE indicators ADD COLUMN')
+
+        #con = libs.helpers.db_connection()
+        #with con:
+        #    cur = con.cursor()
+        #    cur.execute(
+        #        "ALTER TABLE indicators ADD COLUMN " + t + " TEXT DEFAULT ''")
+        #    cur.execute("UPDATE indicators SET " + t + "= '" + records[
+        #                t] + "' WHERE id = '" + records['id'] + "'")
+
+        if records['type'] == "IPv4" or records['type'] == "IPv6" or records['type'] == "Domain" or \
+                        records['type'] == "Network":
+            return redirect(url_for('objectsummary', uid=str(records['object'])))
         elif records['type'] ==  "Hash":
-            return redirect(url_for('filesobject', uid=str(records['id'])))
+            return redirect(url_for('filesobject', uid=str(records['object'])))
         elif records['type'] == "Entity":
-            return redirect(url_for('victimobject', uid=str(records['id'])))
+            return redirect(url_for('victimobject', uid=str(records['object'])))
         elif records['type'] == "Threat Actor":
-            return redirect(url_for('threatactorobject', uid=str(records['id'])))  
+            return redirect(url_for('threatactorobject', uid=str(records['object'])))
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -870,38 +680,18 @@ def insertnewfield():
 @login_required
 def objectsummary(uid):
     try:
-        con = libs.helpers.db_connection()
-        newdict = {}
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * from indicators where id='" + uid + "'")
-            http = cur.fetchall()
-            http = http[0]
-            names = [description[0] for description in cur.description]
-            for i in names:
-                if i is None:
-                    newdict[i] == ""
-                else:
-                    newdict[i] = str(http[i])
-            cur.execute("SELECT * from settings")
-            settingsvars = cur.fetchall()
-            settingsvars = settingsvars[0]
-            cur.execute("SELECT relationships from indicators where id='" + uid + "'")
-            rels = cur.fetchall()
-            rels = rels[0][0]
-        rellist = rels.split(",")
-        taglist = newdict['tags'].split(",")
+        row = Indicator.query.filter_by(object=uid).first()
+        newdict = libs.helpers.row_to_dict(row)
+        settings = Setting.query.filter_by(_id=1).first()
+        taglist = row.tags.split(",")
+
         temprel = {}
-        for rel in rellist:
-            try:
-                with con:
-                    cur = con.cursor()
-                    cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
-                    reltype = cur.fetchall()
-                    reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
-            except:
-                pass
+        if row.relationships:
+            rellist = row.relationships.split(",")
+            for rel in rellist:
+                row = Indicator.query.filter_by(object=rel).first()
+                temprel[row.object] = row.type
+
         reldata = len(temprel)
         jsonvt = ""
         whoisdata = ""
@@ -912,49 +702,46 @@ def objectsummary(uid):
         farsightdata = ""
         shodandata = ""
         # Run ipwhois or domainwhois based on the type of indicator
-        if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
-            if settingsvars['vtinfo'] == "on":
-                jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
-            if settingsvars['whoisinfo'] == "on":
-                whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
-            if settingsvars['odnsinfo'] == "on":
-                odnsdata = libs.investigate.ip_query(str(http['object']))
-            if settingsvars['circlinfo'] == "on":
-                circldata = libs.circl.circlquery(str(http['object']))
-            if settingsvars['circlssl'] == "on":
-                circlssl = libs.circl.circlssl(str(http['object']))
-            if settingsvars['ptinfo'] == "on":
-                ptdata = libs.passivetotal.pt(str(http['object']))
-            if settingsvars['farsightinfo'] == "on":
-                farsightdata = libs.farsight.farsightip(str(http['object']))
-            if settingsvars['shodaninfo'] == "on":
-                shodandata = libs.shodan.shodan(str(http['object']))   
-        elif str(http['type']) == "Domain":
-            if settingsvars['whoisinfo'] == "on":
-                whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
-            if settingsvars['vtinfo'] == "on":
-                jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
-            if settingsvars['odnsinfo'] == "on":
-                odnsdata = libs.investigate.domain_categories(str(http['object']))
-            if settingsvars['circlinfo'] == "on":
-                circldata = libs.circl.circlquery(str(http['object']))
-            if settingsvars['ptinfo'] == "on":
-                ptdata = libs.passivetotal.pt(str(http['object']))
-            if settingsvars['farsightinfo'] == "on":
-                farsightdata = libs.farsight.farsightdomain(str(http['object']))
-            if settingsvars['shodaninfo'] == "on":
-                shodandata = libs.shodan.shodan(str(http['object']))
-        if settingsvars['whoisinfo'] == "on":
-            if str(http['type']) == "Domain":
+        if str(row.type) == "IPv4" or str(row.type) == "IPv6":
+            if settings.vtinfo == "on":
+                jsonvt = libs.virustotal.vt_ipv4_lookup(str(row.object))
+            if settings.whoisinfo == "on":
+                whoisdata = libs.whoisinfo.ipwhois(str(row.object))
+            if settings.odnsinfo == "on":
+                odnsdata = libs.investigate.ip_query(str(row.object))
+            if settings.circlinfo == "on":
+                circldata = libs.circl.circlquery(str(row.object))
+            if settings.circlssl == "on":
+                circlssl = libs.circl.circlssl(str(row.object))
+            if settings.ptinfo == "on":
+                ptdata = libs.passivetotal.pt(str(row.object))
+            if settings.farsightinfo == "on":
+                farsightdata = libs.farsight.farsightip(str(row.object))
+        elif str(row.type) == "Domain":
+            if settings.whoisinfo == "on":
+                whoisdata = libs.whoisinfo.domainwhois(str(row.object))
+            if settings.vtinfo == "on":
+                jsonvt = libs.virustotal.vt_domain_lookup(str(row.object))
+            if settings.odnsinfo == "on":
+                odnsdata = libs.investigate.domain_categories(str(row.object))
+            if settings.circlinfo == "on":
+                circldata = libs.circl.circlquery(str(row.object))
+            if settings.ptinfo == "on":
+                ptdata = libs.passivetotal.pt(str(row.object))
+            if settings.farsightinfo == "on":
+                farsightdata = libs.farsight.farsightdomain(str(row.object))
+        if settings.whoisinfo == "on":
+            if str(row.type) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
             else:
                 address = str(whoisdata['nets'][0]['city']) + ", " + str(
                     whoisdata['nets'][0]['country'])
         else:
-            address = "Information about " + str(http['object'])
-        return render_template(
-            'networkobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, settingsvars=settingsvars, address=address, ptdata=ptdata, temprel=temprel, circldata=circldata, circlssl=circlssl, reldata=reldata, taglist=taglist, farsightdata=farsightdata, shodandata=shodandata)
+            address = "Information about " + str(row.object)
+        return render_template('networkobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
+                               odnsdata=odnsdata, settingsvars=settings, address=address,
+                               ptdata=ptdata, temprel=temprel, circldata=circldata, circlssl=circlssl, reldata=reldata,
+                               taglist=taglist, farsightdata=farsightdata)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -963,29 +750,18 @@ def objectsummary(uid):
 @login_required
 def threatactorobject(uid):
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * from indicators where id='" + uid + "'")
-            http = cur.fetchall()
-            http = http[0]
-            cur.execute("SELECT relationships from indicators where id='" + uid + "'")
-            rels = cur.fetchall()
-            rels = rels[0][0]
-        rellist = rels.split(",")
+        row = Indicator.query.filter(Indicator.object == uid).first()
+        newdict = libs.helpers.row_to_dict(row)
+
         temprel = {}
-        for rel in rellist:
-            try:
-                with con:
-                    cur = con.cursor()
-                    cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
-                    reltype = cur.fetchall()
-                    reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
-            except:
-                pass
+        if row.relationships:
+            rellist = row.relationships.split(",")
+            for rel in rellist:
+                reltype = Indicator.query.filter(Indicator.object == rel)
+                temprel[reltype.object] = reltype.type
+
         reldata = len(temprel)
-        return render_template('threatactorobject.html', records=http, temprel=temprel, reldata=reldata)
+        return render_template('threatactorobject.html', records=newdict, temprel=temprel, reldata=reldata)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -993,58 +769,40 @@ def threatactorobject(uid):
 @login_required
 def relationships(uid):
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * from indicators where id='" + uid + "'")
-            http = cur.fetchall()
-            http = http[0]
-            cur = con.cursor()
-            cur.execute("SELECT * from indicators")
-            indicators = cur.fetchall()
-            cur.execute("SELECT relationships from indicators where id='" + uid + "'")
-            rels = cur.fetchall()
-            rels = rels[0][0]
-        rellist = rels.split(",")
-        temprel = {}
-        for rel in rellist:
-            try:
-                with con:
-                    cur = con.cursor()
-                    cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
-                    reltype = cur.fetchall()
-                    reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
-            except:
-                pass
-        reldata = len(temprel)
-        return render_template('addrelationship.html', records=http, indicators=indicators)
+        row = Indicator.query.filter_by(object=uid).first()
+        indicators = Indicator.query.all()
+        if row.relationships:
+            rellist = row.relationships.split(",")
+            temprel = {}
+            for rel in rellist:
+                reltype = Indicator.query.filter_by(object=rel).first()
+                temprel[reltype.object] = reltype.type
+        return render_template('addrelationship.html', records=row, indicators=indicators)
     except Exception as e:
         return render_template('error.html', error=e)
 
 
-@app.route('/addrelationship', methods=['GET','POST'])
+@app.route('/addrelationship', methods=['GET', 'POST'])
 @login_required
 def addrelationship():
     try:
         something = request.form
         imd = ImmutableMultiDict(something)
         records = libs.helpers.convert(imd)
-        newdict = {}
-        for i in records:
-            newdict[i] = records[i]
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("UPDATE indicators SET relationships=relationships || '" + newdict['indicator'] + ",' WHERE id='" + newdict['id'] + "'")
-        if newdict['type'] == "IPv4" or newdict['type'] == "IPv6" or newdict['type'] == "Domain" or newdict['type'] == "Network":
-            return redirect(url_for('objectsummary', uid=str(newdict['id'])))
-        elif newdict['type'] ==  "Hash":
-            return redirect(url_for('filesobject', uid=str(newdict['id'])))
-        elif newdict['type'] == "Entity":
-            return redirect(url_for('victimobject', uid=str(newdict['id'])))
-        elif newdict['type'] == "Threat Actor":
-            return redirect(url_for('threatactorobject', uid=str(newdict['id'])))  
+
+        row = Indicator.query.filter_by(object=records['id']).first()
+        row.relationships = records['indicator']
+        db_session.commit()
+
+        if records['type'] == "IPv4" or records['type'] == "IPv6" or records['type'] == "Domain" or \
+                        records['type'] == "Network":
+            return redirect(url_for('objectsummary', uid=str(records['id'])))
+        elif records['type'] == "Hash":
+            return redirect(url_for('filesobject', uid=str(records['id'])))
+        elif records['type'] == "Entity":
+            return redirect(url_for('victimobject', uid=str(records['id'])))
+        elif records['type'] == "Threat Actor":
+            return redirect(url_for('threatactorobject', uid=str(records['id'])))
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -1053,38 +811,18 @@ def addrelationship():
 @login_required
 def profile():
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            tempdict = {}
-            cur = con.cursor()
-            cur.execute("SELECT key from users where user='" + str(
-                current_user.user).lower() + "'")
-            http = cur.fetchall()
-            http = http[0]
-            names = [description[0] for description in cur.description]
-            for i in names:
-                if i is None:
-                    tempdict[i] == ""
-                else:
-                    tempdict[i] = http[i]
+        user = User.query.filter_by(user=current_user.user.lower()).first()
         something = request.form
         imd = ImmutableMultiDict(something)
         records = libs.helpers.convert(imd)
-        newdict = {}
-        for i in records:
-            newdict[i] = records[i]
-        if 'currentpw' in newdict:
-            if hashlib.md5(newdict['currentpw'].encode('utf-8')).hexdigest() == tempdict['key']:
-                if newdict['newpw'] == newdict['newpwvalidation']:
-                    with con:
-                        try:
-                            cur = con.cursor()
-                            cur.execute("UPDATE users SET key='" + hashlib.md5(newdict['newpw'].encode(
-                                'utf-8')).hexdigest() + "' WHERE user='" + str(current_user.user).lower() + "'")
-                            errormessage = "Password updated successfully."
-                            return render_template('profile.html', errormessage=errormessage)
-                        except lite.Error as er:
-                            print 'er:', er.__dict__
+
+        if 'currentpw' in records:
+            if hashlib.md5(records['currentpw'].encode('utf-8')).hexdigest() == user.key:
+                if records['newpw'] == records['newpwvalidation']:
+                    user.key = hashlib.md5(records['newpw'].encode('utf-8')).hexdigest()
+                    db_session.commit()
+                    errormessage = "Password updated successfully."
+                    return render_template('profile.html', errormessage=errormessage)
                 else:
                     errormessage = "New passwords don't match."
                     return render_template('profile.html', errormessage=errormessage)
@@ -1100,38 +838,18 @@ def profile():
 @login_required
 def victimobject(uid):
     try:
-        con = libs.helpers.db_connection()
-        newdict = {}
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * from indicators where id='" + uid + "'")
-            http = cur.fetchall()
-            http = http[0]
-            names = [description[0] for description in cur.description]
-            for i in names:
-                if i is None:
-                    newdict[i] == ""
-                else:
-                    newdict[i] = str(http[i])
-            cur.execute("SELECT * from settings")
-            settingsvars = cur.fetchall()
-            settingsvars = settingsvars[0]
-            cur.execute("SELECT relationships from indicators where id='" + uid + "'")
-            rels = cur.fetchall()
-            rels = rels[0][0]
-        taglist = newdict['tags'].split(",")
-        rellist = rels.split(",")
+        http = Indicator.query.filter(Indicator.object == uid).first()
+        newdict = libs.helpers.row_to_dict(http)
+        settings = Setting.query.filter_by(_id=1).first()
+        taglist = http.tags.split(",")
+
         temprel = {}
-        for rel in rellist:
-            try:
-                with con:
-                    cur = con.cursor()
-                    cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
-                    reltype = cur.fetchall()
-                    reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
-            except:
-                pass
+        if http.relationships:
+            rellist = http.relationships.split(",")
+            for rel in rellist:
+                reltype = Indicator.query.filter(Indicator.object == rel)
+                temprel[reltype.object] = reltype.type
+
         reldata = len(temprel)
         jsonvt = ""
         whoisdata = ""
@@ -1142,97 +860,76 @@ def victimobject(uid):
         farsightdata = ""
         shodaninfo = ""
         # Run ipwhois or domainwhois based on the type of indicator
-        if str(http['type']) == "IPv4" or str(http['type']) == "IPv6":
-            if settingsvars['vtinfo'] == "on":
-                jsonvt = libs.virustotal.vt_ipv4_lookup(str(http['object']))
-            if settingsvars['whoisinfo'] == "on":
-                whoisdata = libs.whoisinfo.ipwhois(str(http['object']))
-            if settingsvars['odnsinfo'] == "on":
-                odnsdata = libs.investigate.ip_query(str(http['object']))
-            if settingsvars['circlinfo'] == "on":
-                circldata = libs.circl.circlquery(str(http['object']))
-            if settingsvars['circlssl'] == "on":
-                circlssl = libs.circl.circlssl(str(http['object']))
-            if settingsvars['ptinfo'] == "on":
-                ptdata = libs.passivetotal.pt(str(http['object']))
-            if settingsvars['farsightinfo'] == "on":
-                farsightdata = libs.farsight.farsightip(str(http['object']))
-            if settingsvars['shodaninfo'] == "on":
-                shodandata = libs.shodan.shodan(str(http['object']))
-        elif str(http['type']) == "Domain":
-            if settingsvars['whoisinfo'] == "on":
-                whoisdata = libs.whoisinfo.domainwhois(str(http['object']))
-            if settingsvars['vtinfo'] == "on":
-                jsonvt = libs.virustotal.vt_domain_lookup(str(http['object']))
-            if settingsvars['odnsinfo'] == "on":
+        if str(http.type) == "IPv4" or str(http.type) == "IPv6":
+            if settings.vtinfo == "on":
+                jsonvt = libs.virustotal.vt_ipv4_lookup(str(http.object))
+            if settings.whoisinfo == "on":
+                whoisdata = libs.whoisinfo.ipwhois(str(http.object))
+            if settings.odnsinfo == "on":
+                odnsdata = libs.investigate.ip_query(str(http.object))
+            if settings.circlinfo == "on":
+                circldata = libs.circl.circlquery(str(http.object))
+            if settings.circlssl == "on":
+                circlssl = libs.circl.circlssl(str(http.object))
+            if settings.ptinfo == "on":
+                ptdata = libs.passivetotal.pt(str(http.object))
+            if settings.farsightinfo == "on":
+                farsightdata = libs.farsight.farsightip(str(http.object))
+        elif str(http.type) == "Domain":
+            if settings.whoisinfo == "on":
+                whoisdata = libs.whoisinfo.domainwhois(str(http.object))
+            if settings.vtinfo == "on":
+                jsonvt = libs.virustotal.vt_domain_lookup(str(http.object))
+            if settings.odnsinfo == "on":
                 odnsdata = libs.investigate.domain_categories(
-                    str(http['object']))
-            if settingsvars['circlinfo'] == "on":
-                circldata = libs.circl.circlquery(str(http['object']))
-            if settingsvars['ptinfo'] == "on":
-                ptdata = libs.passivetotal.pt(str(http['object']))
-            if settingsvars['shodaninfo'] == "on":
-                shodandata = libs.shodan.shodan(str(http['object']))
-        if settingsvars['whoisinfo'] == "on":
-            if str(http['type']) == "Domain":
+                    str(http.object))
+            if settings.circlinfo == "on":
+                circldata = libs.circl.circlquery(str(http.object))
+            if settings.ptinfo == "on":
+                ptdata = libs.passivetotal.pt(str(http.object))
+        if settings.whoisinfo == "on":
+            if str(http.type) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(
                     whoisdata['country'])
             else:
                 address = str(whoisdata['nets'][0]['city']) + ", " + str(
                     whoisdata['nets'][0]['country'])
         else:
-            address = "Information about " + str(http['object'])
-        return render_template(
-            'victimobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
-            odnsdata=odnsdata, circldata=circldata, circlssl=circlssl, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, taglist=taglist, ptdata=ptdata, farsightdata=farsightdata, shodandata=shodandata)
+            address = "Information about " + str(http.object)
+        return render_template('victimobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
+                               odnsdata=odnsdata, circldata=circldata, circlssl=circlssl, settingsvars=settings,
+                               address=address, temprel=temprel, reldata=reldata, taglist=taglist, ptdata=ptdata,
+                               farsightdata=farsightdata)
     except Exception as e:
         return render_template('error.html', error=e)
+
 
 @app.route('/files/<uid>/info', methods=['GET'])
 @login_required
 def filesobject(uid):
     try:
-        con = libs.helpers.db_connection()
-        newdict = {}
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * from indicators where id='" + uid + "'")
-            http = cur.fetchall()
-            http = http[0]
-            names = [description[0] for description in cur.description]
-            for i in names:
-                if i is None:
-                    newdict[i] == ""
-                else:
-                    newdict[i] = str(http[i])
-            cur.execute("SELECT * from settings")
-            settingsvars = cur.fetchall()
-            settingsvars = settingsvars[0]
-            address = "Information about " + str(http['object'])
-            cur.execute("SELECT relationships from indicators where id='" + uid + "'")
-            rels = cur.fetchall()
-            rels = rels[0][0]
-        rellist = rels.split(",")
-        taglist = newdict['tags'].split(",")
+        http = Indicator.query.filter(Indicator.object == uid).first()
+        newdict = libs.helpers.row_to_dict(http)
+        settings = Setting.query.filter_by(_id=1).first()
+        taglist = http.tags.split(",")
+
         temprel = {}
-        for rel in rellist:
-            try:
-                with con:
-                    cur = con.cursor()
-                    cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
-                    reltype = cur.fetchall()
-                    reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
-            except:
-                pass
+        if http.relationships:
+            rellist = http.relationships.split(",")
+            for rel in rellist:
+                reltype = Indicator.query.filter(Indicator.object == rel)
+                temprel[reltype.object] = reltype.type
+
         reldata = len(temprel)
-        if settingsvars['vtfile'] == "on":
-            jsonvt = libs.virustotal.vt_hash_lookup(str(http['object']))
+        if settings.vtfile == "on":
+            jsonvt = libs.virustotal.vt_hash_lookup(str(http.object))
         else:
             jsonvt=""
-        return render_template('fileobject.html', records=newdict, settingsvars=settingsvars, address=address,temprel=temprel, reldata=reldata, jsonvt=jsonvt, taglist=taglist)
+        return render_template('fileobject.html', records=newdict, settingsvars=settings, address=http.object,
+                               temprel=temprel, reldata=reldata, jsonvt=jsonvt, taglist=taglist)
     except Exception as e:
         return render_template('error.html', error=e)
+
 
 @app.route('/import', methods=['GET', 'POST'])
 @login_required
@@ -1240,14 +937,18 @@ def import_indicators():
     cuckoo_tasks = libs.cuckoo.get_tasks()
     return render_template('import.html', cuckoo_tasks=cuckoo_tasks)
 
+
 @app.route('/download/<uid>', methods=['GET'])
 @login_required
 def download(uid):
+
     if uid == 'unknown':
         uid = ""
-    file = io.BytesIO()
+    rows = Indicator.query.filter_by(campaign=uid).all()
+    for row in rows:
+        print row
+
     con = libs.helpers.db_connection()
-    indlist = []
     with con:
         cur = con.cursor()
         cur.execute(
@@ -1256,6 +957,7 @@ def download(uid):
         cur.execute("SELECT * from indicators")
         fieldnames = [description[0] for description in cur.description]
 
+    indlist = []
     for i in http:
         indicators = []
         for item in i:
@@ -1264,12 +966,12 @@ def download(uid):
             else:
                 indicators.append(str(item))
         indlist.append(indicators)
-
-    w = csv.writer(file)
     try:
+        out_file = io.BytesIO()
+        w = csv.writer(out_file)
         w.writerow(fieldnames)
         w.writerows(indlist)
-        response = make_response(file.getvalue())
+        response = make_response(out_file.getvalue())
         response.headers[
             "Content-Disposition"] = "attachment; filename=" + uid + "-campaign.csv"
         response.headers["Content-type"] = "text/csv"
@@ -1277,6 +979,7 @@ def download(uid):
     except Exception as e:
         print str(e)
         pass
+
 
 @app.route('/api/v1/indicators', methods=['GET'])
 def get_indicators():
@@ -1294,6 +997,7 @@ def get_indicators():
             indicatorlist.append(newdict)
     return jsonify({'indicators': indicatorlist})
 
+
 @app.route('/api/v1/ip_indicator/<ip>', methods=['GET'])
 def get_ip_indicator(ip):
     con = libs.helpers.db_connection()
@@ -1309,6 +1013,7 @@ def get_ip_indicator(ip):
                 newdict[i] = str(ind[i])
             indicatorlist.append(newdict)
     return jsonify({'indicator': indicatorlist})
+
 
 @app.route('/api/v1/network', methods=['GET'])
 def get_network():
@@ -1326,6 +1031,7 @@ def get_network():
             indicatorlist.append(newdict)
     return jsonify({'network_indicators': indicatorlist})
 
+
 @app.route('/api/v1/threatactors', methods=['GET'])
 def get_threatactors():
     con = libs.helpers.db_connection()
@@ -1341,6 +1047,7 @@ def get_threatactors():
                 newdict[i] = str(ind[i])
             indicatorlist.append(newdict)
     return jsonify({'threatactors': indicatorlist})
+
 
 @app.route('/api/v1/files', methods=['GET'])
 def get_files():
@@ -1358,6 +1065,7 @@ def get_files():
             indicatorlist.append(newdict)
     return jsonify({'files': indicatorlist})
 
+
 @app.route('/api/v1/campaigns/<campaign>', methods=['GET'])
 def get_campaigns(campaign):
     con = libs.helpers.db_connection()
@@ -1374,6 +1082,7 @@ def get_campaigns(campaign):
                 newdict[i] = str(ind[i])
             indicatorlist.append(newdict)
     return jsonify({'campaigns': indicatorlist})
+
 
 @app.route('/api/v1/relationships/<ip>', methods=['GET'])
 def get_relationships(ip):
@@ -1399,14 +1108,16 @@ def get_relationships(ip):
     return jsonify({'relationships': temprel})
 
 
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db_session.remove()
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--port', help="Specify port to listen on")
     parser.add_argument('-d', '--debug', help="Run in debug mode", action="store_true")
     parser.add_argument('-db', '--database', help="Path to sqlite database - Not Implemented")
     args = parser.parse_args()
-
-    libs.helpers.setup_db()
 
     if not args.port:
         port = 8888
@@ -1418,5 +1129,9 @@ if __name__ == '__main__':
     else:
         debug = True
 
+    if args.database:
+        # TODO
+        libs.database.db_file = args.database
 
+    init_db()
     app.run(host='0.0.0.0', port=port, debug=debug)

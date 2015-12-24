@@ -140,11 +140,11 @@
                       {% for p in network %}
                       <tr>
                       {% if p['type'] == "Threat Actor" %}
-                        <td><a href="/threatactors/{{ p['id'] }}/info">{{ p['object'] }}</a></td>
+                        <td><a href="/threatactors/{{ p['object'] }}/info">{{ p['object'] }}</a></td>
                         {% elif p['type'] == "Hash" %}
-                        <td><a href="/files/{{ p['id'] }}/info">{{ p['object'] }}</a></td>
+                        <td><a href="/files/{{ p['object'] }}/info">{{ p['object'] }}</a></td>
                         {% else %}
-                        <td><a href="/network/{{ p['id'] }}/info">{{ p['object'] }}</a></td>
+                        <td><a href="/network/{{ p['object'] }}/info">{{ p['object'] }}</a></td>
                         {% endif %}
                                            <td>{{ p['type'] }}</td>
                                             {% if p['firstseen']|length == 0 %}
@@ -178,13 +178,13 @@
                         {% endfor %}</td>
                                             {% endif %}
                                               <td class="td-actions text-right">
-                                                    <a href="/relationships/{{ p['id'] }}" role="button" rel="tooltip" title="Add Relationship" class="btn btn-info btn-simple btn-xs">
+                                                    <a href="/relationships/{{ p['object'] }}" role="button" rel="tooltip" title="Add Relationship" class="btn btn-info btn-simple btn-xs">
                                                     <i class="fa fa-link"></i>
                                                     </a>
-                                                    <a href="/edit/{{ p['id'] }}" role="button" rel="tooltip" title="Edit Indicator" class="btn btn-info btn-simple btn-xs">
+                                                    <a href="/edit/{{ p['object'] }}" role="button" rel="tooltip" title="Edit Indicator" class="btn btn-info btn-simple btn-xs">
                                                     <i class="fa fa-pencil"></i>
                                                     </a>
-                                                    <a href="/delete/network/{{ p['id'] }}" role="button" rel="tooltip" title="Remove" class="btn btn-danger btn-simple btn-xs">
+                                                    <a href="/delete/network/{{ p['object'] }}" role="button" rel="tooltip" title="Remove" class="btn btn-danger btn-simple btn-xs">
                                                       <i class="fa fa-times"></i>
                           </a>
                         </td>

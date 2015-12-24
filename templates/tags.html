@@ -111,7 +111,7 @@
             </div>
           </div>
 
-          {% for tag in tags %}
+          {% for tag, object in tags.iteritems() %}
           <div class="row">
             <div class="col-md-6 col-md-offset-3">
               <div class="card">
@@ -129,14 +129,14 @@
                       <th>Indicator</th>
                     </thead>
                     <tbody>
-                      {% for tag in tags[tag] %}
+                      {% for indicator, type in object[0].iteritems() %}
                       <tr>
-                      {% if tag['type'] == "IPv4" or tag['type'] == "IPv6" or tag['type'] == "Domain" or tag['type'] == "Network" %}
-                        <td><a href="/network/{{ tag['id'] }}/info">{{ tag['object'] }}</a></td>
-                        {% elif tag['type'] == "Threat Actor" %}
-                        <td><a href="/threatactors/{{ tag['id'] }}/info">{{ tag['object'] }}</a></td>
-                        {% elif tag['type'] == "Hash" %}
-                        <td><a href="/files/{{ tag['id'] }}/info">{{ tag['object'] }}</a></td>
+                      {% if type == "IPv4" or type == "IPv6" or type == "Domain" or type == "Network" %}
+                        <td><a href="/network/{{ indicator }}/info">{{ indicator }}</a></td>
+                        {% elif type == "Threat Actor" %}
+                        <td><a href="/threatactors/{{ indicator }}/info">{{ indicator }}</a></td>
+                        {% elif type == "Hash" %}
+                        <td><a href="/files/{{ indicator }}/info">{{ indicator }}</a></td>
                         {% endif %}
                         </tr>
                       {% endfor %}

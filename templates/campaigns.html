@@ -135,14 +135,14 @@
                       <th>Indicator</th>
                     </thead>
                     <tbody>
-                      {% for ind in campaignents[campaign] %}
+                      {% for obj, type in campaignents[campaign][0].iteritems() %}
                       <tr>
-                        {% if ind[2] == "IPv4" or ind[2] == "IPv6" or ind[2] == "Domain" or ind[2] == "Network" %}
-                        <td><a href="/network/{{ ind[0] }}/info">{{ ind[1] }}</a></td>
-                        {% elif ind[2] == "Threat Actor" %}
-                        <td><a href="/threatactors/{{ ind[0] }}/info">{{ ind[1] }}</a></td>
-                        {% elif ind[2] == "Hash" %}
-                        <td><a href="/files/{{ ind[0] }}/info">{{ ind[1] }}</a></td>
+                        {% if type == "IPv4" or type == "IPv6" or type == "Domain" or type == "Network" %}
+                        <td><a href="/network/{{ obj }}/info">{{ obj }}</a></td>
+                        {% elif type == "Threat Actor" %}
+                        <td><a href="/threatactors/{{ obj }}/info">{{ obj }}</a></td>
+                        {% elif type == "Hash" %}
+                        <td><a href="/files/{{ obj }}/info">{{ obj }}</a></td>
                         {% endif %}
                       </tr>
                       {% endfor %}
