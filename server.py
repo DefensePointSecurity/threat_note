@@ -23,7 +23,7 @@ import libs.passivetotal
 import libs.shodan
 import libs.whoisinfo
 import libs.virustotal
-
+from libs.API import tn_api
 
 from flask import Flask
 from flask import flash
@@ -58,6 +58,8 @@ app.config['SECRET_KEY'] = 'yek_terces'
 lm = LoginManager()
 lm.init_app(app)
 lm.login_view = 'login'
+
+app.register_blueprint(tn_api)
 
 class LoginForm(Form):
     user = StringField('user', validators=[DataRequired()])
@@ -979,133 +981,6 @@ def download(uid):
     except Exception as e:
         print str(e)
         pass
-
-
-@app.route('/api/v1/indicators', methods=['GET'])
-def get_indicators():
-    con = libs.helpers.db_connection()
-    indicatorlist = []
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT * FROM indicators")
-        indicators = cur.fetchall()
-        names = [description[0] for description in cur.description]
-        for ind in indicators:
-            newdict = {}
-            for i in names:
-                newdict[i] = str(ind[i])
-            indicatorlist.append(newdict)
-    return jsonify({'indicators': indicatorlist})
-
-
-@app.route('/api/v1/ip_indicator/<ip>', methods=['GET'])
-def get_ip_indicator(ip):
-    con = libs.helpers.db_connection()
-    indicatorlist = []
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT * FROM indicators where object='" + ip + "'")
-        indicators = cur.fetchall()
-        names = [description[0] for description in cur.description]
-        for ind in indicators:
-            newdict = {}
-            for i in names:
-                newdict[i] = str(ind[i])
-            indicatorlist.append(newdict)
-    return jsonify({'indicator': indicatorlist})
-
-
-@app.route('/api/v1/network', methods=['GET'])
-def get_network():
-    con = libs.helpers.db_connection()
-    indicatorlist = []
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT * FROM indicators where type='IPv4' or type='IPv6' or type='Domain' or type='Network'")
-        indicators = cur.fetchall()
-        names = [description[0] for description in cur.description]
-        for ind in indicators:
-            newdict = {}
-            for i in names:
-                newdict[i] = str(ind[i])
-            indicatorlist.append(newdict)
-    return jsonify({'network_indicators': indicatorlist})
-
-
-@app.route('/api/v1/threatactors', methods=['GET'])
-def get_threatactors():
-    con = libs.helpers.db_connection()
-    indicatorlist = []
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT * FROM indicators where type='Threat Actor'")
-        indicators = cur.fetchall()
-        names = [description[0] for description in cur.description]
-        for ind in indicators:
-            newdict = {}
-            for i in names:
-                newdict[i] = str(ind[i])
-            indicatorlist.append(newdict)
-    return jsonify({'threatactors': indicatorlist})
-
-
-@app.route('/api/v1/files', methods=['GET'])
-def get_files():
-    con = libs.helpers.db_connection()
-    indicatorlist = []
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT * FROM indicators where type='Hash'")
-        indicators = cur.fetchall()
-        names = [description[0] for description in cur.description]
-        for ind in indicators:
-            newdict = {}
-            for i in names:
-                newdict[i] = str(ind[i])
-            indicatorlist.append(newdict)
-    return jsonify({'files': indicatorlist})
-
-
-@app.route('/api/v1/campaigns/<campaign>', methods=['GET'])
-def get_campaigns(campaign):
-    con = libs.helpers.db_connection()
-    indicatorlist = []
-    campaign = urllib.unquote(campaign).decode('utf8')
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT * FROM indicators where campaign='" + campaign + "'")
-        indicators = cur.fetchall()
-        names = [description[0] for description in cur.description]
-        for ind in indicators:
-            newdict = {}
-            for i in names:
-                newdict[i] = str(ind[i])
-            indicatorlist.append(newdict)
-    return jsonify({'campaigns': indicatorlist})
-
-
-@app.route('/api/v1/relationships/<ip>', methods=['GET'])
-def get_relationships(ip):
-    con = libs.helpers.db_connection()
-    indicatorlist = []
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT relationships from indicators where object='" + ip + "'")
-        rels = cur.fetchall()
-        rels = rels[0][0]
-        rellist = rels.split(",")
-        temprel = {}
-        for rel in rellist:
-            try:
-                with con:
-                    cur = con.cursor()
-                    cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
-                    reltype = cur.fetchall()
-                    reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
-            except:
-                pass
-    return jsonify({'relationships': temprel})
 
 
 @app.teardown_appcontext
