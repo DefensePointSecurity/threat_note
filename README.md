@@ -1,7 +1,7 @@
 <p align="center">
 <img src="http://i.imgur.com/4keZTGz.png"></p>
 
-### Disclaimer 
+### Disclaimer
 
 Please note threat_note is in beta at the moment, and you may experience issues with this app. This was tested on Yosemite 10.10.4 running Google Chrome, other browsers or OS'es may experience issues with the rendering, please identify any issues or possible fixes to the issues page.
 
@@ -21,7 +21,7 @@ Major changes include:
 
 threat_note is a web application built by [Defense Point Security](http://www.defpoint.com) to allow security researchers the ability to add and retrieve indicators related to their research. As of right now this includes the ability to add IP Addresses, Domains and Threat Actors, with more types being added in the future.
 
-This app fills the gap between various solutions currently available, by being lightweight, easy-to-install, and by minimizing fluff and extraneous information that sometimes gets in the way of adding information. To create a new indicator, you only really need to supply the object itself (whether it be a Domain, IP or Threat Actor) and change the type accordingly, and boom! That's it! Of course, supplying more information is definitely helpful, but, it's not required. 
+This app fills the gap between various solutions currently available, by being lightweight, easy-to-install, and by minimizing fluff and extraneous information that sometimes gets in the way of adding information. To create a new indicator, you only really need to supply the object itself (whether it be a Domain, IP or Threat Actor) and change the type accordingly, and boom! That's it! Of course, supplying more information is definitely helpful, but, it's not required.
 
 Other applications built for storing indicators and research have some shortcomings that threat_note hopes to fix. Some common complaints with other apps are:
 
@@ -53,7 +53,7 @@ First up is a shot of the dashboard, which has the latest indicators, the latest
 <p align="center">
 <img src="http://i.imgur.com/hWknd2C.png" href="http://i.imgur.com/hWknd2C.png"></p>
 
-Next is a screenshot of the Network Indicators page, here you will see all the indicators that have a type of "Domain", "Network", or "IP Address". 
+Next is a screenshot of the Network Indicators page, here you will see all the indicators that have a type of "Domain", "Network", or "IP Address".
 
 <p align="center">
 <img src="http://i.imgur.com/uSaLH6y.png" href="http://i.imgur.com/uSaLH6y.png"></p>
@@ -95,7 +95,7 @@ Lastly, here is the Settings page, where you can delete your threat_note databas
 
 ### Credits
 
-Thanks to the guys over at [Creative Tim](http://www.creative-tim.com/) for their awesome Bootstrap theme. Download your version for free [here](http://demos.creative-tim.com/light-bootstrap-dashboard). 
+Thanks to the guys over at [Creative Tim](http://www.creative-tim.com/) for their awesome Bootstrap theme. Download your version for free [here](http://demos.creative-tim.com/light-bootstrap-dashboard).
 
 ### License
 

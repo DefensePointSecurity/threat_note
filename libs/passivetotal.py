@@ -1,7 +1,8 @@
-import requests
 import json
+
 import libs.helpers
-import sqlite3 as lite
+import requests
+
 
 def pt(indicator):
     try:
@@ -19,6 +20,3 @@ def pt(indicator):
         return json_response
     except:
         pass
-
-
-
