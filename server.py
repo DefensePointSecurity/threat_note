@@ -7,13 +7,14 @@
 # October 26, 2015                                      #
 #
 
+import argparse
 import csv
 import hashlib
 import io
 import re
 import time
 import urllib
-import argparse
+
 import libs.circl
 import libs.cuckoo
 import libs.farsight
@@ -21,10 +22,8 @@ import libs.helpers
 import libs.investigate
 import libs.passivetotal
 import libs.shodan
-import libs.whoisinfo
 import libs.virustotal
-
-
+import libs.whoisinfo
 from flask import Flask
 from flask import flash
 from flask import jsonify
@@ -33,21 +32,21 @@ from flask import redirect
 from flask import render_template
 from flask import request
 from flask import url_for
-from flask.ext.login import current_user
 from flask.ext.login import LoginManager
+from flask.ext.login import current_user
 from flask.ext.login import login_required
 from flask.ext.login import login_user
 from flask.ext.login import logout_user
 from flask.ext.wtf import Form
-
+from libs.database import db_session
+from libs.database import init_db
+from libs.models import Indicator
+from libs.models import Setting
+from libs.models import User
 from werkzeug.datastructures import ImmutableMultiDict
 from wtforms import PasswordField
 from wtforms import StringField
 from wtforms.validators import DataRequired
-
-from libs.models import User, Setting, Indicator
-from libs.database import db_session
-from libs.database import init_db
 
 #
 # Configuration #
@@ -58,6 +57,7 @@ app.config['SECRET_KEY'] = 'yek_terces'
 lm = LoginManager()
 lm.init_app(app)
 lm.login_view = 'login'
+
 
 class LoginForm(Form):
     user = StringField('user', validators=[DataRequired()])
@@ -221,6 +221,7 @@ def tags():
     except Exception as e:
         return render_template('error.html', error=e)
 
+
 @app.route('/networks', methods=['GET'])
 @login_required
 def networks():
@@ -252,6 +253,7 @@ def victims():
         return render_template('victims.html', network=victims)
     except Exception as e:
         return render_template('error.html', error=e)
+
 
 @app.route('/files', methods=['GET'])
 @login_required
@@ -308,7 +310,7 @@ def campaignsummary(uid):
         http = Indicator.query.filter_by(object=uid).first()
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http.type) == "IPv4" or str(http.type) == "IPv6" or str(http.type) == "Domain" or \
-                        str(http.type) == "Network":
+                str(http.type) == "Network":
             return redirect(url_for('objectsummary', uid=http.object))
         elif str(http.type) == "Hash":
             return redirect(url_for('filesobject', uid=http.object))
@@ -339,7 +341,7 @@ def newobject():
         # Import indicators from Cuckoo for the selected analysis task
         if 'type' in records and 'cuckoo' in records['type']:
             host_data, dns_data, sha1, firstseen = libs.cuckoo.report_data(records['cuckoo_task_id'])
-            if not None in (host_data, dns_data, sha1, firstseen):
+            if host_data and dns_data and sha1 and firstseen:
                 # Import IP Indicators from Cuckoo Task
                 for ip in host_data:
                     object = Indicator.query.filter_by(object=ip).first()
@@ -413,7 +415,7 @@ def newobject():
                         object = Indicator.query.filter_by(object=newobject).first()
                         if object is None:
                             ipv4_indicator = Indicator(newobject.strip(), records['inputtype'],
-                                                       records['inputfirstseen'],records['inputlastseen'],
+                                                       records['inputfirstseen'], records['inputlastseen'],
                                                        records['diamondmodel'], records['inputcampaign'],
                                                        records['confidence'], records['comments'], records['tags'], None)
                             db_session.add(ipv4_indicator)
@@ -445,8 +447,8 @@ def newobject():
                     object = Indicator.query.filter_by(object=newobject).first()
                     if object is None:
                         indicator = Indicator(newobject.strip(), records['inputtype'], records['inputfirstseen'],
-                                 records['inputlastseen'], records['diamondmodel'], records['inputcampaign'],
-                                 records['confidence'], records['comments'], records['tags'], None)
+                                              records['inputlastseen'], records['diamondmodel'], records['inputcampaign'],
+                                              records['confidence'], records['comments'], records['tags'], None)
                         db_session.add(indicator)
                         db_session.commit()
                     else:
@@ -539,6 +541,7 @@ def deletefilesobject(uid):
     except Exception as e:
         return render_template('error.html', error=e)
 
+
 @app.route('/update/settings/', methods=['POST'])
 @login_required
 def updatesettings():
@@ -554,7 +557,7 @@ def updatesettings():
         if 'threatcrowd' in newdict.keys():
             settings.threatcrowd = 'on'
         else:
-           settings.threatcrowd = 'off'
+            settings.threatcrowd = 'off'
         if 'ptinfo' in newdict.keys() and newdict['ptkey'] is not '':
             settings.ptinfo = 'on'
         else:
@@ -619,24 +622,24 @@ def updateobject():
         something = request.form
         imd = ImmutableMultiDict(something)
         records = libs.helpers.convert(imd)
-        taglist = records['tags'].split(",")
-        indicator = Indicator.query.filter_by(object=records['object']).first()
+        # taglist = records['tags'].split(",") - Unused
+        # indicator = Indicator.query.filter_by(object=records['object']).first() - Unused
 
         try:
             Indicator.query.filter_by(object=records['object']).update(records)
         except Exception as e:
             # SQLAlchemy does not outright support altering tables.
-            for k,v in records.iteritems():
+            for k, v in records.iteritems():
                 if Indicator.query.group_by(k).first() is None:
                     print 'ALTER Table'
-                    #db_session.engine.execute("ALTER TABLE indicators ADD COLUMN " + k + " TEXT DEFAULT ''")
+                    # db_session.engine.execute("ALTER TABLE indicators ADD COLUMN " + k + " TEXT DEFAULT ''")
 
         db_session.commit()
 
-           # db_session.execute('ALTER  TABLE indicators ADD COLUMN')
+        # db_session.execute('ALTER  TABLE indicators ADD COLUMN')
 
-        #con = libs.helpers.db_connection()
-        #with con:
+        # con = libs.helpers.db_connection()
+        # with con:
         #    cur = con.cursor()
         #    cur.execute(
         #        "ALTER TABLE indicators ADD COLUMN " + t + " TEXT DEFAULT ''")
@@ -644,9 +647,9 @@ def updateobject():
         #                t] + "' WHERE id = '" + records['id'] + "'")
 
         if records['type'] == "IPv4" or records['type'] == "IPv6" or records['type'] == "Domain" or \
-                        records['type'] == "Network":
+                records['type'] == "Network":
             return redirect(url_for('objectsummary', uid=str(records['object'])))
-        elif records['type'] ==  "Hash":
+        elif records['type'] == "Hash":
             return redirect(url_for('filesobject', uid=str(records['object'])))
         elif records['type'] == "Entity":
             return redirect(url_for('victimobject', uid=str(records['object'])))
@@ -700,7 +703,7 @@ def objectsummary(uid):
         circlssl = ""
         ptdata = ""
         farsightdata = ""
-        shodandata = ""
+        # shodandata = ""
         # Run ipwhois or domainwhois based on the type of indicator
         if str(row.type) == "IPv4" or str(row.type) == "IPv6":
             if settings.vtinfo == "on":
@@ -765,6 +768,7 @@ def threatactorobject(uid):
     except Exception as e:
         return render_template('error.html', error=e)
 
+
 @app.route('/relationships/<uid>', methods=['GET'])
 @login_required
 def relationships(uid):
@@ -795,7 +799,7 @@ def addrelationship():
         db_session.commit()
 
         if records['type'] == "IPv4" or records['type'] == "IPv6" or records['type'] == "Domain" or \
-                        records['type'] == "Network":
+                records['type'] == "Network":
             return redirect(url_for('objectsummary', uid=str(records['id'])))
         elif records['type'] == "Hash":
             return redirect(url_for('filesobject', uid=str(records['id'])))
@@ -858,7 +862,7 @@ def victimobject(uid):
         circlssl = ""
         ptdata = ""
         farsightdata = ""
-        shodaninfo = ""
+        # shodaninfo = ""
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http.type) == "IPv4" or str(http.type) == "IPv6":
             if settings.vtinfo == "on":
@@ -924,7 +928,7 @@ def filesobject(uid):
         if settings.vtfile == "on":
             jsonvt = libs.virustotal.vt_hash_lookup(str(http.object))
         else:
-            jsonvt=""
+            jsonvt = ""
         return render_template('fileobject.html', records=newdict, settingsvars=settings, address=http.object,
                                temprel=temprel, reldata=reldata, jsonvt=jsonvt, taglist=taglist)
     except Exception as e:
@@ -1087,7 +1091,7 @@ def get_campaigns(campaign):
 @app.route('/api/v1/relationships/<ip>', methods=['GET'])
 def get_relationships(ip):
     con = libs.helpers.db_connection()
-    indicatorlist = []
+    # indicatorlist = []
     with con:
         cur = con.cursor()
         cur.execute("SELECT relationships from indicators where object='" + ip + "'")
@@ -1102,7 +1106,7 @@ def get_relationships(ip):
                     cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
                     reltype = cur.fetchall()
                     reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
+                    temprel[reltype['object']] = reltype['type']
             except:
                 pass
     return jsonify({'relationships': temprel})
