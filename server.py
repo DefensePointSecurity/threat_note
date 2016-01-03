@@ -1102,7 +1102,7 @@ def get_relationships(ip):
                     cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
                     reltype = cur.fetchall()
                     reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
+                    temprel[reltype['object']] = reltype['type']
             except:
                 pass
     return jsonify({'relationships': temprel})
@@ -1114,24 +1114,15 @@ def shutdown_session(exception=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--port', help="Specify port to listen on")
-    parser.add_argument('-d', '--debug', help="Run in debug mode", action="store_true")
+    parser.add_argument('-H', '--host', default="127.0.0.1", help="Specify the host IP address")
+    parser.add_argument('-p', '--port', default=8888, help="Specify port to listen on")
+    parser.add_argument('-d', '--debug', default=False, help="Run in debug mode", action="store_true")
     parser.add_argument('-db', '--database', help="Path to sqlite database - Not Implemented")
     args = parser.parse_args()
-
-    if not args.port:
-        port = 8888
-    else:
-        port = args.port
-
-    if not args.debug:
-        debug = False
-    else:
-        debug = True
 
     if args.database:
         # TODO
         libs.database.db_file = args.database
 
     init_db()
-    app.run(host='0.0.0.0', port=port, debug=debug)
+    app.run(host=args.host, port=args.port, debug=args.debug)
