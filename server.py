@@ -1102,7 +1102,7 @@ def get_relationships(ip):
                     cur.execute("SELECT * from indicators where object='" + str(rel) + "'")
                     reltype = cur.fetchall()
                     reltype = reltype[0]
-                    temprel[reltype['object']] = reltype['type'] 
+                    temprel[reltype['object']] = reltype['type']
             except:
                 pass
     return jsonify({'relationships': temprel})
@@ -1135,4 +1135,3 @@ if __name__ == '__main__':
         libs.database.db_file = args.database
 
     init_db()
-    app.run(host='0.0.0.0', port=port, debug=debug)
