@@ -47,7 +47,9 @@ def get_tasks():
 					if 'file' in t['category']:
 						tasks[t['id']] = t['added_on']
 				return tasks
+			else:
+				return {'[!] Error': r.status_code}
 	except:
-		pass
+		return {'[!] Error': 'Check Cuckoo API service'}
 
 
