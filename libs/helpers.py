@@ -1,9 +1,9 @@
 import collections
+import sqlite3 as lite
+
 from libs.models import Setting
 
 
-# TODO: db_connection is deprecated and will be removed.
-import sqlite3 as lite
 def db_connection(db_file='threatnote.db'):
     con = lite.connect(db_file)
     con.row_factory = lite.Row
@@ -37,4 +37,3 @@ def convert(data):
         return type(data)(map(convert, data))
     else:
         return data
-

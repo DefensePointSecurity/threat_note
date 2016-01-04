@@ -1,6 +1,10 @@
-from sqlalchemy import Column, Integer, String
-from database import Base
 import hashlib
+
+from database import Base
+from sqlalchemy import Column
+from sqlalchemy import Integer
+from sqlalchemy import String
+
 
 class User(Base):
     __tablename__ = 'users'
@@ -77,7 +81,6 @@ class Setting(Base):
         self.cuckooapiport = cuckooapiport
         self.farsightinfo = farsightinfo
         self.farsightkey = farsightkey
-
 
 
 class Indicator(Base):

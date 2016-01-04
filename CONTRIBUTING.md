@@ -2,6 +2,12 @@
 
 This is a community-driven project and we happily accept contributions from anyone interested in helping. To keep things well-organized and flowing smoothly, here are a few guidelines.
 
+## Getting Started
+
+To get started setup a virutal environment using `virtualenv venv` followed by `source venv/bin/activate` to give yourself a clean Python environment. You can install development libraries using `pip install -r requirements-dev.txt`.
+
+threat_note uses [Yelp's Pre-Commit](http://pre-commit.com/) to ensure consistency and following good practices. If you installed libraries using the `requirements-dev.txt` you'll can run `pre-commit install` before you start submitting code. Check your code using `pre-commit run --all-files` (as well as whenever you commit).
+
 ## GitHub
 
 You need a [GitHub](https://github.com) account for most everything like opening or commenting on issues, or submitting code patches (the GitHub parlance here is "pull request").

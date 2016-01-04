@@ -1,9 +1,12 @@
-import requests
 import json
+
 import libs.helpers
-import sqlite3 as lite
+import requests
+
 
 # IPv4 VirusTotal function for passive DNS
+
+
 def vt_ipv4_lookup(ipv4):
     try:
         con = libs.helpers.db_connection()
@@ -42,6 +45,7 @@ def vt_domain_lookup(domain):
             return j
     except:
         pass
+
 
 def vt_hash_lookup(filehash):
     try:
