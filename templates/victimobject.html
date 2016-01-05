@@ -244,7 +244,7 @@
                           </td>
                           <td>{{ records['comments'] }}</td>
                         </tr>
-                        {% endif %} 
+                        {% endif %}
                         {% if records['tags']|length == 0 %}
                         <tr>
                         <td>
@@ -263,7 +263,7 @@
                         {% endfor %}
                         </td>
                         </tr>
-                        {% endif %} 
+                        {% endif %}
                         {% for key in records %} {% if key == "id" or key == "type" or key == "campaign" or key == "confidence" or key == "Firstseen" or key == "tags" or key == "Lastseen" or key == "comments" or key == "diamondmodel" or key == "object" or key == "firstseen" or key == "relationships" or key
                         == "lastseen" or records[key] == "None" or records[key] == "" %}
                         <div></div>
@@ -275,7 +275,7 @@
                           <td>{{ records[key] }}</td>
                         </tr>
 
-                        {% endif %} {% endfor %} 
+                        {% endif %} {% endfor %}
                       </tbody>
                     </table>
                     </div>
@@ -299,7 +299,7 @@
                       {% for rel in temprel %}
                        <tr>
                        <td>{{ rel }}</td>
-                       <td>{{ temprel[rel] }}</td>                     
+                       <td>{{ temprel[rel] }}</td>
                        </tr>
                        {% endfor %}
                             </tbody>
@@ -524,7 +524,7 @@
                         </div>
                         </div>
                         {% endif %} {% endif %}
-                        
+
                          {% if settingsvars['circlinfo'] == "on" %}
                 <div class="row">
                   <div class="col-lg-12">
@@ -582,9 +582,9 @@
                       <td>{{ result['lastSeen'] }}</td>
                       </tr>
                       {% endfor %}
-                      
+
                             <tr>
-                            
+
                             </tbody>
                             </table>
                       </div>

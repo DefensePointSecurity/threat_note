@@ -1,6 +1,5 @@
 import libs.helpers
 import requests
-import sqlite3 as lite
 
 
 def get_odns_apikey():
@@ -13,6 +12,7 @@ def get_odns_apikey():
         if odnskey == '':
             odnskey = None
     return odnskey
+
 
 def domain_security(enity):
     api_url = 'https://investigate.api.opendns.com/'
@@ -66,7 +66,7 @@ def domain_categories(enity):
         labels = '?showLabels'
         response = requests.get(api_url + endpoint + enity + labels, headers=headers, proxies=libs.helpers.get_proxy()).json()
         for domain, values in response.iteritems():
-            if values['status'] == -1: # -1 if domain is malicous
+            if values['status'] == -1:  # -1 if domain is malicous
                 sec = domain_security(enity)
                 for row in domain_tag(enity):
                     c = row.copy()

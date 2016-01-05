@@ -1,7 +1,8 @@
-import requests
 import json
+
 import libs.helpers
-import sqlite3 as lite
+import requests
+
 
 def shodan(indicator):
     try:
@@ -15,7 +16,7 @@ def shodan(indicator):
         url = "https://api.shodan.io/shodan/host/"
         ip = indicator
         tempdict = {}
-        r = requests.get(url+ip+"?key="+apikey)
+        r = requests.get(url + ip + "?key=" + apikey)
         shodan = json.loads(r.text)
         for i in shodan:
             if str(i) == "data":
@@ -25,10 +26,13 @@ def shodan(indicator):
                             pass
                         else:
                             tempdict[v['port']] = v
-            if str(i) == "city" or str(i) == "region_code" or str(i) == "os" or str(i) == "isp" or str(i) == "country_name" or str(i) == "hostnames" or str(i) == "longitude" or str(i) == "latitude" or str(i) == "vulns" or str(i) == "info" or str(i) == "product" or str(i) == "ports":
+            if str(i) == "city" or str(i) == "region_code" or str(i) == "os" or \
+                    str(i) == "isp" or str(i) == "country_name" or str(i) == "hostnames" \
+                    or str(i) == "longitude" or str(i) == "latitude" or str(i) == "vulns" \
+                    or str(i) == "info" or str(i) == "product" or str(i) == "ports":
                 tempdict[i] = str(shodan[i])
         for i in tempdict.keys():
-            if tempdict[i] == None or tempdict[i] == "None":
+            if tempdict[i] is None or tempdict[i] is "None":
                 tempdict.pop(i)
         return tempdict
     except:
