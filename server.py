@@ -143,13 +143,13 @@ def home():
         taglist = Indicator.query.distinct(Indicator.tags).all()
 
         # Generate Tag Cloud
-        tags = []
+        tags = set()
         for object in taglist:
             if object.tags == "":
                 pass
             else:
                 for tag in object.tags.split(","):
-                    tags.append(tag.strip())
+                    tags.add(tag.strip())
 
         dictcount = {}
         dictlist = []
@@ -208,8 +208,9 @@ def tags():
         rows = Indicator.query.distinct(Indicator.tags).all()
         for row in rows:
             if row.tags:
+                print row.tags
                 for tag in row.tags.split(','):
-                    taglist[tag] = list()
+                    taglist[tag.strip()] = list()
         # Match indicators to tags
         del rows, row
         for tag, indicators in taglist.iteritems():
