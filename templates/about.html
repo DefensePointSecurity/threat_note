@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="main-panel">
+  {% include "navbar.html" %}
+  <div class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="content">
+              <img style="width: 100%;" src="../../static/img/Solid_Shield_Horizontal_BlackText_WhiteBkgd.jpg"> Welcome to threat_note. This app was developed by <a href="http://www.defpoint.com">Defense Point Security</a> for individual security researchers to track their investigations and quickly retrieve information related to different objects
+              (IP's, domains, threat actors, etc.). This app fills the gap of running a full-fledged indicator-storage solution requiring a great deal of setting up and configuring, as well as other web apps requiring signing up and having some limitations
+              without paying for enterprise features.
+              </p>
+              This small app can be deployed quickly thanks to the use of a <a href="http://www.vagrantup.com">Vagrant</a> machine, which sets up the mongo database that you will be using. Thanks to <a href="http://flask.pocoo.org/">Flask</a> and
+              Python, you can run a small webserver which you can interact with the objects you create.
+              </p>
+              By having a rapidly deployable webapp that can store your information related to incidents or malware research, you can quickly delete and start your research over, keeping things isolated per incident. You can also export any indicators you enter into
+              a variety of formats (STIX, TAXII, OpenIOC, Bro intel, etc.) to share with colleagues or the security community at large.
+              </br>
+              </br>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% include "footer.html" %}
+  </div>
+</div>
+{% endblock content %}
