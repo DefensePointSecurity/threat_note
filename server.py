@@ -13,7 +13,6 @@ import hashlib
 import io
 import re
 import time
-import urllib
 
 import libs.circl
 import libs.cuckoo
@@ -23,11 +22,9 @@ import libs.investigate
 import libs.passivetotal
 import libs.shodan
 import libs.virustotal
-from libs.API import tn_api
-
+import libs.whoisinfo
 from flask import Flask
 from flask import flash
-from flask import jsonify
 from flask import make_response
 from flask import redirect
 from flask import render_template
@@ -39,6 +36,7 @@ from flask.ext.login import login_required
 from flask.ext.login import login_user
 from flask.ext.login import logout_user
 from flask.ext.wtf import Form
+from libs.API import tn_api
 from libs.database import db_session
 from libs.database import init_db
 from libs.models import Indicator
@@ -60,6 +58,7 @@ lm.init_app(app)
 lm.login_view = 'login'
 
 app.register_blueprint(tn_api)
+
 
 class LoginForm(Form):
     user = StringField('user', validators=[DataRequired()])
@@ -143,13 +142,13 @@ def home():
         taglist = Indicator.query.distinct(Indicator.tags).all()
 
         # Generate Tag Cloud
-        tags = []
+        tags = set()
         for object in taglist:
             if object.tags == "":
                 pass
             else:
                 for tag in object.tags.split(","):
-                    tags.append(tag.strip())
+                    tags.add(tag.strip())
 
         dictcount = {}
         dictlist = []
@@ -208,8 +207,9 @@ def tags():
         rows = Indicator.query.distinct(Indicator.tags).all()
         for row in rows:
             if row.tags:
+                print row.tags
                 for tag in row.tags.split(','):
-                    taglist[tag] = list()
+                    taglist[tag.strip()] = list()
         # Match indicators to tags
         del rows, row
         for tag, indicators in taglist.iteritems():
