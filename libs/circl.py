@@ -1,21 +1,15 @@
 import datetime
 import json
-import sqlite3 as lite
 
-import libs.helpers
 import requests
+from libs.models import Setting
 
 
 def circlquery(indicator):
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * from settings")
-            settings = cur.fetchall()
-            settings = settings[0]
-            username = settings['circlusername']
-            password = settings['circlpassword']
+        settings = Setting.query.filter_by(_id=1).first()
+        username = settings.circlusername
+        password = settings.circlpassword
         r = requests.get('https://www.circl.lu/pdns/query/' + indicator, auth=(username, password), verify=False)
         to_return = []
         for l in r.text.split('\n'):
@@ -37,15 +31,9 @@ def circlquery(indicator):
 
 def circlssl(indicator):
     try:
-        con = lite.connect('threatnote.db')
-        con.row_factory = lite.Row
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * from settings")
-            settings = cur.fetchall()
-            settings = settings[0]
-            username = settings['circlusername']
-            password = settings['circlpassword']
+        settings = Setting.query.filter_by(_id=1).first()
+        username = settings.circlusername
+        password = settings.circlpassword
         r = requests.get('https://www.circl.lu/v2pssl/query/' + indicator, auth=(username, password), verify=False)
         if "certificates" in r.text:
             return json.loads(r.text)

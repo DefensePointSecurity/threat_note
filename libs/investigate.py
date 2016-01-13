@@ -1,16 +1,13 @@
 import libs.helpers
 import requests
 
+from libs.models import Setting
 
 def get_odns_apikey():
-    con = libs.helpers.db_connection()
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT odnskey from settings")
-        odnskey = cur.fetchall()
-        odnskey = str(odnskey[0][0])
-        if odnskey == '':
-            odnskey = None
+    settings = Setting.query.filter_by(_id=1).first()
+    odnskey = settings.odnskey
+    if odnskey == '':
+        odnskey = None
     return odnskey
 
 

@@ -1,18 +1,12 @@
 import json
 
-import libs.helpers
 import requests
-
+from libs.models import Setting
 
 def shodan(indicator):
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * from settings")
-            settings = cur.fetchall()
-            settings = settings[0]
-            apikey = settings['shodankey']
+        settings = Setting.query.filter_by(_id=1).first()
+        apikey = settings.shodankey
         url = "https://api.shodan.io/shodan/host/"
         ip = indicator
         tempdict = {}

@@ -3,7 +3,7 @@ import sqlite3 as lite
 
 from libs.models import Setting
 
-
+# db_connection has been replaced with sqlachmey Deprecated, will be removed.
 def db_connection(db_file='threatnote.db'):
     con = lite.connect(db_file)
     con.row_factory = lite.Row
