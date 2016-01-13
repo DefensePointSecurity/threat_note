@@ -1,21 +1,12 @@
-import libs.helpers
 import requests
 
-
-def get_settings():
-    con = libs.helpers.db_connection()
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT cuckoohost,cuckooapiport FROM settings")
-
-    cuckoo_settings = cur.fetchall()[0]
-    cuckoo_host = cuckoo_settings[0]
-    cuckoo_api_port = cuckoo_settings[1]
-    return cuckoo_host, cuckoo_api_port
+from libs.models import Setting
 
 
 def report_data(cuckoo_task_id):
-    host, port = get_settings()
+    settings = Setting.query.filter_by(_id=1).first()
+    host = settings.cuckoohost
+    port = settings.cuckooapiport
     if host:
         cuckoo_api_resource = '/tasks/report/'
         url = 'http://' + host + ':' + port + cuckoo_api_resource + cuckoo_task_id
@@ -38,7 +29,9 @@ def report_data(cuckoo_task_id):
 
 def get_tasks():
     try:
-        host, port = get_settings()
+        settings = Setting.query.filter_by(_id=1).first()
+        host = settings.cuckoohost
+        port = settings.cuckooapiport
         if host:
             url = 'http://' + host + ':' + port + '/tasks/list'
             r = requests.get(url)

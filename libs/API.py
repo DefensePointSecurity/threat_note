@@ -2,109 +2,59 @@ from flask import Blueprint
 from flask import jsonify
 import helpers
 import urllib
+from libs.models import Indicator
 
 tn_api = Blueprint('tn_api', __name__)
 
 @tn_api.route('/api/v1/indicators', methods=['GET'])
 def get_indicators():
-    con = helpers.db_connection()
+    indicators = Indicator.query.all()
     indicatorlist = []
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT * FROM indicators")
-        indicators = cur.fetchall()
-        names = [description[0] for description in cur.description]
-        for ind in indicators:
-            newdict = {}
-            for i in names:
-                newdict[i] = str(ind[i])
-            indicatorlist.append(newdict)
+    for ind in indicators:
+        indicatorlist.append(helpers.row_to_dict(ind))
     return jsonify({'indicators': indicatorlist})
 
 
 @tn_api.route('/api/v1/ip_indicator/<ip>', methods=['GET'])
 def get_ip_indicator(ip):
-    con = helpers.db_connection()
+    indicators = Indicator.query.filter(Indicator.object == ip).first()
     indicatorlist = []
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT * FROM indicators where object='" + ip + "'")
-        indicators = cur.fetchall()
-        names = [description[0] for description in cur.description]
-        for ind in indicators:
-            newdict = {}
-            for i in names:
-                newdict[i] = str(ind[i])
-            indicatorlist.append(newdict)
+    indicatorlist.append(helpers.row_to_dict(indicators))
     return jsonify({'indicator': indicatorlist})
 
 
 @tn_api.route('/api/v1/network', methods=['GET'])
 def get_network():
-    con = helpers.db_connection()
+    indicators = Indicator.query.filter(Indicator.type.in_(('IPv4', 'IPv6', 'Domain', 'Network'))).all()
     indicatorlist = []
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT * FROM indicators where type='IPv4' or type='IPv6' or type='Domain' or type='Network'")
-        indicators = cur.fetchall()
-        names = [description[0] for description in cur.description]
-        for ind in indicators:
-            newdict = {}
-            for i in names:
-                newdict[i] = str(ind[i])
-            indicatorlist.append(newdict)
+    for ind in indicators:
+        indicatorlist.append(helpers.row_to_dict(ind))
     return jsonify({'network_indicators': indicatorlist})
 
 
 @tn_api.route('/api/v1/threatactors', methods=['GET'])
 def get_threatactors():
-    con = helpers.db_connection()
+    indicators = Indicator.query.filter(Indicator.type == 'Threat Actor').first()
     indicatorlist = []
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT * FROM indicators where type='Threat Actor'")
-        indicators = cur.fetchall()
-        names = [description[0] for description in cur.description]
-        for ind in indicators:
-            newdict = {}
-            for i in names:
-                newdict[i] = str(ind[i])
-            indicatorlist.append(newdict)
+    indicatorlist.append(helpers.row_to_dict(indicators))
     return jsonify({'threatactors': indicatorlist})
 
 
 @tn_api.route('/api/v1/files', methods=['GET'])
 def get_files():
-    con = helpers.db_connection()
+    indicators = Indicator.query.filter(Indicator.type == 'Hash').first()
     indicatorlist = []
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT * FROM indicators where type='Hash'")
-        indicators = cur.fetchall()
-        names = [description[0] for description in cur.description]
-        for ind in indicators:
-            newdict = {}
-            for i in names:
-                newdict[i] = str(ind[i])
-            indicatorlist.append(newdict)
+    indicatorlist.append(helpers.row_to_dict(indicators))
     return jsonify({'files': indicatorlist})
 
 
 @tn_api.route('/api/v1/campaigns/<campaign>', methods=['GET'])
 def get_campaigns(campaign):
-    con = helpers.db_connection()
-    indicatorlist = []
     campaign = urllib.unquote(campaign).decode('utf8')
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT * FROM indicators where campaign='" + campaign + "'")
-        indicators = cur.fetchall()
-        names = [description[0] for description in cur.description]
-        for ind in indicators:
-            newdict = {}
-            for i in names:
-                newdict[i] = str(ind[i])
-            indicatorlist.append(newdict)
+    indicators = Indicator.query.filter(Indicator.campaign == campaign).all()
+    indicatorlist = []
+    for ind in indicators:
+        indicatorlist.append(helpers.row_to_dict(ind))
     return jsonify({'campaigns': indicatorlist})
 
 

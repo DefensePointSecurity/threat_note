@@ -240,7 +240,7 @@ def networks():
 def threatactors():
     try:
         # Grab threat actors
-        threatactors = Indicator.query.filter(Indicator.type == ('Threat Actor')).all()
+        threatactors = Indicator.query.filter(Indicator.type == 'Threat Actor').all()
         return render_template('threatactors.html', network=threatactors)
     except Exception as e:
         return render_template('error.html', error=e)
