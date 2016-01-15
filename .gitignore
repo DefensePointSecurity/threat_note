@@ -14,4 +14,4 @@ static/uploads/*
 *.db
 
 # Common VirtualEnv Path
-venv
+venv*
