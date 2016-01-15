@@ -1,4 +1,4 @@
-import libs.helpers
+import helpers
 import requests
 
 

@@ -1,7 +1,7 @@
 import collections
 import sqlite3 as lite
 
-from libs.models import Setting
+from models import Setting
 
 
 def db_connection(db_file='threatnote.db'):
