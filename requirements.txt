@@ -1,7 +1,9 @@
 Flask
+gunicorn
 requests
 ipwhois
 python-whois
 Flask-SQLAlchemy
 Flask-Login
 flask-wtf
+honcho

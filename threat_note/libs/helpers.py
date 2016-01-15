@@ -1,7 +1,7 @@
 import collections
 import sqlite3 as lite
 
-from libs.models import Setting
+from models import Setting
 
 # db_connection has been replaced with sqlachmey Deprecated, will be removed.
 def db_connection(db_file='threatnote.db'):

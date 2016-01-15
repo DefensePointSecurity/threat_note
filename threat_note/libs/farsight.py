@@ -1,8 +1,9 @@
 import datetime
 import json
 
+import helpers
 import requests
-from libs.models import Setting
+from models import Setting
 
 def farsightip(indicator):
     settings = Setting.query.filter_by(_id=1).first()

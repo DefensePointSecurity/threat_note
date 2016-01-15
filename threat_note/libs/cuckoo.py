@@ -1,6 +1,7 @@
+import helpers
 import requests
 
-from libs.models import Setting
+from models import Setting
 
 
 def report_data(cuckoo_task_id):

@@ -2,7 +2,7 @@ from flask import Blueprint
 from flask import jsonify
 import helpers
 import urllib
-from libs.models import Indicator
+from models import Indicator
 
 tn_api = Blueprint('tn_api', __name__)
 

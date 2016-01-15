@@ -37,10 +37,10 @@ Now that we are using SQLite, there's no need for a pesky Vagrant machine. All w
 ```
 cd threat_note
 pip install -r requirements.txt
-python server.py
+honcho start
 ```
 
-Once the server is running, you can browse to http://localhost:8888 and register a new account to use to login into threat_note with.
+Once the server is running, you can browse to http://localhost:5000 and register a new account to use to login into threat_note with.
 
 ### Usage
 

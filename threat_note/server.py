@@ -14,15 +14,15 @@ import io
 import re
 import time
 
-import libs.circl
-import libs.cuckoo
-import libs.farsight
-import libs.helpers
-import libs.investigate
-import libs.passivetotal
-import libs.shodan
-import libs.virustotal
-import libs.whoisinfo
+from libs import circl
+from libs import cuckoo
+from libs import farsight
+from libs import helpers
+from libs import investigate
+from libs import passivetotal
+from libs import shodan
+from libs import virustotal
+from libs import whoisinfo
 from flask import Flask
 from flask import flash
 from flask import make_response

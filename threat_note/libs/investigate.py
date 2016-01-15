@@ -1,7 +1,7 @@
-import libs.helpers
+import helpers
 import requests
 
-from libs.models import Setting
+from models import Setting
 
 def get_odns_apikey():
     settings = Setting.query.filter_by(_id=1).first()
