@@ -2,17 +2,13 @@ import json
 
 import helpers
 import requests
+from models import Setting
 
 
 def pt(indicator):
     try:
-        con = libs.helpers.db_connection()
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT * from settings")
-            settings = cur.fetchall()
-            settings = settings[0]
-            apikey = settings['ptkey']
+        settings = Setting.query.filter_by(_id=1).first()
+        apikey = settings.ptkey
         url = 'https://www.passivetotal.org/api/v1/passive'
         params = {'api_key': apikey, 'query': indicator}
         response = requests.get(url, params=params)

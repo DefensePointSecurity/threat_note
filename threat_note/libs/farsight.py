@@ -3,16 +3,11 @@ import json
 
 import helpers
 import requests
-
+from models import Setting
 
 def farsightip(indicator):
-    con = libs.helpers.db_connection()
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT * from settings")
-        settings = cur.fetchall()
-        settings = settings[0]
-        apikey = settings['farsightkey']
+    settings = Setting.query.filter_by(_id=1).first()
+    apikey = settings.farsightkey
     headers = {'X-API-Key': apikey, 'accept': 'application/json'}
     ip = requests.get("https://api.dnsdb.info/lookup/rdata/name/" + indicator, headers=headers, verify=False)
     to_return = []
@@ -30,13 +25,8 @@ def farsightip(indicator):
 
 
 def farsightdomain(indicator):
-    con = libs.helpers.db_connection()
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT * from settings")
-        settings = cur.fetchall()
-        settings = settings[0]
-        apikey = settings['farsightkey']
+    settings = Setting.query.filter_by(_id=1).first()
+    apikey = settings.farsightkey
     headers = {'X-API-Key': apikey, 'accept': 'application/json'}
     domain = requests.get("https://api.dnsdb.info/lookup/rrset/name/" + indicator, headers=headers, verify=False)
     to_return = []
