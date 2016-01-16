@@ -1,1 +1,1 @@
-web: gunicorn threat_note:app
+web: gunicorn threat_note.threat_note:app

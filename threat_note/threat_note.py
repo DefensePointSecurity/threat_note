@@ -338,7 +338,7 @@ def newobject():
     try:
         something = request.form
         imd = ImmutableMultiDict(something)
-        records = libs.helpers.convert(imd)
+        records = helpers.convert(imd)
 
         # Import indicators from Cuckoo for the selected analysis task
         if 'type' in records and 'cuckoo' in records['type']:
@@ -490,7 +490,7 @@ def newobject():
 def editobject(uid):
     try:
         http = Indicator.query.filter_by(object=uid).first()
-        newdict = libs.helpers.row_to_dict(http)
+        newdict = helpers.row_to_dict(http)
         return render_template('neweditobject.html', entry=newdict)
     except Exception as e:
         return render_template('error.html', error=e)
@@ -550,7 +550,7 @@ def updatesettings():
     try:
         something = request.form
         imd = ImmutableMultiDict(something)
-        newdict = libs.helpers.convert(imd)
+        newdict = helpers.convert(imd)
 
         # Query the first set of settings, could query custom settings for individual users
         settings = Setting.query.filter_by(_id=1).first()
@@ -623,7 +623,7 @@ def updateobject():
         # Updates entry information
         something = request.form
         imd = ImmutableMultiDict(something)
-        records = libs.helpers.convert(imd)
+        records = helpers.convert(imd)
         # taglist = records['tags'].split(",") - Unused
         # indicator = Indicator.query.filter_by(object=records['object']).first() - Unused
 
@@ -640,7 +640,7 @@ def updateobject():
 
         # db_session.execute('ALTER  TABLE indicators ADD COLUMN')
 
-        # con = libs.helpers.db_connection()
+        # con = helpers.db_connection()
         # with con:
         #    cur = con.cursor()
         #    cur.execute(
@@ -667,7 +667,7 @@ def insertnewfield():
     try:
         something = request.form
         imd = ImmutableMultiDict(something)
-        records = libs.helpers.convert(imd)
+        records = helpers.convert(imd)
         newdict = {}
         for i in records:
             if i == "inputnewfieldname":
@@ -686,7 +686,7 @@ def insertnewfield():
 def objectsummary(uid):
     try:
         row = Indicator.query.filter_by(object=uid).first()
-        newdict = libs.helpers.row_to_dict(row)
+        newdict = helpers.row_to_dict(row)
         settings = Setting.query.filter_by(_id=1).first()
         taglist = row.tags.split(",")
 
@@ -756,7 +756,7 @@ def objectsummary(uid):
 def threatactorobject(uid):
     try:
         row = Indicator.query.filter(Indicator.object == uid).first()
-        newdict = libs.helpers.row_to_dict(row)
+        newdict = helpers.row_to_dict(row)
 
         temprel = {}
         if row.relationships:
@@ -794,7 +794,7 @@ def addrelationship():
     try:
         something = request.form
         imd = ImmutableMultiDict(something)
-        records = libs.helpers.convert(imd)
+        records = helpers.convert(imd)
 
         row = Indicator.query.filter_by(object=records['id']).first()
         row.relationships = records['indicator']
@@ -820,7 +820,7 @@ def profile():
         user = User.query.filter_by(user=current_user.user.lower()).first()
         something = request.form
         imd = ImmutableMultiDict(something)
-        records = libs.helpers.convert(imd)
+        records = helpers.convert(imd)
 
         if 'currentpw' in records:
             if hashlib.md5(records['currentpw'].encode('utf-8')).hexdigest() == user.key:
@@ -845,7 +845,7 @@ def profile():
 def victimobject(uid):
     try:
         http = Indicator.query.filter(Indicator.object == uid).first()
-        newdict = libs.helpers.row_to_dict(http)
+        newdict = helpers.row_to_dict(http)
         settings = Setting.query.filter_by(_id=1).first()
         taglist = http.tags.split(",")
 
@@ -915,7 +915,7 @@ def victimobject(uid):
 def filesobject(uid):
     try:
         http = Indicator.query.filter(Indicator.object == uid).first()
-        newdict = libs.helpers.row_to_dict(http)
+        newdict = helpers.row_to_dict(http)
         settings = Setting.query.filter_by(_id=1).first()
         taglist = http.tags.split(",")
 
@@ -954,7 +954,7 @@ def download(uid):
     for row in rows:
         print row
 
-    con = libs.helpers.db_connection()
+    con = helpers.db_connection()
     with con:
         cur = con.cursor()
         cur.execute(
@@ -1004,4 +1004,4 @@ if __name__ == '__main__':
         libs.database.db_file = args.database
 
     init_db()
-    app.run(host=args.host, port=args.port, debug=args.debug)
+    app.run(host=args.host, port=args.port, debug=True)
