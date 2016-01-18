@@ -17,7 +17,7 @@ def domain_security(enity):
     headers = {'Authorization': 'Bearer ' + api_key}
     domain = enity
     endpoint = 'security/name/{}.json'
-    response = requests.get(api_url + endpoint.format(domain), headers=headers, proxies=libs.helpers.get_proxy()).json()
+    response = requests.get(api_url + endpoint.format(domain), headers=headers, proxies=helpers.get_proxy()).json()
     newdict = {}
     newdict['domain'] = domain
     newdict['attack'] = response['attack']
@@ -36,7 +36,7 @@ def domain_tag(enity):
     headers = {'Authorization': 'Bearer ' + api_key}
     domain = enity
     endpoint = 'domains/{}/latest_tags'
-    response = requests.get(api_url + endpoint.format(domain), headers=headers, proxies=libs.helpers.get_proxy()).json()
+    response = requests.get(api_url + endpoint.format(domain), headers=headers, proxies=helpers.get_proxy()).json()
     newlist = []
     for row in response:
         newdict = {}
@@ -61,7 +61,7 @@ def domain_categories(enity):
         headers = {'Authorization': 'Bearer ' + api_key}
         endpoint = 'domains/categorization/'
         labels = '?showLabels'
-        response = requests.get(api_url + endpoint + enity + labels, headers=headers, proxies=libs.helpers.get_proxy()).json()
+        response = requests.get(api_url + endpoint + enity + labels, headers=headers, proxies=helpers.get_proxy()).json()
         for domain, values in response.iteritems():
             if values['status'] == -1:  # -1 if domain is malicous
                 sec = domain_security(enity)
@@ -86,7 +86,7 @@ def ip_query(entity):
         mal_domains = []
         ip = entity.strip()
         endpoint = 'ips/{ip}/latest_domains'.format(ip=ip)
-        response = requests.get(api_url + endpoint, headers=headers, proxies=libs.helpers.get_proxy())
+        response = requests.get(api_url + endpoint, headers=headers, proxies=helpers.get_proxy())
         if response.text != '[]':
             results = response.json()
             for entry in results:
