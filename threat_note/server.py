@@ -57,6 +57,9 @@ lm = LoginManager()
 lm.init_app(app)
 lm.login_view = 'login'
 
+# Setup Database if Necessary
+init_db()
+
 app.register_blueprint(tn_api)
 
 
@@ -1004,4 +1007,4 @@ if __name__ == '__main__':
         libs.database.db_file = args.database
 
     init_db()
-    app.run(host=args.host, port=args.port, debug=args.debug)
+    app.run(host=args.host, port=args.port, debug=True)
