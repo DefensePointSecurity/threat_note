@@ -57,6 +57,9 @@ lm = LoginManager()
 lm.init_app(app)
 lm.login_view = 'login'
 
+# Setup Database if Necessary
+init_db()
+
 app.register_blueprint(tn_api)
 
 
