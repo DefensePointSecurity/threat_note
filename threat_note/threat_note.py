@@ -1007,4 +1007,4 @@ if __name__ == '__main__':
         libs.database.db_file = args.database
 
     init_db()
-    app.run(host=args.host, port=args.port, debug=True)
+    app.run(host=args.host, port=args.port, debug=args.debug)
