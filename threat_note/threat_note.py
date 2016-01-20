@@ -14,15 +14,6 @@ import io
 import re
 import time
 
-from libs import circl
-from libs import cuckoo
-from libs import farsight
-from libs import helpers
-from libs import investigate
-from libs import passivetotal
-from libs import shodan
-from libs import virustotal
-from libs import whoisinfo
 from flask import Flask
 from flask import flash
 from flask import make_response
@@ -36,6 +27,15 @@ from flask.ext.login import login_required
 from flask.ext.login import login_user
 from flask.ext.login import logout_user
 from flask.ext.wtf import Form
+from libs import circl
+from libs import cuckoo
+from libs import farsight
+from libs import helpers
+from libs import investigate
+from libs import passivetotal
+from libs import shodan
+from libs import virustotal
+from libs import whoisinfo
 from libs.API import tn_api
 from libs.database import db_session
 from libs.database import init_db
@@ -100,8 +100,8 @@ def register():
 
             # Set up the settings table when the first user is registered.
             if not Setting.query.filter_by(_id=1).first():
-                settings = Setting('off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', '', '', '',
-                                   '', '', '', '', '', '', '', '')
+                settings = Setting('off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', '', '', '',
+                                   '', '', '', '', '', '', '', '', '')
                 db_session.add(settings)
             # Commit all database changes once they have been completed
             db_session.commit()
@@ -345,7 +345,7 @@ def newobject():
 
         # Import indicators from Cuckoo for the selected analysis task
         if 'type' in records and 'cuckoo' in records['type']:
-            host_data, dns_data, sha1, firstseen = libs.cuckoo.report_data(records['cuckoo_task_id'])
+            host_data, dns_data, sha1, firstseen = cuckoo.report_data(records['cuckoo_task_id'])
             if host_data and dns_data and sha1 and firstseen:
                 # Import IP Indicators from Cuckoo Task
                 for ip in host_data:
@@ -595,6 +595,10 @@ def updatesettings():
             settings.farsightinfo = 'on'
         else:
             settings.farsightinfo = 'off'
+        if 'shodaninfo' in newdict.keys() and newdict['shodankey'] is not '':
+            settings.shodaninfo = 'on'
+        else:
+            settings.shodaninfo = 'off'
         if 'odnsinfo' in newdict.keys() and newdict['odnskey'] is not '':
             settings.odnsinfo = 'on'
         else:
@@ -610,6 +614,7 @@ def updatesettings():
         settings.circlusername = newdict['circlusername']
         settings.circlpassword = newdict['circlpassword']
         settings.ptkey = newdict['ptkey']
+        settings.shodankey = newdict['shodankey']
 
         db_session.commit()
         settings = Setting.query.first()
@@ -708,36 +713,40 @@ def objectsummary(uid):
         circlssl = ""
         ptdata = ""
         farsightdata = ""
-        # shodandata = ""
+        shodandata = ""
         # Run ipwhois or domainwhois based on the type of indicator
         if str(row.type) == "IPv4" or str(row.type) == "IPv6":
             if settings.vtinfo == "on":
-                jsonvt = libs.virustotal.vt_ipv4_lookup(str(row.object))
+                jsonvt = virustotal.vt_ipv4_lookup(str(row.object))
             if settings.whoisinfo == "on":
-                whoisdata = libs.whoisinfo.ipwhois(str(row.object))
+                whoisdata = whoisinfo.ipwhois(str(row.object))
             if settings.odnsinfo == "on":
-                odnsdata = libs.investigate.ip_query(str(row.object))
+                odnsdata = investigate.ip_query(str(row.object))
             if settings.circlinfo == "on":
-                circldata = libs.circl.circlquery(str(row.object))
+                circldata = circl.circlquery(str(row.object))
             if settings.circlssl == "on":
-                circlssl = libs.circl.circlssl(str(row.object))
+                circlssl = circl.circlssl(str(row.object))
             if settings.ptinfo == "on":
-                ptdata = libs.passivetotal.pt(str(row.object))
+                ptdata = passivetotal.pt(str(row.object))
             if settings.farsightinfo == "on":
-                farsightdata = libs.farsight.farsightip(str(row.object))
+                farsightdata = farsight.farsightip(str(row.object))
+            if settings.shodaninfo == "on":
+                shodandata = shodan.shodan(str(row.object))
         elif str(row.type) == "Domain":
             if settings.whoisinfo == "on":
-                whoisdata = libs.whoisinfo.domainwhois(str(row.object))
+                whoisdata = whoisinfo.domainwhois(str(row.object))
             if settings.vtinfo == "on":
-                jsonvt = libs.virustotal.vt_domain_lookup(str(row.object))
+                jsonvt = virustotal.vt_domain_lookup(str(row.object))
             if settings.odnsinfo == "on":
-                odnsdata = libs.investigate.domain_categories(str(row.object))
+                odnsdata = investigate.domain_categories(str(row.object))
             if settings.circlinfo == "on":
-                circldata = libs.circl.circlquery(str(row.object))
+                circldata = circl.circlquery(str(row.object))
             if settings.ptinfo == "on":
-                ptdata = libs.passivetotal.pt(str(row.object))
+                ptdata = passivetotal.pt(str(row.object))
             if settings.farsightinfo == "on":
-                farsightdata = libs.farsight.farsightdomain(str(row.object))
+                farsightdata = farsight.farsightdomain(str(row.object))
+            if settings.shodaninfo == "on":
+                shodandata = shodan.shodan(str(row.object))
         if settings.whoisinfo == "on":
             if str(row.type) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
@@ -749,7 +758,7 @@ def objectsummary(uid):
         return render_template('networkobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
                                odnsdata=odnsdata, settingsvars=settings, address=address,
                                ptdata=ptdata, temprel=temprel, circldata=circldata, circlssl=circlssl, reldata=reldata,
-                               taglist=taglist, farsightdata=farsightdata)
+                               taglist=taglist, farsightdata=farsightdata, shodandata=shodandata)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -871,31 +880,31 @@ def victimobject(uid):
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http.type) == "IPv4" or str(http.type) == "IPv6":
             if settings.vtinfo == "on":
-                jsonvt = libs.virustotal.vt_ipv4_lookup(str(http.object))
+                jsonvt = virustotal.vt_ipv4_lookup(str(http.object))
             if settings.whoisinfo == "on":
-                whoisdata = libs.whoisinfo.ipwhois(str(http.object))
+                whoisdata = whoisinfo.ipwhois(str(http.object))
             if settings.odnsinfo == "on":
-                odnsdata = libs.investigate.ip_query(str(http.object))
+                odnsdata = investigate.ip_query(str(http.object))
             if settings.circlinfo == "on":
-                circldata = libs.circl.circlquery(str(http.object))
+                circldata = circl.circlquery(str(http.object))
             if settings.circlssl == "on":
-                circlssl = libs.circl.circlssl(str(http.object))
+                circlssl = circl.circlssl(str(http.object))
             if settings.ptinfo == "on":
-                ptdata = libs.passivetotal.pt(str(http.object))
+                ptdata = passivetotal.pt(str(http.object))
             if settings.farsightinfo == "on":
-                farsightdata = libs.farsight.farsightip(str(http.object))
+                farsightdata = farsight.farsightip(str(http.object))
         elif str(http.type) == "Domain":
             if settings.whoisinfo == "on":
-                whoisdata = libs.whoisinfo.domainwhois(str(http.object))
+                whoisdata = whoisinfo.domainwhois(str(http.object))
             if settings.vtinfo == "on":
-                jsonvt = libs.virustotal.vt_domain_lookup(str(http.object))
+                jsonvt = virustotal.vt_domain_lookup(str(http.object))
             if settings.odnsinfo == "on":
-                odnsdata = libs.investigate.domain_categories(
+                odnsdata = investigate.domain_categories(
                     str(http.object))
             if settings.circlinfo == "on":
-                circldata = libs.circl.circlquery(str(http.object))
+                circldata = circl.circlquery(str(http.object))
             if settings.ptinfo == "on":
-                ptdata = libs.passivetotal.pt(str(http.object))
+                ptdata = passivetotal.pt(str(http.object))
         if settings.whoisinfo == "on":
             if str(http.type) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(
@@ -931,7 +940,7 @@ def filesobject(uid):
 
         reldata = len(temprel)
         if settings.vtfile == "on":
-            jsonvt = libs.virustotal.vt_hash_lookup(str(http.object))
+            jsonvt = virustotal.vt_hash_lookup(str(http.object))
         else:
             jsonvt = ""
         return render_template('fileobject.html', records=newdict, settingsvars=settings, address=http.object,
@@ -943,7 +952,7 @@ def filesobject(uid):
 @app.route('/import', methods=['GET', 'POST'])
 @login_required
 def import_indicators():
-    cuckoo_tasks = libs.cuckoo.get_tasks()
+    cuckoo_tasks = cuckoo.get_tasks()
     return render_template('import.html', cuckoo_tasks=cuckoo_tasks)
 
 
@@ -1002,9 +1011,8 @@ if __name__ == '__main__':
     parser.add_argument('-db', '--database', help="Path to sqlite database - Not Implemented")
     args = parser.parse_args()
 
-    if args.database:
-        # TODO
-        libs.database.db_file = args.database
+    # if args.database:
+    #     database.db_file = args.database
 
     init_db()
     app.run(host=args.host, port=args.port, debug=args.debug)
