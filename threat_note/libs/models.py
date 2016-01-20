@@ -57,10 +57,12 @@ class Setting(Base):
     cuckooapiport = Column('cuckooapiport', String)
     farsightinfo = Column('farsightinfo', String)
     farsightkey = Column('farsightkey', String)
+    shodaninfo = Column('shodaninfo', String)
+    shodankey = Column('shodankey', String)
 
-    def __init__(self, vtinfo, whoisinfo, odnsinfo, circlinfo, farsightinfo, ptinfo, circlssl, threatcrowd, vtfile,
+    def __init__(self, vtinfo, whoisinfo, odnsinfo, circlinfo, farsightinfo, ptinfo, shodaninfo, circlssl, threatcrowd, vtfile,
                  apikey, odnskey, circlusername, circlpassword, ptkey, farsightkey,
-                 cuckoo, cuckoohost, cuckooapiport, httpproxy, httpsproxy):
+                 cuckoo, cuckoohost, cuckooapiport, httpproxy, httpsproxy, shodankey):
         self.apikey = apikey
         self.odnskey = odnskey
         self.vtinfo = vtinfo
@@ -81,6 +83,8 @@ class Setting(Base):
         self.cuckooapiport = cuckooapiport
         self.farsightinfo = farsightinfo
         self.farsightkey = farsightkey
+        self.shodaninfo = shodaninfo
+        self.shodankey = shodankey
 
 
 class Indicator(Base):
