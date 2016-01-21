@@ -1,6 +1,4 @@
-import helpers
 import requests
-
 from models import Setting
 
 
@@ -14,6 +12,7 @@ def report_data(cuckoo_task_id):
         r = requests.get(url)
         if r.status_code == 200:
             try:
+                # TODO: Processing take a significant amount of time.
                 sha1 = r.json()['target']['file']['sha1']
                 task_started = r.json()['info']['started']
                 # tcp_data = r.json()['network']['tcp']

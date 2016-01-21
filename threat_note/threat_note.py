@@ -16,6 +16,7 @@ import time
 
 from libs import circl
 from libs import cuckoo
+from libs import database
 from libs import farsight
 from libs import helpers
 from libs import investigate
@@ -345,61 +346,33 @@ def newobject():
 
         # Import indicators from Cuckoo for the selected analysis task
         if 'type' in records and 'cuckoo' in records['type']:
-            host_data, dns_data, sha1, firstseen = libs.cuckoo.report_data(records['cuckoo_task_id'])
+            host_data, dns_data, sha1, firstseen = cuckoo.report_data(records['cuckoo_task_id'])
             if host_data and dns_data and sha1 and firstseen:
                 # Import IP Indicators from Cuckoo Task
                 for ip in host_data:
-                    object = Indicator.query.filter_by(object=ip).first()
-                    if object is None:
+                    ind = Indicator.query.filter_by(object=ip).first()
+                    if ind is None:
                         indicator = Indicator(ip.strip(), 'IPv4', firstseen, '', 'Infrastructure', records['campaign'],
                                               'Low', '', records['tags'], '')
                         db_session.add(indicator)
                         db_session.commit()
-                    else:
-                        errormessage = "Entry already exists in database."
-                        return render_template('newobject.html', errormessage=errormessage,
-                                               inputtype=records['inputtype'], inputobject=ip,
-                                               inputfirstseen=records['inputfirstseen'],
-                                               inputlastseen=records['inputlastseen'],
-                                               inputcampaign=records['inputcampaign'],
-                                               comments=records['comments'],
-                                               diamondmodel=records['diamondmodel'],
-                                               tags=records['tags'])
+
                     # Import Domain Indicators from Cuckoo Task
                     for dns in dns_data:
-                        object = Indicator.query.filter_by(object=dns['requst']).first()
-                        if object is None:
+                        ind = Indicator.query.filter_by(object=dns['request']).first()
+                        if ind is None:
                             indicator = Indicator(dns['request'], 'Domain', firstseen, '', 'Infrastructure',
                                                   records['campaign'], 'Low', '', records['tags'], '')
                             db_session.add(indicator)
                             db_session.commit()
-                        else:
-                            errormessage = "Entry already exists in database."
-                            return render_template('newobject.html', errormessage=errormessage,
-                                                   inputtype=records['inputtype'], inputobject=ip,
-                                                   inputfirstseen=records['inputfirstseen'],
-                                                   inputlastseen=records['inputlastseen'],
-                                                   inputcampaign=records['inputcampaign'],
-                                                   comments=records['comments'],
-                                                   diamondmodel=records['diamondmodel'],
-                                                   tags=records['tags'])
+
                     # Import File/Hash Indicators from Cuckoo Task
-                    object = Indicator.query.filter_by(object=sha1).first()
-                    if object is None:
+                    ind = Indicator.query.filter_by(object=sha1).first()
+                    if ind is None:
                         indicator = Indicator(sha1, 'Hash', firstseen, '', 'Capability',
                                               records['campaign'], 'Low', '', records['tags'], '')
                         db_session.add(indicator)
                         db_session.commit()
-                    else:
-                        errormessage = "Entry already exists in database."
-                        return render_template('newobject.html', errormessage=errormessage,
-                                               inputtype=records['inputtype'], inputobject=ip,
-                                               inputfirstseen=records['inputfirstseen'],
-                                               inputlastseen=records['inputlastseen'],
-                                               inputcampaign=records['inputcampaign'],
-                                               comments=records['comments'],
-                                               diamondmodel=records['diamondmodel'],
-                                               tags=records['tags'])
 
                 # Redirect to Dashboard after successful import
                 return redirect(url_for('home'))
@@ -712,32 +685,32 @@ def objectsummary(uid):
         # Run ipwhois or domainwhois based on the type of indicator
         if str(row.type) == "IPv4" or str(row.type) == "IPv6":
             if settings.vtinfo == "on":
-                jsonvt = libs.virustotal.vt_ipv4_lookup(str(row.object))
+                jsonvt = virustotal.vt_ipv4_lookup(str(row.object))
             if settings.whoisinfo == "on":
-                whoisdata = libs.whoisinfo.ipwhois(str(row.object))
+                whoisdata = whoisinfo.ipwhois(str(row.object))
             if settings.odnsinfo == "on":
-                odnsdata = libs.investigate.ip_query(str(row.object))
+                odnsdata = investigate.ip_query(str(row.object))
             if settings.circlinfo == "on":
-                circldata = libs.circl.circlquery(str(row.object))
+                circldata = circl.circlquery(str(row.object))
             if settings.circlssl == "on":
-                circlssl = libs.circl.circlssl(str(row.object))
+                circlssl = circl.circlssl(str(row.object))
             if settings.ptinfo == "on":
-                ptdata = libs.passivetotal.pt(str(row.object))
+                ptdata = passivetotal.pt(str(row.object))
             if settings.farsightinfo == "on":
-                farsightdata = libs.farsight.farsightip(str(row.object))
+                farsightdata = farsight.farsightip(str(row.object))
         elif str(row.type) == "Domain":
             if settings.whoisinfo == "on":
-                whoisdata = libs.whoisinfo.domainwhois(str(row.object))
+                whoisdata = whoisinfo.domainwhois(str(row.object))
             if settings.vtinfo == "on":
-                jsonvt = libs.virustotal.vt_domain_lookup(str(row.object))
+                jsonvt = virustotal.vt_domain_lookup(str(row.object))
             if settings.odnsinfo == "on":
-                odnsdata = libs.investigate.domain_categories(str(row.object))
+                odnsdata = investigate.domain_categories(str(row.object))
             if settings.circlinfo == "on":
-                circldata = libs.circl.circlquery(str(row.object))
+                circldata = circl.circlquery(str(row.object))
             if settings.ptinfo == "on":
-                ptdata = libs.passivetotal.pt(str(row.object))
+                ptdata = passivetotal.pt(str(row.object))
             if settings.farsightinfo == "on":
-                farsightdata = libs.farsight.farsightdomain(str(row.object))
+                farsightdata = farsight.farsightdomain(str(row.object))
         if settings.whoisinfo == "on":
             if str(row.type) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
@@ -871,31 +844,31 @@ def victimobject(uid):
         # Run ipwhois or domainwhois based on the type of indicator
         if str(http.type) == "IPv4" or str(http.type) == "IPv6":
             if settings.vtinfo == "on":
-                jsonvt = libs.virustotal.vt_ipv4_lookup(str(http.object))
+                jsonvt = virustotal.vt_ipv4_lookup(str(http.object))
             if settings.whoisinfo == "on":
-                whoisdata = libs.whoisinfo.ipwhois(str(http.object))
+                whoisdata = whoisinfo.ipwhois(str(http.object))
             if settings.odnsinfo == "on":
-                odnsdata = libs.investigate.ip_query(str(http.object))
+                odnsdata = investigate.ip_query(str(http.object))
             if settings.circlinfo == "on":
-                circldata = libs.circl.circlquery(str(http.object))
+                circldata = circl.circlquery(str(http.object))
             if settings.circlssl == "on":
-                circlssl = libs.circl.circlssl(str(http.object))
+                circlssl = circl.circlssl(str(http.object))
             if settings.ptinfo == "on":
-                ptdata = libs.passivetotal.pt(str(http.object))
+                ptdata = passivetotal.pt(str(http.object))
             if settings.farsightinfo == "on":
-                farsightdata = libs.farsight.farsightip(str(http.object))
+                farsightdata = farsight.farsightip(str(http.object))
         elif str(http.type) == "Domain":
             if settings.whoisinfo == "on":
-                whoisdata = libs.whoisinfo.domainwhois(str(http.object))
+                whoisdata = whoisinfo.domainwhois(str(http.object))
             if settings.vtinfo == "on":
-                jsonvt = libs.virustotal.vt_domain_lookup(str(http.object))
+                jsonvt = virustotal.vt_domain_lookup(str(http.object))
             if settings.odnsinfo == "on":
-                odnsdata = libs.investigate.domain_categories(
+                odnsdata = investigate.domain_categories(
                     str(http.object))
             if settings.circlinfo == "on":
-                circldata = libs.circl.circlquery(str(http.object))
+                circldata = circl.circlquery(str(http.object))
             if settings.ptinfo == "on":
-                ptdata = libs.passivetotal.pt(str(http.object))
+                ptdata = passivetotal.pt(str(http.object))
         if settings.whoisinfo == "on":
             if str(http.type) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(
@@ -931,7 +904,7 @@ def filesobject(uid):
 
         reldata = len(temprel)
         if settings.vtfile == "on":
-            jsonvt = libs.virustotal.vt_hash_lookup(str(http.object))
+            jsonvt = virustotal.vt_hash_lookup(str(http.object))
         else:
             jsonvt = ""
         return render_template('fileobject.html', records=newdict, settingsvars=settings, address=http.object,
@@ -943,7 +916,7 @@ def filesobject(uid):
 @app.route('/import', methods=['GET', 'POST'])
 @login_required
 def import_indicators():
-    cuckoo_tasks = libs.cuckoo.get_tasks()
+    cuckoo_tasks = cuckoo.get_tasks()
     return render_template('import.html', cuckoo_tasks=cuckoo_tasks)
 
 
@@ -1004,7 +977,7 @@ if __name__ == '__main__':
 
     if args.database:
         # TODO
-        libs.database.db_file = args.database
+        database.db_file = args.database
 
     init_db()
     app.run(host=args.host, port=args.port, debug=args.debug)
