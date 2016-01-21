@@ -1,10 +1,17 @@
+import urllib
+
+import helpers
+# V2 Flask-Restful Version
 from flask import Blueprint
 from flask import jsonify
-import helpers
-import urllib
+from flask_restful import Api
+from flask_restful import Resource
 from models import Indicator
 
 tn_api = Blueprint('tn_api', __name__)
+
+# V1 API
+
 
 @tn_api.route('/api/v1/indicators', methods=['GET'])
 def get_indicators():
@@ -61,7 +68,7 @@ def get_campaigns(campaign):
 @tn_api.route('/api/v1/relationships/<ip>', methods=['GET'])
 def get_relationships(ip):
     con = helpers.db_connection()
-    indicatorlist = []
+    # indicatorlist = [] # Unused
     with con:
         cur = con.cursor()
         cur.execute("SELECT relationships from indicators where object='" + ip + "'")
@@ -80,3 +87,174 @@ def get_relationships(ip):
             except:
                 pass
     return jsonify({'relationships': temprel})
+
+
+# TODO: Add Auth - http://blog.miguelgrinberg.com/post/restful-authentication-with-flask
+# TODO: Add Error for No Results
+
+api = Api(tn_api)
+
+
+class Indicators(Resource):
+
+    def get(self):
+        indicators = Indicator.query.all()
+        indicatorlist = []
+        for ind in indicators:
+            indicatorlist.append(helpers.row_to_dict(ind))
+        return jsonify({'indicators': indicatorlist})
+
+    # TODO: def post(self, arg):
+        # pass
+
+api.add_resource(Indicators, '/api/v2/indicators')
+
+
+class NetworkIndicators(Resource):
+
+    def get(self):
+        indicators = Indicator.query.filter(Indicator.type.in_(('IPv4', 'IPv6', 'Domain', 'Network'))).all()
+        indicatorlist = []
+        for ind in indicators:
+            indicatorlist.append(helpers.row_to_dict(ind))
+        return jsonify({'network_indicators': indicatorlist})
+
+    # def post(self, arg):
+    #     pass
+
+api.add_resource(NetworkIndicators, '/api/v2/networks')
+
+
+class NetworkIndicator(Resource):
+
+    def get(self, network_indicator):
+        indicators = Indicator.query.filter(Indicator.object == network_indicator).first()
+        indicatorlist = []
+        indicatorlist.append(helpers.row_to_dict(indicators))
+        return jsonify({'indicator': indicatorlist})
+
+    def post(self, arg):
+        pass
+
+api.add_resource(NetworkIndicator, '/api/v2/network/<string:network_indicator>')
+
+
+class ThreatActors(Resource):
+
+    def get(self):
+        indicators = Indicator.query.filter(Indicator.type == 'Threat Actor').first()
+        indicatorlist = []
+        indicatorlist.append(helpers.row_to_dict(indicators))
+        return jsonify({'threatactors': indicatorlist})
+
+    # def post(self, arg):
+    #     pass
+
+api.add_resource(ThreatActors, '/api/v2/threat_actors')
+
+
+class ThreatActor(Resource):
+
+    def get(self, arg):
+        pass
+
+    def post(self, arg):
+        pass
+
+api.add_resource(ThreatActor, '/api/v2/threat_actor/<int:id>')
+
+
+class Files(Resource):
+
+    def get(self):
+        indicators = Indicator.query.filter(Indicator.type == 'Hash').first()
+        indicatorlist = []
+        indicatorlist.append(helpers.row_to_dict(indicators))
+        return jsonify({'files': indicatorlist})
+
+    def post(self, arg):
+        pass
+
+api.add_resource(Files, '/api/v2/files')
+
+
+class File(Resource):
+
+    def get(self, arg):
+        pass
+
+    def post(self, arg):
+        pass
+
+api.add_resource(File, '/api/v2/file/<int:id>')
+
+
+class Campaigns(Resource):
+
+    def get(self, arg):
+        pass
+
+    def post(self, arg):
+        pass
+
+api.add_resource(Campaigns, '/api/v2/campaigns')
+
+
+class Campaign(Resource):
+
+    def get(self, campaign):
+        campaign = urllib.unquote(campaign).decode('utf8')
+        indicators = Indicator.query.filter(Indicator.campaign == campaign).all()
+        indicatorlist = []
+        for ind in indicators:
+            indicatorlist.append(helpers.row_to_dict(ind))
+        return jsonify({'campaigns': indicatorlist})
+
+    def post(self, arg):
+        pass
+
+api.add_resource(Campaign, '/api/v2/campaign/<string:campaign>')
+
+
+class Relaionships(Resource):
+
+    def get(self, arg):
+        pass
+
+    def post(self, arg):
+        pass
+
+api.add_resource(Relaionships, '/api/v2/relationships')
+
+
+class Relationship(Resource):
+
+    def get(self, arg):
+        pass
+
+    def post(self, arg):
+        pass
+
+api.add_resource(Relationship, '/api/v2/relationship/<int:id>')
+
+
+class Tags(Resource):
+
+    def get(self, arg):
+        pass
+
+    def post(self, arg):
+        pass
+
+api.add_resource(Tags, '/api/v2/tags')
+
+
+class Tag(Resource):
+
+    def get(self, arg):
+        pass
+
+    def post(self, arg):
+        pass
+
+api.add_resource(Tag, '/api/v2/tag/<int:id>')
