@@ -200,11 +200,13 @@ api.add_resource(File, '/api/v2/file/<string:hash>')
 
 class Campaigns(Resource):
 
-    def get(self, arg):
-        pass
-
-    def post(self, arg):
-        pass
+    def get(self):
+        indicators = Indicator.query.all()
+        campaignlist = []
+        for ind in indicators:
+            if ind.campaign not in campaignlist:
+                campaignlist.append(ind.campaign)
+        return jsonify({'campaigns': campaignlist})
 
 api.add_resource(Campaigns, '/api/v2/campaigns')
 
