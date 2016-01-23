@@ -220,7 +220,7 @@ class Campaign(Resource):
 api.add_resource(Campaign, '/api/v2/campaign/<string:campaign>')
 
 
-class Relaionships(Resource):
+class Relationships(Resource):
 
     def get(self, arg):
         pass
@@ -228,7 +228,7 @@ class Relaionships(Resource):
     def post(self, arg):
         pass
 
-api.add_resource(Relaionships, '/api/v2/relationships')
+api.add_resource(Relationships, '/api/v2/relationships')
 
 
 class Relationship(Resource):
