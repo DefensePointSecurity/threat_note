@@ -167,9 +167,10 @@ api.add_resource(ThreatActor, '/api/v2/threat_actor/<int:id>')
 class Files(Resource):
 
     def get(self):
-        indicators = Indicator.query.filter(Indicator.type == 'Hash').first()
+        indicators = Indicator.query.filter(Indicator.type == 'Hash')
         indicatorlist = []
-        indicatorlist.append(helpers.row_to_dict(indicators))
+        for ind in indicators:
+            indicatorlist.append(helpers.row_to_dict(ind))
         return jsonify({'files': indicatorlist})
 
     def post(self, arg):
@@ -180,13 +181,16 @@ api.add_resource(Files, '/api/v2/files')
 
 class File(Resource):
 
-    def get(self, arg):
-        pass
+    def get(self, hash):
+        indicators = Indicator.query.filter(Indicator.object == hash).first()
+        indicatorlist = []
+        indicatorlist.append(helpers.row_to_dict(indicators))
+        return jsonify({'indicator': indicatorlist})
 
     def post(self, arg):
         pass
 
-api.add_resource(File, '/api/v2/file/<int:id>')
+api.add_resource(File, '/api/v2/file/<string:hash>')
 
 
 class Campaigns(Resource):
