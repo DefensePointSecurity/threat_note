@@ -251,21 +251,28 @@ api.add_resource(Relationship, '/api/v2/relationship/<int:id>')
 
 class Tags(Resource):
 
-    def get(self, arg):
-        pass
-
-    def post(self, arg):
-        pass
+    def get(self):
+        indicators = Indicator.query.all()
+        taglist = []
+        for ind in indicators:
+            for tag in ind.tags.split(', '):
+                if tag not in taglist:
+                    taglist.append(tag)
+        return jsonify({'tags': taglist})
 
 api.add_resource(Tags, '/api/v2/tags')
 
 
 class Tag(Resource):
 
-    def get(self, arg):
-        pass
+    def get(self, tag):
+        indicators = Indicator.query.all()
+        indicatorlist = []
+        for ind in indicators:
+            print ind
+            for tag in ind.tags.split(', '):
+                if tag is tag:
+                    indicatorlist.append(helpers.row_to_dict(ind))
+        return jsonify({'tag': tag, 'indicators': indicatorlist})
 
-    def post(self, arg):
-        pass
-
-api.add_resource(Tag, '/api/v2/tag/<int:id>')
+api.add_resource(Tag, '/api/v2/tag/<string:tag>')
