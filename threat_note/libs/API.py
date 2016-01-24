@@ -139,6 +139,18 @@ class NetworkIndicator(Resource):
 api.add_resource(NetworkIndicator, '/api/v2/network/<string:network_indicator>')
 
 
+class ThreatActors(Resource):
+
+    def get(self):
+        indicators = Indicator.query.filter(Indicator.type == 'Threat Actor').all()
+        indicatorlist = []
+        for ind in indicators:
+            indicatorlist.append(helpers.row_to_dict(ind))
+        return jsonify({'threatactors': indicatorlist})
+
+api.add_resource(ThreatActors, '/api/v2/threat_actors')
+
+
 class ThreatActor(Resource):
 
     def get(self, actor):
@@ -152,21 +164,6 @@ class ThreatActor(Resource):
         pass
 
 api.add_resource(ThreatActor, '/api/v2/threat_actor/<string:actor>')
-
-
-class ThreatActors(Resource):
-
-    def get(self):
-        indicators = Indicator.query.filter(Indicator.type == 'Threat Actor').all()
-        indicatorlist = []
-        for ind in indicators:
-            indicatorlist.append(helpers.row_to_dict(ind))
-        return jsonify({'threatactors': indicatorlist})
-
-    # def post(self, arg):
-    #     pass
-
-api.add_resource(ThreatActors, '/api/v2/threat_actors')
 
 
 class Files(Resource):
