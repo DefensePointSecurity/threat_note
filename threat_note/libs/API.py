@@ -104,9 +104,6 @@ class Indicators(Resource):
             indicatorlist.append(helpers.row_to_dict(ind))
         return jsonify({'indicators': indicatorlist})
 
-    # TODO: def post(self, arg):
-        # pass
-
 api.add_resource(Indicators, '/api/v2/indicators')
 
 
@@ -118,9 +115,6 @@ class NetworkIndicators(Resource):
         for ind in indicators:
             indicatorlist.append(helpers.row_to_dict(ind))
         return jsonify({'network_indicators': indicatorlist})
-
-    # def post(self, arg):
-    #     pass
 
 api.add_resource(NetworkIndicators, '/api/v2/networks')
 
@@ -174,9 +168,6 @@ class Files(Resource):
         for ind in indicators:
             indicatorlist.append(helpers.row_to_dict(ind))
         return jsonify({'files': indicatorlist})
-
-    def post(self, arg):
-        pass
 
 api.add_resource(Files, '/api/v2/files')
 
