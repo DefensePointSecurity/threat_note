@@ -133,7 +133,7 @@ class Indicators(Resource):
             db_session.commit()
 
             indicators = Indicator.query.filter(Indicator.object == data['object']).first()
-            return {'indicator': helpers.row_to_dict(indicators)}
+            return {'indicator': helpers.row_to_dict(indicators)}, 201
 
 api.add_resource(Indicators, '/api/v2/indicators')
 
