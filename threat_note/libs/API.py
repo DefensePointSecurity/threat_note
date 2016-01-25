@@ -144,7 +144,7 @@ class Indicator_Singular(Resource):
         ind = urllib.unquote(ind).decode('utf8')
         indicator = Indicator.query.filter(Indicator.object == ind).first()
         if indicator:
-            return jsonify({ind: helpers.row_to_dict(indicator)})
+            return {ind: helpers.row_to_dict(indicator)}
         else:
             return {ind: 'indicator not found'}, 404
 
@@ -196,7 +196,7 @@ class Files(Resource):
         indicatorlist = []
         for ind in indicators:
             indicatorlist.append(helpers.row_to_dict(ind))
-        return jsonify({'files': indicatorlist})
+        return {'files': indicatorlist}
 
 api.add_resource(Files, '/api/v2/files')
 
@@ -211,7 +211,7 @@ class Campaigns(Resource):
         for ind in indicators:
             if ind.campaign not in campaignlist:
                 campaignlist.append(ind.campaign)
-        return jsonify({'campaigns': campaignlist})
+        return {'campaigns': campaignlist}
 
 api.add_resource(Campaigns, '/api/v2/campaigns')
 
@@ -233,10 +233,10 @@ api.add_resource(Campaign, '/api/v2/campaign/<string:campaign>')
 class Relationships(Resource):
 
     def get(self, arg):
-        return jsonify({'status': 'not implimented'})
+        return {'status': 'not implimented'}
 
     def post(self, arg):
-        return jsonify({'status': 'not implimented'})
+        return {'status': 'not implimented'}
 
 # api.add_resource(Relationships, '/api/v2/relationships')
 
@@ -246,7 +246,7 @@ class Relationships(Resource):
 class Relationship(Resource):
 
     def get(self):
-        return jsonify({'status': 'not implimented'})
+        return {'status': 'not implimented'}
 
 # api.add_resource(Relationship, '/api/v2/relationship/<int:id>')
 
@@ -260,7 +260,7 @@ class Tags(Resource):
             for tag in ind.tags.split(', '):
                 if tag not in taglist:
                     taglist.append(tag)
-        return jsonify({'tags': taglist})
+        return {'tags': taglist}
 
 api.add_resource(Tags, '/api/v2/tags')
 
@@ -275,6 +275,6 @@ class Tag(Resource):
             for tag in ind.tags.split(', '):
                 if tag is tag:
                     indicatorlist.append(helpers.row_to_dict(ind))
-        return jsonify({'tag': tag, 'indicators': indicatorlist})
+        return {'tag': tag, 'indicators': indicatorlist}
 
 api.add_resource(Tag, '/api/v2/tag/<string:tag>')
