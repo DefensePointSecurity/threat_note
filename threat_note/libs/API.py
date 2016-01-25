@@ -1,9 +1,11 @@
 import urllib
 
 import helpers
+from database import db_session
 # V2 Flask-Restful Version
 from flask import Blueprint
 from flask import jsonify
+from flask import request
 from flask_restful import Api
 from flask_restful import Resource
 from models import Indicator
@@ -94,6 +96,8 @@ def get_relationships(ip):
 
 api = Api(tn_api)
 
+# Base Data Model: Indicator
+
 
 class Indicators(Resource):
 
@@ -104,7 +108,49 @@ class Indicators(Resource):
             indicatorlist.append(helpers.row_to_dict(ind))
         return jsonify({'indicators': indicatorlist})
 
+    def post(self):
+        data = request.get_json()
+
+        if Indicator.query.filter(Indicator.object == data['object']).first():
+            return {'error': 'indicator {} already exists'.format(data['object'])}, 409
+        elif not helpers.valid_type(data['type']):
+            return {'error': 'indicator {} is not of valid type'.format(data['object'])}, 400
+        elif not helpers.valid_diamond_model(data['diamondmodel']):
+            return {'error': 'indicator {} has invalid dimond model {}'.format(data['object'], data['diamondmodel'])}, 400
+        else:
+            indicator = Indicator(
+                data['object'],
+                data['type'],
+                data['firstseen'],
+                data['lastseen'],
+                data['diamondmodel'],
+                data['campaign'],
+                data['confidence'],
+                data['comments'],
+                data['tags'],
+                None)
+            db_session.add(indicator)
+            db_session.commit()
+
+            indicators = Indicator.query.filter(Indicator.object == data['object']).first()
+            return {'indicator': helpers.row_to_dict(indicators)}
+
 api.add_resource(Indicators, '/api/v2/indicators')
+
+
+class Indicator_Singular(Resource):
+
+    def get(self, ind):
+        ind = urllib.unquote(ind).decode('utf8')
+        indicator = Indicator.query.filter(Indicator.object == ind).first()
+        if indicator:
+            return jsonify({ind: helpers.row_to_dict(indicator)})
+        else:
+            return {ind: 'indicator not found'}, 404
+
+api.add_resource(Indicator_Singular, '/api/v2/indicator/<string:ind>')
+
+# Specific Data Models: Network Indicators, Threat Actors, Victims, & Files
 
 
 class NetworkIndicators(Resource):
@@ -119,20 +165,6 @@ class NetworkIndicators(Resource):
 api.add_resource(NetworkIndicators, '/api/v2/networks')
 
 
-class NetworkIndicator(Resource):
-
-    def get(self, network_indicator):
-        indicators = Indicator.query.filter(Indicator.object == network_indicator).first()
-        indicatorlist = []
-        indicatorlist.append(helpers.row_to_dict(indicators))
-        return jsonify({'indicator': indicatorlist})
-
-    def post(self, arg):
-        pass
-
-api.add_resource(NetworkIndicator, '/api/v2/network/<string:network_indicator>')
-
-
 class ThreatActors(Resource):
 
     def get(self):
@@ -145,19 +177,16 @@ class ThreatActors(Resource):
 api.add_resource(ThreatActors, '/api/v2/threat_actors')
 
 
-class ThreatActor(Resource):
+class Victims(Resource):
 
-    def get(self, actor):
-        actor = urllib.unquote(actor).decode('utf8')
-        indicators = Indicator.query.filter(Indicator.object == actor).first()
+    def get(self):
+        indicators = Indicator.query.filter(Indicator.type == 'Victim').all()
         indicatorlist = []
-        indicatorlist.append(helpers.row_to_dict(indicators))
-        return jsonify({'indicator': indicatorlist})
+        for ind in indicators:
+            indicatorlist.append(helpers.row_to_dict(ind))
+        return jsonify({'victims': indicatorlist})
 
-    def post(self, arg):
-        pass
-
-api.add_resource(ThreatActor, '/api/v2/threat_actor/<string:actor>')
+api.add_resource(Victims, '/api/v2/victims')
 
 
 class Files(Resource):
@@ -172,19 +201,7 @@ class Files(Resource):
 api.add_resource(Files, '/api/v2/files')
 
 
-class File(Resource):
-
-    def get(self, hash):
-        indicators = Indicator.query.filter(Indicator.object == hash).first()
-        indicatorlist = []
-        indicatorlist.append(helpers.row_to_dict(indicators))
-        return jsonify({'indicator': indicatorlist})
-
-    def post(self, arg):
-        pass
-
-api.add_resource(File, '/api/v2/file/<string:hash>')
-
+# Secondary Data Types: Campaigns, Relationships, & Tags
 
 class Campaigns(Resource):
 
@@ -209,32 +226,29 @@ class Campaign(Resource):
             indicatorlist.append(helpers.row_to_dict(ind))
         return jsonify({'campaigns': indicatorlist})
 
-    def post(self, arg):
-        pass
-
 api.add_resource(Campaign, '/api/v2/campaign/<string:campaign>')
 
 
+# TODO - Relationships aren't working, so this is untestable
 class Relationships(Resource):
 
     def get(self, arg):
-        pass
+        return jsonify({'status': 'not implimented'})
 
     def post(self, arg):
-        pass
+        return jsonify({'status': 'not implimented'})
 
-api.add_resource(Relationships, '/api/v2/relationships')
+# api.add_resource(Relationships, '/api/v2/relationships')
+
+# TODO - Relationships aren't working, so this is untestable
 
 
 class Relationship(Resource):
 
-    def get(self, arg):
-        pass
+    def get(self):
+        return jsonify({'status': 'not implimented'})
 
-    def post(self, arg):
-        pass
-
-api.add_resource(Relationship, '/api/v2/relationship/<int:id>')
+# api.add_resource(Relationship, '/api/v2/relationship/<int:id>')
 
 
 class Tags(Resource):
