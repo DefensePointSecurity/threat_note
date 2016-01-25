@@ -103,10 +103,10 @@ class Indicators(Resource):
 
     def get(self):
         indicators = Indicator.query.all()
-        indicatorlist = []
-        for ind in indicators:
-            indicatorlist.append(helpers.row_to_dict(ind))
-        return jsonify({'indicators': indicatorlist})
+        if indicators:
+            return {'indicators': [helpers.row_to_dict(ind) for ind in indicators]}
+        else:
+            return {}, 204
 
     def post(self):
         data = request.get_json()
@@ -157,10 +157,11 @@ class NetworkIndicators(Resource):
 
     def get(self):
         indicators = Indicator.query.filter(Indicator.type.in_(('IPv4', 'IPv6', 'Domain', 'Network'))).all()
-        indicatorlist = []
-        for ind in indicators:
-            indicatorlist.append(helpers.row_to_dict(ind))
-        return jsonify({'network_indicators': indicatorlist})
+
+        if indicators:
+            return {'network_indicators': helpers.row_to_dict(ind) for ind in indicators}
+        else:
+            return {}, 204
 
 api.add_resource(NetworkIndicators, '/api/v2/networks')
 
@@ -169,10 +170,11 @@ class ThreatActors(Resource):
 
     def get(self):
         indicators = Indicator.query.filter(Indicator.type == 'Threat Actor').all()
-        indicatorlist = []
-        for ind in indicators:
-            indicatorlist.append(helpers.row_to_dict(ind))
-        return jsonify({'threatactors': indicatorlist})
+
+        if indicators:
+            return {'threatactors': helpers.row_to_dict(ind) for ind in indicators}
+        else:
+            return {}, 204
 
 api.add_resource(ThreatActors, '/api/v2/threat_actors')
 
@@ -181,10 +183,11 @@ class Victims(Resource):
 
     def get(self):
         indicators = Indicator.query.filter(Indicator.type == 'Victim').all()
-        indicatorlist = []
-        for ind in indicators:
-            indicatorlist.append(helpers.row_to_dict(ind))
-        return jsonify({'victims': indicatorlist})
+
+        if indicators:
+            return {'victims': helpers.row_to_dict(ind) for ind in indicators}
+        else:
+            return {}, 204
 
 api.add_resource(Victims, '/api/v2/victims')
 
@@ -221,10 +224,11 @@ class Campaign(Resource):
     def get(self, campaign):
         campaign = urllib.unquote(campaign).decode('utf8')
         indicators = Indicator.query.filter(Indicator.campaign == campaign).all()
-        indicatorlist = []
-        for ind in indicators:
-            indicatorlist.append(helpers.row_to_dict(ind))
-        return jsonify({'campaigns': indicatorlist})
+
+        if indicators:
+            return {'campaigns': helpers.row_to_dict(ind) for ind in indicators}
+        else:
+            return {}, 204
 
 api.add_resource(Campaign, '/api/v2/campaign/<string:campaign>')
 
