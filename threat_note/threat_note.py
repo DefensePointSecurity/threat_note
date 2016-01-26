@@ -11,6 +11,7 @@ import argparse
 import csv
 import hashlib
 import io
+import random
 import re
 import time
 
@@ -548,12 +549,6 @@ def deletefilesobject(uid):
         return render_template('error.html', error=e)
 
 
-@app.route('/update/apikeys', methods=['POST'])
-@login_required
-def updateapikeys():
-    print "Updating API Keys"
-
-
 @app.route('/update/settings/', methods=['POST'])
 @login_required
 def updatesettings():
@@ -832,13 +827,26 @@ def addrelationship():
         return render_template('error.html', error=e)
 
 
+@app.route('/apikey', methods=['POST'])
+@login_required
+def apiroll():
+    print "Rolling API Key"
+    try:
+        print "Time to roll the key!"
+        user = User.query.filter_by(user=current_user.user.lower()).first()
+        user.apikey = hashlib.md5("{}{}".format(user, str(random.random())).encode('utf-8')).hexdigest()
+        db_session.commit()
+        return redirect(url_for('profile'))
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
     try:
         user = User.query.filter_by(user=current_user.user.lower()).first()
-        something = request.form
-        imd = ImmutableMultiDict(something)
+        imd = ImmutableMultiDict(request.form)
         records = helpers.convert(imd)
 
         if 'currentpw' in records:
