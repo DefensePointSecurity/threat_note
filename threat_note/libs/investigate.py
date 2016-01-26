@@ -19,10 +19,10 @@ def domain_features(domain):
     newdict = {}
     for k, v in response.iteritems():
         if 'features' in k:
-            newdict['ASN'] = v['asns']
+            newdict['ASN'] = ' '.join(v['asns'])
             newdict['Prefix'] = ' '.join(v['prefixes'])
             newdict['Country'] = ' '.join(v['country_codes'])
-            newdict['Age'] = v['age'] + ' days'
+            newdict['Age'] = str(v['age']) + ' days'
     return newdict
 
 
