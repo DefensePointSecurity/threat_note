@@ -98,6 +98,8 @@ api = Api(tn_api)
 
 # Base Data Model: Indicator
 
+# TODO: Add auth based on user.apikey
+
 
 class Indicators(Resource):
 

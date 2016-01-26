@@ -52,6 +52,7 @@
                           <label>Re-enter Password</label>
                           <input type="password" class="form-control" name="newpwvalidation" value="" placeholder="*******">
                           </br>
+                          <button type="submit" value="password" class="btn btn-info btn-fill">Submit</button>
                         </fieldset>
                       </div>
                     </div>
@@ -70,8 +71,7 @@
                     </br>
                     <label>Test Input</label>
                     <input type="text" class="form-control" name="test2" value="" placeholder="Test 2">
-                    </br>
-                    <button type="submit" value="password" class="btn btn-info btn-fill">Submit</button>
+                    <br>
                   </div>
                 </fieldset>
                 </form>
@@ -80,18 +80,20 @@
                 <form class="form-horizontal" action="/apikey" enctype="application/x-www-form-urlencoded" method="POST">
                   <div class="header">
                     <h4 class="title">API Key</h4>
-                    <p class="category">User application programming interface settings</p>
+                    <p class="category">For more information about Threat_Note's API see <a href="https://www.example.com">API Documentation</a>.</p>
                   </div>
                   <div class="content">
                     <div class="row">
                       <div class="col-md-8">
                         <fieldset>
+
                           <label>Key</label>
-                          <input type="text" class="form-control" name="apikey" value="{{ current_user.apikey }}" placeholder="aabbccddeeff11223344556677889900">
-                          </br>
-                          <button type="submit" value="apikey" class="btn btn-info btn-fill">
-                            <i class="fa fa-refresh"></i> Refresh Token
-                          </button>
+                            <input type="text" class="form-control" name="apikey" value="{{ current_user.apikey }}" placeholder="aabbccddeeff11223344556677889900">
+                            </br>
+                            <button type="submit" value="apikey" class="btn btn-info btn-fill">
+                              <i class="fa fa-refresh"></i> Refresh Token
+                            </button>
+                          </div>
                         </fieldset>
                       </div>
                     </div>
