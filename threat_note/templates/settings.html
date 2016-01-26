@@ -50,6 +50,24 @@
               </div>
             </div>
         </div>
+        <div class="card ">
+          <form class="form-horizontal" action="/update/settings/" enctype="application/x-www-form-urlencoded" method="POST">
+            <div class="header">
+              <h4 class="title">API Key</h4>
+              <p class="category">User application programming interface settings</p>
+            </div>
+            <div class="content">
+              <div class="row">
+                <div class="col-md-8">
+                  <fieldset>
+                    <label>Key</label>
+                    <input type="text" class="form-control" name="httpproxy" value="{{ current_user.apikey }}" placeholder="http://127.0.0.1:8080">
+                    </br>
+                  </fieldset>
+                </div>
+              </div>
+            </div>
+        </div>
       </div>
       <div class="col-md-6">
         <div class="card ">
