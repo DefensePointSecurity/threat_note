@@ -945,44 +945,28 @@ def import_indicators():
 @app.route('/download/<uid>', methods=['GET'])
 @login_required
 def download(uid):
-
     if uid == 'unknown':
         uid = ""
     rows = Indicator.query.filter_by(campaign=uid).all()
-    for row in rows:
-        print row
-
-    con = helpers.db_connection()
-    with con:
-        cur = con.cursor()
-        cur.execute(
-            "SELECT * FROM indicators WHERE campaign = '" + str(uid) + "'")
-        http = cur.fetchall()
-        cur.execute("SELECT * from indicators")
-        fieldnames = [description[0] for description in cur.description]
-
     indlist = []
-    for i in http:
-        indicators = []
-        for item in i:
-            if item is None or item == "":
-                indicators.append("-")
-            else:
-                indicators.append(str(item))
-        indlist.append(indicators)
-    try:
-        out_file = io.BytesIO()
-        w = csv.writer(out_file)
-        w.writerow(fieldnames)
-        w.writerows(indlist)
-        response = make_response(out_file.getvalue())
-        response.headers[
-            "Content-Disposition"] = "attachment; filename=" + uid + "-campaign.csv"
-        response.headers["Content-type"] = "text/csv"
-        return response
-    except Exception as e:
-        print str(e)
-        pass
+    for i in rows:
+        indicator = helpers.row_to_dict(i)
+        for key, value in indicator.iteritems():
+            if value is None or value == "":
+                indicator[key] = '-'
+        indlist.append(indicator)
+    out_file = io.BytesIO()
+    fieldnames = indlist[0].keys()
+    w = csv.DictWriter(out_file, fieldnames=fieldnames)
+    w.writeheader()
+    w.writerows(indlist)
+
+    response = make_response(out_file.getvalue())
+    response.headers[
+        "Content-Disposition"] = "attachment; filename=" + uid + "-campaign.csv"
+    response.headers["Content-type"] = "text/csv"
+    return response
+
 
 
 @app.teardown_appcontext
