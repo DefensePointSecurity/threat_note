@@ -33,6 +33,9 @@ class User(Base):
     def get_id(self):
         return self._id
 
+    def get_apikey(self):
+        return self.apikey
+
     def __repr__(self):
         return '<User %r>' % (self.user)
 
