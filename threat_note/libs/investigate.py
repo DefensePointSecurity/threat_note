@@ -19,7 +19,10 @@ def domain_features(domain):
     newdict = {}
     for k, v in response.iteritems():
         if 'features' in k:
-            newdict['ASN'] = ' '.join(v['asns'])
+            if v['asns']:
+                newdict['ASN'] = v['asns']
+            else:
+                newdict['ASN'] = 'N/A'
             newdict['Prefix'] = ' '.join(v['prefixes'])
             newdict['Country'] = ' '.join(v['country_codes'])
             newdict['Age'] = str(v['age']) + ' days'
@@ -33,12 +36,12 @@ def domain_security(domain):
     endpoint = 'security/name/{}.json'
     response = requests.get(api_url + endpoint.format(domain), headers=headers, proxies=helpers.get_proxy()).json()
     newdict = {}
-    newdict['domain'] = domain
-    newdict['asn_score'] = response['asn_score']
-    newdict['dga_score'] = response['dga_score']
-    newdict['prefix_score'] = response['prefix_score']
-    newdict['fastflux'] = response['fastflux']
-    newdict['securerank2'] = response['securerank2']
+    newdict['Domain'] = domain
+    newdict['ASN Score'] = response['asn_score']
+    newdict['DGA Score'] = response['dga_score']
+    newdict['Prefix Score'] = response['prefix_score']
+    newdict['Fast Flux'] = response['fastflux']
+    newdict['Securerank2'] = response['securerank2']
     #newdict['threat_type'] = response['threat_type']
     #newdict['attack'] = response['attack']
     return newdict
