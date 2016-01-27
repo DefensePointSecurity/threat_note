@@ -219,19 +219,20 @@ def tags():
         # Grab tags
         taglist = dict()
         rows = Indicator.query.distinct(Indicator.tags).all()
-        for row in rows:
-            if row.tags:
-                print row.tags
-                for tag in row.tags.split(','):
-                    taglist[tag.strip()] = list()
-        # Match indicators to tags
-        del rows, row
-        for tag, indicators in taglist.iteritems():
-            rows = Indicator.query.filter(Indicator.tags.like('%' + tag + '%')).all()
-            tmp = {}
+        if rows:
             for row in rows:
-                tmp[row.object] = row.type
-                indicators.append(tmp)
+                if row.tags:
+                    print row.tags
+                    for tag in row.tags.split(','):
+                        taglist[tag.strip()] = list()
+            # Match indicators to tags
+            del rows, row
+            for tag, indicators in taglist.iteritems():
+                rows = Indicator.query.filter(Indicator.tags.like('%' + tag + '%')).all()
+                tmp = {}
+                for row in rows:
+                    tmp[row.object] = row.type
+                    indicators.append(tmp)
 
         return render_template('tags.html', tags=taglist)
     except Exception as e:
@@ -920,7 +921,7 @@ def filesobject(uid):
         if http.relationships:
             rellist = http.relationships.split(",")
             for rel in rellist:
-                reltype = Indicator.query.filter(Indicator.object == rel)
+                reltype = Indicator.query.filter(Indicator.object == rel).first()
                 temprel[reltype.object] = reltype.type
 
         reldata = len(temprel)
