@@ -11,6 +11,7 @@ import argparse
 import csv
 import hashlib
 import io
+import random
 import re
 import time
 
@@ -65,11 +66,11 @@ app.register_blueprint(tn_api)
 
 class LoginForm(Form):
     user = StringField('user', validators=[DataRequired()])
-    key = PasswordField('key', validators=[DataRequired()])
+    password = PasswordField('password', validators=[DataRequired()])
 
     def get_user(self):
-        return db_session.query(User).filter_by(user=self.user.data.lower(), key=hashlib.md5(
-            self.key.data.encode('utf-8')).hexdigest()).first()
+        return db_session.query(User).filter_by(user=self.user.data.lower(), password=hashlib.md5(
+            self.password.data.encode('utf-8')).hexdigest()).first()
 
 
 class RegisterForm(Form):
@@ -303,7 +304,8 @@ def campaigns():
 def settings():
     try:
         settings = Setting.query.filter_by(_id=1).first()
-        return render_template('settings.html', records=settings)
+        user = User.query.filter(User.user == current_user).first
+        return render_template('settings.html', records=settings, suser=user)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -825,19 +827,32 @@ def addrelationship():
         return render_template('error.html', error=e)
 
 
+@app.route('/apikey', methods=['POST'])
+@login_required
+def apiroll():
+    print "Rolling API Key"
+    try:
+        print "Time to roll the key!"
+        user = User.query.filter_by(user=current_user.user.lower()).first()
+        user.apikey = hashlib.md5("{}{}".format(user, str(random.random())).encode('utf-8')).hexdigest()
+        db_session.commit()
+        return redirect(url_for('profile'))
+    except Exception as e:
+        return render_template('error.html', error=e)
+
+
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
     try:
         user = User.query.filter_by(user=current_user.user.lower()).first()
-        something = request.form
-        imd = ImmutableMultiDict(something)
+        imd = ImmutableMultiDict(request.form)
         records = helpers.convert(imd)
 
         if 'currentpw' in records:
-            if hashlib.md5(records['currentpw'].encode('utf-8')).hexdigest() == user.key:
+            if hashlib.md5(records['currentpw'].encode('utf-8')).hexdigest() == user.password:
                 if records['newpw'] == records['newpwvalidation']:
-                    user.key = hashlib.md5(records['newpw'].encode('utf-8')).hexdigest()
+                    user.password = hashlib.md5(records['newpw'].encode('utf-8')).hexdigest()
                     db_session.commit()
                     errormessage = "Password updated successfully."
                     return render_template('profile.html', errormessage=errormessage)

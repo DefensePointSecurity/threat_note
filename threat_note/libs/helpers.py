@@ -3,7 +3,11 @@ import sqlite3 as lite
 
 from models import Setting
 
+threat_note_types = ['IPv4', 'IPv6', 'Network', 'Domain', 'Hash', 'Entity', 'Threat Actor']
+
 # db_connection has been replaced with sqlachmey Deprecated, will be removed.
+
+
 def db_connection(db_file='threatnote.db'):
     con = lite.connect(db_file)
     con.row_factory = lite.Row
@@ -37,3 +41,17 @@ def convert(data):
         return type(data)(map(convert, data))
     else:
         return data
+
+
+def valid_diamond_model(diamondmodel):
+    if diamondmodel in ['Adversary', 'Capability', 'Infrastructure', 'Victim']:
+        return True
+    else:
+        return False
+
+
+def valid_type(tn_type):
+    if tn_type in threat_note_types:
+        return True
+    else:
+        return False

@@ -1,4 +1,5 @@
 import hashlib
+import random
 
 from database import Base
 from sqlalchemy import Column
@@ -11,12 +12,14 @@ class User(Base):
     _id = Column('_id', Integer, primary_key=True, autoincrement=True)
     user = Column('user', String)
     email = Column('email', String)
-    key = Column('key', String)
+    password = Column('password', String)
+    apikey = Column('apikey', String)
 
-    def __init__(self, user, key, email):
+    def __init__(self, user, password, email):
         self.user = user.lower()
-        self.key = hashlib.md5(key.encode('utf-8')).hexdigest()
+        self.password = hashlib.md5(password.encode('utf-8')).hexdigest()
         self.email = email
+        self.apikey = hashlib.md5(user + str(random.random()).encode('utf-8')).hexdigest()
 
     def is_authenticated(self):
         return True
@@ -29,6 +32,9 @@ class User(Base):
 
     def get_id(self):
         return self._id
+
+    def get_apikey(self):
+        return self.apikey
 
     def __repr__(self):
         return '<User %r>' % (self.user)
