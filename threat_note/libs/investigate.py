@@ -10,31 +10,47 @@ def get_odns_apikey():
         odnskey = None
     return odnskey
 
-
-def domain_security(enity):
+def domain_features(domain):
     api_url = 'https://investigate.api.opendns.com/'
     api_key = get_odns_apikey()
     headers = {'Authorization': 'Bearer ' + api_key}
-    domain = enity
-    endpoint = 'security/name/{}.json'
+    endpoint = 'dnsdb/name/a/{}.json'
     response = requests.get(api_url + endpoint.format(domain), headers=headers, proxies=helpers.get_proxy()).json()
     newdict = {}
-    newdict['domain'] = domain
-    newdict['attack'] = response['attack']
-    newdict['asn_score'] = response['asn_score']
-    newdict['dga_score'] = response['dga_score']
-    newdict['prefix_score'] = response['prefix_score']
-    newdict['fastflux'] = response['fastflux']
-    newdict['securerank2'] = response['securerank2']
-    newdict['threat_type'] = response['threat_type']
+    for k, v in response.iteritems():
+        if 'features' in k:
+            if v['asns']:
+                newdict['ASN'] = v['asns']
+            else:
+                newdict['ASN'] = 'N/A'
+            newdict['Prefix'] = ' '.join(v['prefixes'])
+            newdict['Country'] = ' '.join(v['country_codes'])
+            newdict['Age'] = str(v['age']) + ' days'
     return newdict
 
 
-def domain_tag(enity):
+def domain_security(domain):
     api_url = 'https://investigate.api.opendns.com/'
     api_key = get_odns_apikey()
     headers = {'Authorization': 'Bearer ' + api_key}
-    domain = enity
+    endpoint = 'security/name/{}.json'
+    response = requests.get(api_url + endpoint.format(domain), headers=headers, proxies=helpers.get_proxy()).json()
+    newdict = {}
+    newdict['Domain'] = domain
+    newdict['ASN Score'] = response['asn_score']
+    newdict['DGA Score'] = response['dga_score']
+    newdict['Prefix Score'] = response['prefix_score']
+    newdict['Fast Flux'] = response['fastflux']
+    newdict['Securerank2'] = response['securerank2']
+    #newdict['threat_type'] = response['threat_type']
+    #newdict['attack'] = response['attack']
+    return newdict
+
+
+def domain_tag(domain):
+    api_url = 'https://investigate.api.opendns.com/'
+    api_key = get_odns_apikey()
+    headers = {'Authorization': 'Bearer ' + api_key}
     endpoint = 'domains/{}/latest_tags'
     response = requests.get(api_url + endpoint.format(domain), headers=headers, proxies=helpers.get_proxy()).json()
     newlist = []
@@ -63,15 +79,24 @@ def domain_categories(enity):
         labels = '?showLabels'
         response = requests.get(api_url + endpoint + enity + labels, headers=headers, proxies=helpers.get_proxy()).json()
         for domain, values in response.iteritems():
-            if values['status'] == -1:  # -1 if domain is malicous
-                sec = domain_security(enity)
-                for row in domain_tag(enity):
-                    c = row.copy()
-                    c.update(sec)
-                return c
+            if values['status'] == -1:  # -1 if domain is malicious
+                data = {}
+                tags = domain_tag(domain)
+                sec = domain_security(domain)
+                feat = domain_features(domain)
+                x = data.copy()
+                x.update(feat)
+                x.update(sec)
+                return x
 
             elif values['status'] == 0:
-                return {'Category': 'Unclassified'}
+                data = {'Category': 'Unclassified'}
+                sec = domain_security(domain)
+                feat = domain_features(domain)
+                x = data.copy()
+                x.update(feat)
+                x.update(sec)
+                return x
             elif values['status'] == 1:
                 return {'Category': ', '.join(values['content_categories'])}
     else:

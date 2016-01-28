@@ -15,6 +15,17 @@ import random
 import re
 import time
 
+
+from libs import circl
+from libs import cuckoo
+from libs import database
+from libs import farsight
+from libs import helpers
+from libs import investigate
+from libs import passivetotal
+from libs import shodan
+from libs import virustotal
+from libs import whoisinfo
 from flask import Flask
 from flask import flash
 from flask import make_response
@@ -209,19 +220,20 @@ def tags():
         # Grab tags
         taglist = dict()
         rows = Indicator.query.distinct(Indicator.tags).all()
-        for row in rows:
-            if row.tags:
-                print row.tags
-                for tag in row.tags.split(','):
-                    taglist[tag.strip()] = list()
-        # Match indicators to tags
-        del rows, row
-        for tag, indicators in taglist.iteritems():
-            rows = Indicator.query.filter(Indicator.tags.like('%' + tag + '%')).all()
-            tmp = {}
+        if rows:
             for row in rows:
-                tmp[row.object] = row.type
-                indicators.append(tmp)
+                if row.tags:
+                    print row.tags
+                    for tag in row.tags.split(','):
+                        taglist[tag.strip()] = list()
+            # Match indicators to tags
+            del rows, row
+            for tag, indicators in taglist.iteritems():
+                rows = Indicator.query.filter(Indicator.tags.like('%' + tag + '%')).all()
+                tmp = {}
+                for row in rows:
+                    tmp[row.object] = row.type
+                    indicators.append(tmp)
 
         return render_template('tags.html', tags=taglist)
     except Exception as e:
@@ -351,57 +363,29 @@ def newobject():
             if host_data and dns_data and sha1 and firstseen:
                 # Import IP Indicators from Cuckoo Task
                 for ip in host_data:
-                    object = Indicator.query.filter_by(object=ip).first()
-                    if object is None:
+                    ind = Indicator.query.filter_by(object=ip).first()
+                    if ind is None:
                         indicator = Indicator(ip.strip(), 'IPv4', firstseen, '', 'Infrastructure', records['campaign'],
                                               'Low', '', records['tags'], '')
                         db_session.add(indicator)
                         db_session.commit()
-                    else:
-                        errormessage = "Entry already exists in database."
-                        return render_template('newobject.html', errormessage=errormessage,
-                                               inputtype=records['inputtype'], inputobject=ip,
-                                               inputfirstseen=records['inputfirstseen'],
-                                               inputlastseen=records['inputlastseen'],
-                                               inputcampaign=records['inputcampaign'],
-                                               comments=records['comments'],
-                                               diamondmodel=records['diamondmodel'],
-                                               tags=records['tags'])
+
                     # Import Domain Indicators from Cuckoo Task
                     for dns in dns_data:
-                        object = Indicator.query.filter_by(object=dns['requst']).first()
-                        if object is None:
+                        ind = Indicator.query.filter_by(object=dns['request']).first()
+                        if ind is None:
                             indicator = Indicator(dns['request'], 'Domain', firstseen, '', 'Infrastructure',
                                                   records['campaign'], 'Low', '', records['tags'], '')
                             db_session.add(indicator)
                             db_session.commit()
-                        else:
-                            errormessage = "Entry already exists in database."
-                            return render_template('newobject.html', errormessage=errormessage,
-                                                   inputtype=records['inputtype'], inputobject=ip,
-                                                   inputfirstseen=records['inputfirstseen'],
-                                                   inputlastseen=records['inputlastseen'],
-                                                   inputcampaign=records['inputcampaign'],
-                                                   comments=records['comments'],
-                                                   diamondmodel=records['diamondmodel'],
-                                                   tags=records['tags'])
+
                     # Import File/Hash Indicators from Cuckoo Task
-                    object = Indicator.query.filter_by(object=sha1).first()
-                    if object is None:
+                    ind = Indicator.query.filter_by(object=sha1).first()
+                    if ind is None:
                         indicator = Indicator(sha1, 'Hash', firstseen, '', 'Capability',
                                               records['campaign'], 'Low', '', records['tags'], '')
                         db_session.add(indicator)
                         db_session.commit()
-                    else:
-                        errormessage = "Entry already exists in database."
-                        return render_template('newobject.html', errormessage=errormessage,
-                                               inputtype=records['inputtype'], inputobject=ip,
-                                               inputfirstseen=records['inputfirstseen'],
-                                               inputlastseen=records['inputlastseen'],
-                                               inputcampaign=records['inputcampaign'],
-                                               comments=records['comments'],
-                                               diamondmodel=records['diamondmodel'],
-                                               tags=records['tags'])
 
                 # Redirect to Dashboard after successful import
                 return redirect(url_for('home'))
@@ -734,6 +718,7 @@ def objectsummary(uid):
                 farsightdata = farsight.farsightip(str(row.object))
             if settings.shodaninfo == "on":
                 shodandata = shodan.shodan(str(row.object))
+
         elif str(row.type) == "Domain":
             if settings.whoisinfo == "on":
                 whoisdata = whoisinfo.domainwhois(str(row.object))
@@ -749,6 +734,7 @@ def objectsummary(uid):
                 farsightdata = farsight.farsightdomain(str(row.object))
             if settings.shodaninfo == "on":
                 shodandata = shodan.shodan(str(row.object))
+
         if settings.whoisinfo == "on":
             if str(row.type) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(whoisdata['country'])
@@ -950,7 +936,7 @@ def filesobject(uid):
         if http.relationships:
             rellist = http.relationships.split(",")
             for rel in rellist:
-                reltype = Indicator.query.filter(Indicator.object == rel)
+                reltype = Indicator.query.filter(Indicator.object == rel).first()
                 temprel[reltype.object] = reltype.type
 
         reldata = len(temprel)
@@ -974,44 +960,28 @@ def import_indicators():
 @app.route('/download/<uid>', methods=['GET'])
 @login_required
 def download(uid):
-
     if uid == 'unknown':
         uid = ""
     rows = Indicator.query.filter_by(campaign=uid).all()
-    for row in rows:
-        print row
-
-    con = helpers.db_connection()
-    with con:
-        cur = con.cursor()
-        cur.execute(
-            "SELECT * FROM indicators WHERE campaign = '" + str(uid) + "'")
-        http = cur.fetchall()
-        cur.execute("SELECT * from indicators")
-        fieldnames = [description[0] for description in cur.description]
-
     indlist = []
-    for i in http:
-        indicators = []
-        for item in i:
-            if item is None or item == "":
-                indicators.append("-")
-            else:
-                indicators.append(str(item))
-        indlist.append(indicators)
-    try:
-        out_file = io.BytesIO()
-        w = csv.writer(out_file)
-        w.writerow(fieldnames)
-        w.writerows(indlist)
-        response = make_response(out_file.getvalue())
-        response.headers[
-            "Content-Disposition"] = "attachment; filename=" + uid + "-campaign.csv"
-        response.headers["Content-type"] = "text/csv"
-        return response
-    except Exception as e:
-        print str(e)
-        pass
+    for i in rows:
+        indicator = helpers.row_to_dict(i)
+        for key, value in indicator.iteritems():
+            if value is None or value == "":
+                indicator[key] = '-'
+        indlist.append(indicator)
+    out_file = io.BytesIO()
+    fieldnames = indlist[0].keys()
+    w = csv.DictWriter(out_file, fieldnames=fieldnames)
+    w.writeheader()
+    w.writerows(indlist)
+
+    response = make_response(out_file.getvalue())
+    response.headers[
+        "Content-Disposition"] = "attachment; filename=" + uid + "-campaign.csv"
+    response.headers["Content-type"] = "text/csv"
+    return response
+
 
 
 @app.teardown_appcontext
@@ -1026,8 +996,9 @@ if __name__ == '__main__':
     parser.add_argument('-db', '--database', help="Path to sqlite database - Not Implemented")
     args = parser.parse_args()
 
-    # if args.database:
-    #     database.db_file = args.database
+    if args.database:
+        # TODO
+        database.db_file = args.database
 
     init_db()
     app.run(host=args.host, port=args.port, debug=args.debug)
