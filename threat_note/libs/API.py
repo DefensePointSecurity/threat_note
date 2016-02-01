@@ -12,17 +12,13 @@ from models import Indicator
 from models import User
 
 tn_api = Blueprint('tn_api', __name__)
-
 api = Api(tn_api)
-
-# Base Data Model: Indicator
-
-apikeys = [user.apikey for user in User.query.all()]
 
 
 def apikey(f):
     def d(*args, **kwargs):
-        print request.args.get('key')
+
+        apikeys = [user.apikey for user in User.query.all()]
 
         if request.args.get('key') and request.args.get('key') in apikeys:
             return f(*args, **kwargs)
