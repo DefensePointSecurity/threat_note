@@ -152,7 +152,7 @@ def home():
     try:
         counts = Indicator.query.distinct(Indicator._id).count()
         types = Indicator.query.group_by(Indicator.type).all()
-        network = Indicator.query.order_by(Indicator._id).limit(5).all()
+        network = Indicator.query.order_by(Indicator._id.desc()).limit(5).all()
         campaigns = Indicator.query.group_by(Indicator.campaign).all()
         taglist = Indicator.query.distinct(Indicator.tags).all()
 
@@ -223,7 +223,6 @@ def tags():
         if rows:
             for row in rows:
                 if row.tags:
-                    print row.tags
                     for tag in row.tags.split(','):
                         taglist[tag.strip()] = list()
             # Match indicators to tags
@@ -483,6 +482,12 @@ def editobject(uid):
         return render_template('neweditobject.html', entry=newdict)
     except Exception as e:
         return render_template('error.html', error=e)
+
+@app.route('/editcampaign/<uid>', methods=['POST', 'GET'])
+@login_required
+def editcampaign(uid):
+
+    return render_template('error.html', error='Not Implemented')
 
 
 @app.route('/delete/network/<uid>', methods=['GET'])
