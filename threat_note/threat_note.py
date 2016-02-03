@@ -152,7 +152,7 @@ def home():
     try:
         counts = Indicator.query.distinct(Indicator._id).count()
         types = Indicator.query.group_by(Indicator.type).all()
-        network = Indicator.query.order_by(Indicator._id).limit(5).all()
+        network = Indicator.query.order_by(Indicator._id.desc()).limit(5).all()
         campaigns = Indicator.query.group_by(Indicator.campaign).all()
         taglist = Indicator.query.distinct(Indicator.tags).all()
 
