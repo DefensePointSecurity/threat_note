@@ -484,6 +484,12 @@ def editobject(uid):
     except Exception as e:
         return render_template('error.html', error=e)
 
+@app.route('/editcampaign/<uid>', methods=['POST', 'GET'])
+@login_required
+def editcampaign(uid):
+
+    return render_template('error.html', error='Not Implemented')
+
 
 @app.route('/delete/network/<uid>', methods=['GET'])
 @login_required
