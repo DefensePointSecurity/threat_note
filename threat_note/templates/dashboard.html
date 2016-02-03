@@ -102,7 +102,7 @@
                       <td>-</td>
                     {% else %}
                       <td>{% for tag in p['tags'].split(",")[:4] %}
-                        <button type="button" class="btn btn-default btn-fill btn-xs">{{ tag }}</button>
+                        <button type="button" class="btn btn-default btn-fill btn-xs"><a href="/tags#{{ tag }}" style="color:#FFF;"> {{ tag }}</a></button>
                       {% endfor %}
                       </td>
                     {% endif %}
@@ -135,7 +135,7 @@
             </div>
             <div class="content">
               {% for tag in taglist %}
-              <button type="button" class="btn btn-default btn-fill btn-sm">{{ tag }}</button>
+              <button type="button" class="btn btn-default btn-fill btn-sm"><a href="/tags#{{ tag }}" style="color:#FFF;"> {{ tag }}</a></button>
               {% endfor %}
             </div>
           </div>

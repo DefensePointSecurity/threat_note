@@ -223,7 +223,6 @@ def tags():
         if rows:
             for row in rows:
                 if row.tags:
-                    print row.tags
                     for tag in row.tags.split(','):
                         taglist[tag.strip()] = list()
             # Match indicators to tags
