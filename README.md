@@ -51,6 +51,8 @@ sudo docker build -t threat_note .
 sudo docker run -itd -p 8888:8888 threat_note
 ```
 
+Once the server is running, you can browse to http://localhost:8888 and register a new account to use to login into threat_note with.
+
 ### Usage
 
 For a good "Getting Started" guide on using threat_note, check out [this](http://www.cyintanalysis.com/playing-with-threat_note/) post by [@CYINT_dude](https://twitter.com/CYINT_dude) on his blog.
