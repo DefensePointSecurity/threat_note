@@ -8,6 +8,7 @@
 # then access http://localhost:8888 in your browser
 
 FROM ubuntu:14.04
+MAINTAINER John D. Swanson "swanson.john.d@gmail.com"
 RUN apt-get update && \
   apt-get dist-upgrade -y
 RUN apt-get install -y --no-install-recommends \
