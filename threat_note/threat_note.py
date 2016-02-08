@@ -801,8 +801,24 @@ def addrelationship():
         imd = ImmutableMultiDict(something)
         records = helpers.convert(imd)
 
+        # Add Direct Relationship
         row = Indicator.query.filter_by(object=records['id']).first()
-        row.relationships = records['indicator']
+
+        if row.relationships:
+            row.relationships = str(row.relationships) + ",{}".format(records['indicator'])
+        else:
+            row.relationships = str(records['indicator'])
+
+        db_session.commit()
+
+        # Add Reverse Relationship
+        row = Indicator.query.filter_by(object=records['indicator']).first()
+
+        if row.relationships:
+            row.relationships = str(row.relationships) + ",{}".format(records['id'])
+        else:
+            row.relationships = str(records['id'])
+
         db_session.commit()
 
         if records['type'] == "IPv4" or records['type'] == "IPv6" or records['type'] == "Domain" or \
