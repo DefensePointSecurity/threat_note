@@ -176,10 +176,38 @@ class Relationships(Resource):
     def get(self, arg):
         return {'status': 'not implimented'}
 
-    def post(self, arg):
-        return {'status': 'not implimented'}
+    @apikey
+    def post(self):
 
-# api.add_resource(Relationships, '/api/relationships')
+        try:
+            src = request.form['src']
+            dst = request.form['dst']
+
+            # Add Direct Relationship
+            src_row = Indicator.query.filter_by(object=src).first()
+
+            if src_row.relationships:
+                src_row.relationships = str(src_row.relationships) + ",{}".format(dst)
+            else:
+                src_row.relationships = str(dst)
+
+            db_session.commit()
+
+            # Add Reverse Relationship
+            dst_row = Indicator.query.filter_by(object=dst).first()
+
+            if dst_row.relationships:
+                dst_row.relationships = str(dst_row.relationships) + ",{}".format(src)
+            else:
+                dst_row.relationships = str(src)
+
+            db_session.commit()
+
+            return {'result': 'true', 'source': helpers.row_to_dict(src_row), 'destination': helpers.row_to_dict(dst_row)}, 201
+        except:
+            return {'result': 'false'}, 500
+
+api.add_resource(Relationships, '/api/relationships')
 
 # TODO - Relationships aren't working, so this is untestable
 
