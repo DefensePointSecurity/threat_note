@@ -186,10 +186,26 @@ class Relationships(Resource):
 
 class Relationship(Resource):
 
-    def get(self):
-        return {'status': 'not implimented'}
+    @apikey
+    def get(self, target):
 
-# api.add_resource(Relationship, '/api/relationship/<int:id>')
+        indicator = Indicator.query.filter(Indicator.object == target)[0]
+
+        if indicator:
+            try:
+                indicatorlist = []
+                for indicator in indicator.relationships.split(","):
+                    inc = helpers.row_to_dict(Indicator.query.filter(Indicator.object == indicator)[0])
+                    if inc not in indicatorlist:
+                        indicatorlist.append(inc)
+
+                return {target: indicatorlist}
+            except AttributeError:
+                return {target: []}, 404
+        else:
+            return {target: 'Indicator not found.'}, 404
+
+api.add_resource(Relationship, '/api/relationship/<string:target>')
 
 
 class Tags(Resource):
