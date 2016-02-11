@@ -1,15 +1,27 @@
 <p align="center">
 <img src="http://i.imgur.com/4keZTGz.png"></p>
 
-### Disclaimer 
+### Disclaimer
 
 Please note threat_note is in beta at the moment, and you may experience issues with this app. This was tested on Yosemite 10.10.4 running Google Chrome, other browsers or OS'es may experience issues with the rendering, please identify any issues or possible fixes to the issues page.
+
+### Version 3 Release Notes
+
+Major changes include:
+
+- Switched back-end database to SQLite
+- Removed Vagrant machine needed for Mongo
+- Added ThreatCrowd Visualization Integration
+- Added basic authentication system (user can register/login)
+- Settings and Profile pages moved to user account dropdown
+
+...and many minor bug fixes
 
 ### About
 
 threat_note is a web application built by [Defense Point Security](http://www.defpoint.com) to allow security researchers the ability to add and retrieve indicators related to their research. As of right now this includes the ability to add IP Addresses, Domains and Threat Actors, with more types being added in the future.
 
-This app fills the gap between various solutions currently available, by being lightweight, easy-to-install, and by minimizing fluff and extraneous information that sometimes gets in the way of adding information. To create a new indicator, you only really need to supply the object itself (whether it be a Domain, IP or Threat Actor) and change the type accordingly, and boom! That's it! Of course, supplying more information is definitely helpful, but, it's not required. 
+This app fills the gap between various solutions currently available, by being lightweight, easy-to-install, and by minimizing fluff and extraneous information that sometimes gets in the way of adding information. To create a new indicator, you only really need to supply the object itself (whether it be a Domain, IP or Threat Actor) and change the type accordingly, and boom! That's it! Of course, supplying more information is definitely helpful, but, it's not required.
 
 Other applications built for storing indicators and research have some shortcomings that threat_note hopes to fix. Some common complaints with other apps are:
 
@@ -20,18 +32,26 @@ Other applications built for storing indicators and research have some shortcomi
 
 ### Installation
 
-As this tool tries to be lightweight and easy to setup, we tried to make the setup as easy as possible. To get started, you'll need to install [Vagrant](https://www.vagrantup.com/) along with a provider (Using VirtualBox is recommended since it's free and available on all platforms and already built into Vagrant.)
-
-That's it! By using Vagrant it'll save you the time and hassle of configuring your own server and database. This Vagrant machine sets up the Mongo database you'll need in order for threat_note to store your indicators as well as sets up the Flask Python app that runs the web server.
-
-So, if you have Vagrant installed on your machine, simply run the following:
+Now that we are using SQLite, there's no need for a pesky Vagrant machine. All we need to do is install some requirements via pip and fire up the server:
 
 ```
-cd threat_note/vagrant
-vagrant up
+cd threat_note
+pip install -r requirements.txt
+honcho start
 ```
 
-If you don't get any errors, you can just browse to http://localhost:7777 and you'll have yourself a brand new threat_note server to start populating.
+Once the server is running, you can browse to http://localhost:5000 and register a new account to use to login into threat_note with.
+
+### Docker Installation
+
+A development dockerfile is now available, to build it do the following from its directory:
+
+```
+sudo docker build -t threat_note .
+sudo docker run -itd -p 8888:8888 threat_note
+```
+
+Once the server is running, you can browse to http://localhost:8888 and register a new account to use to login into threat_note with.
 
 ### Usage
 
@@ -44,7 +64,7 @@ First up is a shot of the dashboard, which has the latest indicators, the latest
 <p align="center">
 <img src="http://i.imgur.com/hWknd2C.png" href="http://i.imgur.com/hWknd2C.png"></p>
 
-Next is a screenshot of the Network Indicators page, here you will see all the indicators that have a type of "Domain", "Network", or "IP Address". 
+Next is a screenshot of the Network Indicators page, here you will see all the indicators that have a type of "Domain", "Network", or "IP Address".
 
 <p align="center">
 <img src="http://i.imgur.com/uSaLH6y.png" href="http://i.imgur.com/uSaLH6y.png"></p>
@@ -86,7 +106,7 @@ Lastly, here is the Settings page, where you can delete your threat_note databas
 
 ### Credits
 
-Thanks to the guys over at [Creative Tim](http://www.creative-tim.com/) for their awesome Bootstrap theme. Download your version for free [here](http://demos.creative-tim.com/light-bootstrap-dashboard). 
+Thanks to the guys over at [Creative Tim](http://www.creative-tim.com/) for their awesome Bootstrap theme. Download your version for free [here](http://demos.creative-tim.com/light-bootstrap-dashboard).
 
 ### License
 

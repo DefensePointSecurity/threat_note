@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="main-panel">
+  <nav class="navbar navbar-default navbar-fixed">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navigation-example-2">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">Threat Actors</a>
+    </div>
+    {% include "userdropdown.html" %}
+  </div>
+</nav>
+
+      <div class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-12">
+              This page contains all the threat actors in the threat_note database. Along with the threat actors, you'll also find key attributes and their values that have been entered.
+              </br>
+              </br>
+              <div class="card">
+                <div class="header">
+                  <div style="float: left;">
+                    <h4 class="title">Threat Actors</h4>
+                    <p class="category">This table shows you all of the threat actors.</p>
+                  </div>
+                  <div style="float: right;">
+                    <a href="/newobject" class="btn btn-info btn-fill"><i class="fa fa-plus"></i> New Object</a>
+                  </div>
+                </div>
+
+                <div style="margin-top:60px" class="content table-responsive table-full-width">
+                  <table class="table table-hover table-striped">
+                    <thead>
+                      <th>Object</th>
+                      <th>Object Type</th>
+                      <th>First Seen</th>
+                      <th>Last Seen</th>
+                      <th>Campaign</th>
+                      <th>Confidence</th>
+                      <th>Diamond Model</th>
+                      <th>Tags</th>
+                    </thead>
+                    <tbody>
+                      {% for p in network %}
+                      <tr>
+                        <td><a href="/threatactors/{{ p['object'] }}/info">{{ p['object'] }}</td>
+                                                    <td>{{ p['type'] }}</td>
+                                                    {% if p['firstseen']|length == 0 %}
+                                                    <td>-</td>
+                                                    {% else %}
+                                                    <td>{{ p['firstseen'] }}</td>
+                                                    {% endif %}
+                                                    {% if p['lastseen']|length == 0 %}
+                                                    <td>-</td>
+                                                    {% else %}
+                                                    <td>{{ p['lastseen'] }}</td>
+                                                    {% endif %}
+                                                    {% if p['campaign']|length == 0 %}
+                                                    <td>-</td>
+                                                    {% else %}
+                                                    <td>{{ p['campaign'] }}</td>
+                                                    {% endif %}
+                                                     {% if p['confidence'] == "Low" %}
+                                            <td><i class="fa fa-circle text-warning"></i> {{ p['confidence'] }}</td>
+                                            {% elif p['confidence'] == "Medium" %}
+                                            <td><i class="fa fa-circle text-info"></i> {{ p['confidence'] }}</td>
+                                            {% elif p['confidence'] == "High" %}
+                                            <td><i class="fa fa-circle text-danger"></i> {{ p['confidence'] }}</td>
+                                            {% endif %}
+                                                    <td>{{ p['diamondmodel'] }}</td>
+                                                    {% if p['tags']|length == 0 %}
+                                                    <td>-</td>
+                                                    {% else %}
+                                                    <td>{% for tag in p['tags'].split(",") %}
+                        <button type="button" class="btn btn-default btn-fill btn-xs">{{ tag }}</button>
+                        {% endfor %}</td>
+                                                    {% endif %}
+                                                     <td class="td-actions text-right">
+                                                     <a href="/relationships/{{ p['object'] }}" role="button" rel="tooltip" title="Add Relationship" class="btn btn-info btn-simple btn-xs">
+                                                    <i class="fa fa-link"></i>
+                                                    </a>
+                                                    <a href="/edit/{{ p['object'] }}" role="button" rel="tooltip" title="Edit Indicator" class="btn btn-info btn-simple btn-xs">
+                                                        <i class="fa fa-pencil"></i>
+                                                    </a>
+                          <a href="/delete/threatactor/{{ p['object'] }}" role="button" rel="tooltip" title="Remove" class="btn btn-danger btn-simple btn-xs">
+                            <i class="fa fa-times"></i>
+                          </a>
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% include "footer.html" %}
+      </div>
+      </div>
+      {% endblock content %}

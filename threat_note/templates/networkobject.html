@@ -1,0 +1,653 @@
+{% extends "base.html" %} {% block content %}
+<div class="main-panel">
+  <nav class="navbar navbar-default navbar-fixed">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navigation-example-2">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">{{ records['object'] }}</a>
+      </div>
+      {% include "userdropdown.html" %}
+    </div>
+  </nav>
+  <div class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+          <div class="card">
+            <div class="content">
+              This page contains information on {{ records['object'] }} that was manually entered, as well as 3rd party supplemental information that can aide an analyst in research. 3rd party sources can include VirusTotal, PassiveTotal, Whois, geolocational data,
+              and more. You can enable these 3rd party integrations in the <a href="/settings">settings</a> menu.
+              </p>
+              On this page, you can also edit the entry to add new fields or change any attributes previously entered. You can also delete the entry if it's no longer needed.
+              </br>
+              </br>
+            </div>
+          </div>
+          <div class="row">
+            <div class="card">
+              <div class="header">
+                <h4 class="title"><i class="pe-7s-global"></i>
+                      <span style="padding-left:10px"></span>{{ records['object'] }}<div style="float: right;"><a href="/relationships/{{ records['object'] }}" class="btn btn-info btn-fill" rel="tooltip" title="Add Relationship"><i class="fa fa-link" ></i></a>
+                    <a href="/edit/{{ records['object'] }}" class="btn btn-info btn-fill" rel="tooltip" title="Edit Object"><i class="fa fa-pencil"></i></a>
+                  </div></h4>
+
+                <p class="category">{{ address }}</p>
+
+              </div>
+
+
+              <div class="content table-responsive table-full-width">
+                <table class="table table-hover table-striped">
+                  <thead>
+                    <th>Attribute</th>
+                    <th>Value</th>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <span class="text-capitalize">Object Type</span>
+                      </td>
+                      <td>{{ records['type'] }}</td>
+                    </tr>
+                    {% if records['campaign']|length == 0 %}
+                    <tr>
+                      <td>
+                        <span class="text-capitalize">Campaign</span>
+                      </td>
+                      <td>-</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                      <td>
+                        <span class="text-capitalize">Campaign</span>
+                      </td>
+                      <td>{{ records['campaign'] }}</td>
+                    </tr>
+                    {% endif %} {% if records['confidence'] == "Low" %}
+                    <tr>
+                      <td>
+                        <span class="text-capitalize">Confidence</span>
+                      </td>
+                      <td><i class="fa fa-circle text-warning"></i> {{ records['confidence'] }}</td>
+                    </tr>
+                    {% elif records['confidence'] == "Medium" %}
+                    <tr>
+                      <td>
+                        <span class="text-capitalize">Confidence</span>
+                      </td>
+                      <td><i class="fa fa-circle text-info"></i> {{ records['confidence'] }}</td>
+                    </tr>
+                    {% elif records['confidence'] == "High" %}
+                    <tr>
+                      <td>
+                        <span class="text-capitalize">Confidence</span>
+                      </td>
+                      <td><i class="fa fa-circle text-danger"></i> {{ records['confidence'] }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                      <td>
+                        <span class="text-capitalize">Diamond Model</span>
+                      </td>
+                      <td>{{ records['diamondmodel'] }}</td>
+                    </tr>
+                    {% if records['firstseen']|length == 0 %}
+                    <tr>
+                      <td>
+                        <span class="text-capitalize">First Seen</span>
+                      </td>
+                      <td>-</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                      <td>
+                        <span class="text-capitalize">First Seen</span>
+                      </td>
+                      <td>{{ records['firstseen'] }}</td>
+                    </tr>
+                    {% endif %} {% if records['lastseen']|length == 0 %}
+                    <tr>
+                      <td>
+                        <span class="text-capitalize">Last Seen</span>
+                      </td>
+                      <td>-</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                      <td>
+                        <span class="text-capitalize">Last Seen</span>
+                      </td>
+                      <td>{{ records['lastseen'] }}</td>
+                    </tr>
+                    {% endif %} {% if records['comments']|length == 0 %}
+                    <tr>
+                      <td>
+                        <span class="text-capitalize">Comments</span>
+                      </td>
+                      <td>-</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                      <td>
+                        <span class="text-capitalize">Comments</span>
+                      </td>
+                      <td>{{ records['comments'] }}</td>
+                    </tr>
+                    {% endif %} {% if records['tags']|length == 0 %}
+                    <tr>
+                      <td>
+                        <span class="text-capitalize">Tags</span>
+                      </td>
+                      <td>-</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                      <td>
+                        <span class="text-capitalize">Tags</span>
+                      </td>
+                      <td>
+                        {% for tag in records['tags'].split(",") %}
+                        <button type="button" class="btn btn-default btn-fill btn-xs"><a href="/tags#{{ tag }}" style="color:#FFF;"> {{ tag }}</a></button>
+                        {% endfor %}
+                      </td>
+                    </tr>
+                    {% endif %} {% for key in records %} {% if key == "id" or key == "type" or key == "campaign" or key == "confidence" or key == "Firstseen" or key == "tags" or key == "Lastseen" or key == "comments" or key == "diamondmodel" or key == "object" or key ==
+                    "firstseen" or key == "relationships" or key == "lastseen" or records[key] == "None" or records[key] == "" %}
+                    <div></div>
+                    {% else %}
+                    <tr>
+                      <td>
+                        <span class="text-capitalize">{{ key }}</span>
+                      </td>
+                      <td>{{ records[key] }}</td>
+                    </tr>
+
+                    {% endif %} {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+
+            {% if reldata > 0 %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">Relationships</h4>
+                    <p class="category">This table shows the indicators related to {{ records['object'] }}</p>
+                  </div>
+                  <div class="content">
+                    <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Attribute</th>
+                        <th>Value</th>
+                      </thead>
+                      <tbody>
+                        {% for rel in temprel %}
+                        <tr>
+                          <td>{{ rel }}</td>
+                          <td>{{ temprel[rel] }}</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %} {% if settingsvars['whoisinfo'] == "on" %} {% if records['type'] == "IPv4" %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">Whois Information</h4>
+                    <p class="category">More information can be found at <a href="https://who.is/whois-ip/ip-address/{{ records['object'] }}" target="_blank">who.is</a></p>
+                  </div>
+                  <div class="content">
+                    <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Attribute</th>
+                        <th>Value</th>
+                      </thead>
+                      <tbody>
+                        {% for line in whoisdata %} {% if line == "raw" or line == "raw_referral" or line == "referral" %}
+                        <div></div>
+                        {% elif line == "nets" %} {% for i in whoisdata['nets'][0] %}
+                        <tr>
+                          {% if whoisdata['nets'][0][i] == None %}
+                          <td><span class="text-capitalize">{{ i }}</span</td><td>-</td>
+                            {% else %}
+                            <td><span class="text-capitalize">{{ i }}</span</td><td>{{ whoisdata['nets'][0][i] }}</td>
+                            {% endif %}
+                            </tr>
+                            {% endfor %}
+                            {% elif line == "asn" %}
+                            <tr>
+                            <td><span class="text-capitalize">{{ line }}</span></td>
+                          <td>{{ whoisdata[line] }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                          <td><span class="text-capitalize">{{ line }}</span></td>
+                          <td>{{ whoisdata[line] }}</td>
+                        </tr>
+                        {% endif %} {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% elif records['type'] == "Domain" %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">Whois Information</h4>
+                    <p class="category">More information can be found at <a href="https://who.is/whois/{{ records['object'] }}" target="_blank">who.is</a></p>
+                  </div>
+                  <div class="content">
+                    <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Attribute</th>
+                        <th>Value</th>
+                      </thead>
+                      <tbody>
+                        {% for line in whoisdata %}
+                        <tr>
+                          <td><span class="text-uppercase">{{ line }}</span></td>
+                          <td>{{ whoisdata[line] }}</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %} {% endif %} {% if settingsvars['vtinfo'] == "on" %} {% if records['type'] == "IPv4" %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">VirusTotal Information</h4>
+                    <p class="category">More information can be found at <a href="https://www.virustotal.com" target="_blank">VirusTotal</a></p>
+                  </div>
+                  <div class="content">
+                    <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Last Resolved</th>
+                        <th>Hostname</th>
+                      </thead>
+                      <tbody>
+                        {% for record in jsonvt['resolutions'] %}
+                        <tr>
+                          <td>{{ record['last_resolved'] }}</td>
+                          <td>{{ record['hostname'] }}</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% elif records['type'] == "Domain" %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">VirusTotal Information</h4>
+                    <p class="category">More information can be found at <a href="https://www.virustotal.com" target="_blank">VirusTotal</a></p>
+                  </div>
+                  <div class="content">
+                    <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Last Resolved</th>
+                        <th>IP Address</th>
+                      </thead>
+                      <tbody>
+                        {% for record in jsonvt['resolutions'] %}
+                        <tr>
+                          <td>{{ record['last_resolved'] }}</td>
+                          <td>{{ record['ip_address'] }}</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %} {% endif %} {% if settingsvars['odnsinfo'] == "on" %} {% if records['type'] == "IPv4" %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">OpenDNS Investigate Information</h4>
+                    <p class="category">More information can be found at <a href="https://sgraph.opendns.com/ip-view/{{ records['object'] }}" target="_blank">OpenDNS</a></p>
+                  </div>
+                  <div class="content">
+                    <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Last Malicious</th>
+
+                      </thead>
+                      <tbody>
+                        {% for record in odnsdata %}
+                        <tr>
+                          <td>{{ record }}</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% elif records['type'] == "Domain" %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">OpenDNS Investigate Information</h4>
+                    <p class="category">More information can be found at <a href="https://sgraph.opendns.com/domain-view/name/{{ records['object'] }}/view" target="_blank">OpenDNS</a></p>
+                  </div>
+                  <div class="content">
+                    <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Key</th>
+                        <th>Value</th>
+                      </thead>
+                      <tbody>
+                        {% for k,v in odnsdata.iteritems()%}
+                        <tr>
+                          <td>{{ k }}</td>
+                          <td>{{ v }}</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %} {% endif %} {% if settingsvars['threatcrowd'] == "on" %} {% if records['type'] == "IPv4" %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">ThreatCrowd Visualization</h4>
+                    <p class="category">More information can be found at <a href="https://www.threatcrowd.org/ip.php?ip={{ records['object'] }}" target="_blank">ThreatCrowd</a></p>
+                  </div>
+                  <div class="content">
+                    <iframe src="http://www.threatcrowd.org/graphHtml.php?ip={{ records['object'] }}" frameborder='0' style='height: 500px; width: 100%;'></iframe>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% elif records['type'] == "Domain" %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">ThreatCrowd Visualization</h4>
+                    <p class="category">More information can be found at <a href="https://www.threatcrowd.org/domain.php?domain={{ records['object'] }}" target="_blank">ThreatCrowd</a></p>
+                  </div>
+                  <div class="content">
+                    <iframe src="http://www.threatcrowd.org/graphHtml.php?ip={{ records['object'] }}" frameborder='0' style='height: 500px; width: 100%;'></iframe>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %} {% endif %} {% if settingsvars['circlinfo'] == "on" %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">CIRCL Passive DNS</h4>
+                    <p class="category">More information can be found at <a href="https://www.circl.lu/services/passive-dns/" target="_blank">CIRCL</a></p>
+                  </div>
+                  <div class="content">
+                    <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Record Type</th>
+                        <th>Record Data</th>
+                        <th>First Seen</th>
+                        <th>Last Seen</th>
+
+                      </thead>
+                      <tbody>
+                        {% if circldata == None or circldata == {} or circldata == "" %}
+                        <tr>
+                          <td>No Information Available</td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                        {% else %} {% for i in circldata %}
+                        <tr>
+                          <td>{{ i['rrtype'] }}</td>
+                          <td>{{ i['rdata'] }}</td>
+                          <td>{{ i['time_first'] }}</td>
+                          <td>{{ i['time_last'] }}</td>
+                        </tr>
+                        {% endfor %} {% endif %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %} {% if settingsvars['circlssl'] == "on" %} {% if records['type'] == "IPv4" %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">CIRCL Passive SSL</h4>
+                    <p class="category">More information can be found at <a href="https://www.circl.lu/services/passive-ssl/" target="_blank">CIRCL</a></p>
+                  </div>
+                  <div class="content">
+                    <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Certificate</th>
+                        <th>Data</th>
+
+                      </thead>
+                      <tbody>
+                        {% if circlssl == None or circlssl == {} or circlssl == "" %}
+                        <tr>
+                          <td>No Information Available</td>
+                          <td></td>
+                        </tr>
+                        {% else %} {% for i in circlssl[records['object']]['subjects'] %}
+                        <tr>
+                          <td>{{ i }}</td>
+                          <td>{{ circlssl[records['object']]['subjects'][i]['values'][0] }}</td>
+                        </tr>
+                        {% endfor %} {% endif %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %} {% endif %} {% if settingsvars['ptinfo'] == "on" %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">PassiveTotal Passive DNS</h4>
+                    <p class="category">More information can be found at <a href="https://www.passivetotal.org/" target="_blank">PassiveTotal</a></p>
+                  </div>
+                  <div class="content">
+                    <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Resolved</th>
+                        <th>First Seen</th>
+                        <th>Last Seen</th>
+
+                      </thead>
+                      <tbody>
+                        {% for result in ptdata['results']['records'] %}
+                        <tr>
+                          <td>{{ result['resolve'] }}</td>
+                          <td>{{ result['firstSeen'] }}</td>
+                          <td>{{ result['lastSeen'] }}</td>
+                        </tr>
+                        {% endfor %}
+
+                        <tr>
+
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+            {% if settingsvars['shodaninfo'] == "on" %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">Shodan Information</h4>
+                    <p class="category">More information can be found at <a href="https://www.shodan.io/" target="_blank">Shodan.io</a></p>
+                  </div>
+                  <div class="content">
+                    <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Attribute</th>
+                        <th>Value</th>
+                      </thead>
+                      <tbody>
+                        {% for result in shodandata %}
+                        <tr>
+                          {% if result == "city" or result == "region_code" or result == "vulns" or result == "isp" or result == "longitude" or result == "latitude" or result == "country_name" or result == "hostnames" or result == "ports" %}
+                          <td><span class="text-capitalize">{{ result }}</span></td>
+                          {% if shodandata[result] == [] or shodandata[result] == None %}
+                          <div></div>
+                          {% else %}
+                          <td style="max-width:150px;">{{ shodandata[result] }}</td>
+                          {% endif %} {% else %}
+                          <tr></tr>
+                          {% endif %} {% endfor %}
+
+                          <tr>
+                      </tbody>
+                    </table>
+                    <h4>Open Ports</h4>
+                    <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Port</th>
+                        <th>Data</th>
+                      </thead>
+                      <tbody>
+                        {% for result in shodandata %}
+                        <tr>
+                          {% if result == "city" or result == "region_code" or result == "vulns" or result == "isp" or result == "longitude" or result == "latitude" or result == "country_name" or result == "hostnames" or result == "ports" %}
+                          <tr></tr>
+                          {% else %}
+                          <td>{{ result }}</td>
+                          <td style="max-width:150px;">{% for line in shodandata[result] %}{% if line == "html" or line == "location" or line == "_shodan" or line == "ip_str" or line == "opts" or line == "ip" or line == "isp" or shodandata[result][line] == [] or shodandata[result][line]
+                            == None %}
+                            <div></div>{% else %}<b><span class="text-uppercase">{{ line }}</b>: {{ shodandata[result][line] }}</span>
+                            </br>{% endif %}{% endfor %}</td>
+                          {% endif %}
+                        </tr>
+                        {% endfor %}
+                        <tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+            {% if settingsvars['farsightinfo'] == "on" %} {% if records['type'] == "IPv4" %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">Farsight Passive DNS</h4>
+                    <p class="category">More information can be found at <a href="https://www.farsightsecurity.com/" target="_blank">Farsight</a></p>
+                  </div>
+                  <div class="content">
+                    <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Count</th>
+                        <th>Record Type</th>
+                        <th>Record Name</th>
+                        <th>First Seen</th>
+                        <th>Last Seen</th>
+                      </thead>
+                      <tbody>
+                        {% for result in farsightdata %}
+                        <tr>
+                          <td>{{ result['count'] }}</td>
+                          <td>{{ result['rrtype'] }}</td>
+                          <td>{{ result['rrname'] }}</td>
+                          <td>{{ result['time_first'] or result['zone_time_first'] }}</td>
+                          <td>{{ result['time_last'] or result['zone_time_last'] }}</td>
+                        </tr>
+                        {% endfor %}
+
+                        <tr>
+
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">Farsight Passive DNS</h4>
+                    <p class="category">More information can be found at <a href="https://www.farsightsecurity.com/" target="_blank">Farsight</a></p>
+                  </div>
+                  <div class="content">
+                    <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Count</th>
+                        <th>Record Type</th>
+                        <th>Record Name</th>
+                        <th>First Seen</th>
+                        <th>Last Seen</th>
+                      </thead>
+                      <tbody>
+                        {% for result in farsightdata %}
+                        <tr>
+                          <td>{{ result['count'] }}</td>
+                          <td>{{ result['rrtype'] }}</td>
+                          <td>{% for i in result['rdata'] %} {{ i }}, {% endfor %}</td>
+                          <td>{{ result['time_first'] or result['zone_time_first'] }}</td>
+                          <td>{{ result['time_last'] or result['zone_time_last'] }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% include "footer.html" %}
+</div>
+</div>
+{% endblock content %}

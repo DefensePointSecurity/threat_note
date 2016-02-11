@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="main-panel">
+  <nav class="navbar navbar-default navbar-fixed">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navigation-example-2">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">Edit Indicator</a>
+    </div>
+    {% include "userdropdown.html" %}
+  </div>
+</nav>
+
+      {% if errormessage %}
+
+      <div class="alert alert-dismissible alert-danger">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        {{ errormessage }}
+      </div>
+
+      {% endif %}
+
+      <div class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+              <div class="card">
+                <div class="header">
+                  <h4 class="title">Edit Indicator</h4>
+                </div>
+                <div class="content">
+                  <form action="/update/object/" enctype="application/x-www-form-urlencoded" method="POST">
+                    <div class="row">
+                      <div class="col-md-12">
+
+                        <fieldset>
+                          <div class="form-group">
+                            <label>Object</label>
+                            <input type="text" class="form-control" name="object" value="{{ entry['object'] }}" disabled>
+                          </div>
+
+
+                          <div class="form-group">
+                            <label>Object Type</label>
+                            <select class="form-control" name="type">
+                              {% if entry['type'] == "IPv4" %}
+                              <option value="IPv4" selected="true">IPv4</option>
+                              <option value="IPv6">IPv6</option>
+                              <option value="Domain">Domain</option>
+                              <option value="Threat Actor">Threat Actor</option>
+                              <option value="Entity">Entity</option>
+                              <option value="Network">Network</option>
+                              <option value="Hash">Hash</option>
+                              {% elif entry['type'] == "IPv6" %}
+                              <option value="IPv4">IPv4</option>
+                              <option value="IPv6" selected="true">IPv6</option>
+                              <option value="Domain">Domain</option>
+                              <option value="Threat Actor">Threat Actor</option>
+                              <option value="Entity">Entity</option>
+                              <option value="Network">Network</option>
+                              <option value="Hash">Hash</option>
+                              {% elif entry['type'] == "Domain" %}
+                              <option value="IPv4">IPv4</option>
+                              <option value="IPv6">IPv6</option>
+                              <option value="Domain" selected="true">Domain</option>
+                              <option value="Threat Actor">Threat Actor</option>
+                              <option value="Entity">Entity</option>
+                              <option value="Network">Network</option>
+                              <option value="Hash">Hash</option>
+                              {% elif entry['type'] == "Threat Actor" %}
+                              <option value="IPv4">IPv4</option>
+                              <option value="IPv6">IPv6</option>
+                              <option value="Domain">Domain</option>
+                              <option value="Threat Actor" selected="true">Threat Actor</option>
+                              <option value="Entity">Entity</option>
+                              <option value="Network">Network</option>
+                              <option value="Hash">Hash</option>
+                              {% elif entry['type'] == "Network" %}
+                              <option value="IPv4">IPv4</option>
+                              <option value="IPv6">IPv6</option>
+                              <option value="Domain">Domain</option>
+                              <option value="Threat Actor">Threat Actor</option>
+                              <option value="Entity">Entity</option>
+                              <option value="Network" selected="true">Network</option>
+                              <option value="Hash">Hash</option>
+                              {% elif entry['type'] == "Entity" %}
+                              <option value="IPv4">IPv4</option>
+                              <option value="IPv6">IPv6</option>
+                              <option value="Domain">Domain</option>
+                              <option value="Threat Actor">Threat Actor</option>
+                              <option value="Entity" selected="true">Entity</option>
+                              <option value="Network">Network</option>
+                              <option value="Hash">Hash</option>
+                               {% elif entry['type'] == "Hash" %}
+                              <option value="IPv4">IPv4</option>
+                              <option value="IPv6">IPv6</option>
+                              <option value="Domain">Domain</option>
+                              <option value="Threat Actor">Threat Actor</option>
+                              <option value="Entity">Entity</option>
+                              <option value="Network">Network</option>
+                              <option value="Hash" selected="true">Hash</option>
+                              {% else %}
+                              <option value="IPv4" selected="true">IPv4</option>
+                              <option value="IPv6">IPv6</option>
+                              <option value="Domain">Domain</option>
+                              <option value="Threat Actor">Threat Actor</option>
+                              <option value="Entity">Entity</option>
+                              <option value="Network">Network</option>
+                              {% endif %}
+                            </select>
+                          </div>
+
+                          <div class="form-group">
+                            <label>Campaign</label>
+                            <input type="text" class="form-control" name="campaign" value="{{ entry['campaign'] }}" placeholder="LASER PANDA">
+                          </div>
+
+                          <div class="form-group">
+                            <label>Confidence</label>
+                            <select class="form-control" name="confidence">
+                              {% if entry['confidence'] == "Low" %}
+                              <option value="Low" selected="true">Low</option>
+                              <option value="Medium">Medium</option>
+                              <option value="High">High</option>
+                              {% elif entry['confidence'] == "Medium" %}
+                              <option value="Low">Low</option>
+                              <option value="Medium" selected="true">Medium</option>
+                              <option value="High">High</option>
+                              {% elif entry['confidence'] == "High" %}
+                              <option value="Low">Low</option>
+                              <option value="Medium">Medium</option>
+                              <option value="High" selected="true">High</option>
+                              {% else %}
+                              <option value="Low" selected="true">Low</option>
+                              <option value="Medium">Medium</option>
+                              <option value="High">High</option>
+                              {% endif %}
+                            </select>
+                          </div>
+
+                          <div class="form-group">
+                            <label>First Seen</label>
+                            <input type="text" class="form-control" name="firstseen" value="{{ entry['firstseen'] }}" placeholder="09-01-2015">
+                          </div>
+
+
+                          <div class="form-group">
+                            <label>Last Seen</label>
+                            <input type="text" class="form-control" name="lastseen" value="{{ entry['lastseen'] }}" placeholder="09-15-2015">
+                          </div>
+
+                          <div class="form-group">
+                            <label>Diamond Model</label>
+                            <select class="form-control" name="diamondmodel">
+                              {% if entry['diamondmodel'] == "Adversary" %}
+                              <option value="Adversary" selected="true">Adversary</option>
+                              <option value="Infrastructure">Infrastructure</option>
+                              <option value="Victim">Victim</option>
+                              <option value="Capability">Capability</option>
+                              {% elif entry['diamondmodel'] == "Infrastructure" %}
+                              <option value="Adversary">Adversary</option>
+                              <option value="Infrastructure" selected="true">Infrastructure</option>
+                              <option value="Victim">Victim</option>
+                              <option value="Capability">Capability</option>
+                              {% elif entry['diamondmodel'] == "Victim" %}
+                              <option value="Adversary">Adversary</option>
+                              <option value="Infrastructure">Infrastructure</option>
+                              <option value="Victim" selected="true">Victim</option>
+                              <option value="Capability">Capability</option>
+                              {% elif entry['diamondmodel'] == "Capability" %}
+                              <option value="Adversary">Adversary</option>
+                              <option value="Infrastructure">Infrastructure</option>
+                              <option value="Victim">Victim</option>
+                              <option value="Capability" selected="true">Capability</option>
+                              {% endif %}
+                            </select>
+                          </div>
+
+                          <div class="form-group">
+                            <label>Comments</label>
+                            <textarea class="form-control" rows="3" name="comments" value="{{ entry['comments'] }}">{{ entry['comments'] }}</textarea>
+                          </div>
+
+                          <div class="form-group">
+                            <label>Tags</label>
+                            <input type="text" class="form-control" id="tokenfield" name="tags" value="{{ entry['tags'] }}" />
+                          </div>
+
+
+                          {% for i in entry %} {% if i == "comments" or i == "type" or i == "campaign" or i == "type" or i == "firstseen" or i == "lastseen" or i == "tags" or i == "object" or i== "relationships" or i == "confidence" or i == "object" or i == "diamondmodel" %}
+                          <div></div>
+
+                          {% else %} {% if entry[i] == None or entry[i] == ""%}
+                          <div></div>
+                          {% else %}
+                          <div class="form-group">
+                            <label>{{ i }}</label>
+                            <input type="text" class="form-control" name="{{ i }}" value="{{ entry[i] }}">
+                          </div>
+
+
+                          {% endif %} {% endif %} {% endfor %}
+
+
+
+                      </div>
+                    </div>
+
+
+                    <input type="hidden" class="form-control" name="object" value="{{ entry['object'] }}">
+
+                    <div style="float: right;">
+                      {% if entry['type'] == "Threat Actor" %}
+                      <a href="/threatactors" class="btn btn-info btn-fill">Cancel</a> {% else %}
+                      <a href="/networks" class="btn btn-info btn-fill">Cancel</a> {% endif %}
+
+                      <button type="submit" class="btn btn-info btn-fill">Submit</button>
+                      <button type="button" class="btn btn-success btn-fill" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i> New Attribute</button>
+
+                    </div>
+                    <div class="clearfix"></div>
+                    </fieldset>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% include "footer.html" %}
+
+
+<!-- Creating popup for new field-->
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">New Field</h4>
+      </div>
+
+      <div class="modal-body">
+        <form class="form-horizontal" action="/insert/newfield/" enctype="application/x-www-form-urlencoded" method="POST">
+          <fieldset>
+
+            <div class="form-group">
+              <label for="inputnewfieldname" class="col-lg-2 control-label">Name</label>
+
+              <div class="col-lg-10">
+                <input type="text" class="form-control" name="inputnewfieldname" value="" placeholder="Registrar">
+              </div>
+
+            </div>
+
+            <div class="form-group">
+              <label for="inputnewfieldvalue" class="col-lg-2 control-label">Value</label>
+              <div class="col-lg-10">
+                <input type="text" class="form-control" name="inputnewfieldvalue" value="" placeholder="GoDaddy">
+              </div>
+            </div>
+
+            {% for item in entry %} {% if entry[item] == None %}
+            <div></div>
+            {% else %}
+            <input type="hidden" class="form-control" name="{{ item }}" value="{{ entry[item] }}"> {% endif %} {% endfor %}
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-info btn-fill" data-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-info btn-fill">Submit</button>
+      </div>
+    </div>
+
+    </fieldset>
+    </form>
+  </div>
+</div>
+
+</div>
+</div>
+{% endblock content %}

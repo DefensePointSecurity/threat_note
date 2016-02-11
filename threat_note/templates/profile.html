@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="main-panel">
+  <nav class="navbar navbar-default navbar-fixed">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navigation-example-2">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">Profile</a>
+    </div>
+    {% include "userdropdown.html" %}
+  </div>
+</nav>
+
+      <div class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="header">
+                  <h4 class="title">Edit Profile</h4>
+                </div>
+                <div class="content">
+                  Here you can edit your profile settings including password and user preferences.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-3">
+              <div class="card ">
+                <form class="form-horizontal" value="password" action="/profile" enctype="application/x-www-form-urlencoded" method="POST">
+                  <div class="header">
+                    <h4 class="title">Change Password</h4>
+                  </div>
+                  <div class="content">
+                    <div class="row">
+                      <div class="col-md-12">
+                        <fieldset>
+                          <label>Current Password</label>
+                          <input type="password" class="form-control" name="currentpw" value="" placeholder="*******">
+                          </br>
+                          <label>New Password</label>
+                          <input type="password" class="form-control" name="newpw" value="" placeholder="*******">
+                          </br>
+                          <label>Re-enter Password</label>
+                          <input type="password" class="form-control" name="newpwvalidation" value="" placeholder="*******">
+                          </br>
+                          <button type="submit" value="password" class="btn btn-info btn-fill">Update Password</button>
+                        </fieldset>
+                      </div>
+                    </div>
+                  </div>
+              </div>
+            </div>
+            <div class="col-md-9">
+              <div class="card ">
+                <div class="header">
+                  <h4 class="title">Preferences</h4>
+                </div>
+                <fieldset>
+                  <div class="content">
+                    <label>Test Input</label>
+                    <input type="text" class="form-control" name="test1" value="" placeholder="Test 1">
+                    </br>
+                    <label>Test Input</label>
+                    <input type="text" class="form-control" name="test2" value="" placeholder="Test 2">
+                    <br>
+                  </div>
+                </fieldset>
+                </form>
+              </div>
+              <div class="card ">
+                <form class="form-horizontal" action="/apikey" enctype="application/x-www-form-urlencoded" method="POST">
+                  <div class="header">
+                    <h4 class="title">API Key</h4>
+                    <p class="category">For more information about Threat_Note's API see <a href="https://www.example.com">API Documentation</a>.</p>
+                  </div>
+                  <div class="content">
+                    <div class="row">
+                      <div class="col-md-8">
+                        <fieldset>
+
+                          <label>Key</label>
+                            <input type="text" class="form-control" name="apikey" value="{{ current_user.apikey }}" placeholder="aabbccddeeff11223344556677889900">
+                            </br>
+                            <button type="submit" value="apikey" class="btn btn-info btn-fill">
+                              <i class="fa fa-refresh"></i> Refresh Token
+                            </button>
+                          </div>
+                        </fieldset>
+                      </div>
+                    </div>
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+    {% include "footer.html" %}
+
+{% if errormessage %}
+<script type="text/javascript">
+  new $(document).ready(function() {
+
+    demo.initChartist();
+
+    $.notify({
+      icon: 'pe-7s-info',
+      message: "<b>Info - {{ errormessage }}"
+
+    }, {
+      type: 'info',
+      timer: 4000
+    });
+
+  });
+</script>
+{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="main-panel">
+  <nav class="navbar navbar-default navbar-fixed">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navigation-example-2">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">Tags</a>
+    </div>
+    {% include "userdropdown.html" %}
+  </div>
+</nav>
+
+      <div class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="header">
+                  <h4 class="title">Tags</h4>
+                </div>
+                <div class="content">
+                  This page lists the tags that have been associated with indicators in the database. Each tag is in it's own table, with the tag name at the top, and the indicators that are associated with that particular tag. Clicking on an indicator
+                  in each tag will take you to their object page, where you can edit or delete the indicator.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {% for tag, object in tags.iteritems() %}
+          <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+              <div class="card">
+                <div class="header">
+                  <div style="float: right;"><a href="/download/{{ campaign }}" class="btn btn-info btn-fill"><i class="fa fa-plus"></i> Download Indicators</a>
+                  </div>
+                  <h4 class="title"><i class="pe-7s-ticket" id="{{ tag }}" ></i> {{ tag }}</h4>
+                  <p class="category">
+                    <a href="/editcampaign/{{ campaign }}" class="fa"></a>
+                  </p>
+                </div>
+                <div class="content table-responsive table-full-width">
+                  <table class="table table-hover table-striped">
+                    <thead>
+                      <th>Indicator</th>
+                    </thead>
+                    <tbody>
+                      {% for indicator, type in object[0].iteritems() %}
+                      <tr>
+                      {% if type == "IPv4" or type == "IPv6" or type == "Domain" or type == "Network" %}
+                        <td><a href="/network/{{ indicator }}/info">{{ indicator }}</a></td>
+                        {% elif type == "Threat Actor" %}
+                        <td><a href="/threatactors/{{ indicator }}/info">{{ indicator }}</a></td>
+                        {% elif type == "Hash" %}
+                        <td><a href="/files/{{ indicator }}/info">{{ indicator }}</a></td>
+                        {% endif %}
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {% endfor %}
+
+        </div>
+      </div>
+
+      {% include "footer.html" %}
+      </div>
+      </div>
+      {% endblock content %}
