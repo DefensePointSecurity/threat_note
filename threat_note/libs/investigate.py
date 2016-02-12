@@ -20,7 +20,7 @@ def domain_features(domain):
     for k, v in response.iteritems():
         if 'features' in k:
             if v['asns']:
-                newdict['ASN'] = v['asns']
+                newdict['ASN'] = ', '.join(['AS' + str(i) for i in v['asns']])
             else:
                 newdict['ASN'] = 'N/A'
             newdict['Prefix'] = ' '.join(v['prefixes'])
