@@ -425,10 +425,9 @@ def newobject():
 
                     else:
                         errormessage = "Not a valid IP Address."
-                        newobject = ', '.join(records['inputobject'])
                         return render_template('newobject.html', errormessage=errormessage,
                                                inputtype=records['inputtype'],
-                                               inputobject=records, inputfirstseen=records['inputfirstseen'],
+                                               inputobject=newobject, inputfirstseen=records['inputfirstseen'],
                                                inputlastseen=records['inputlastseen'],
                                                confidence=records['confidence'], inputcampaign=records['inputcampaign'],
                                                comments=records['comments'], diamondmodel=records['diamondmodel'],
