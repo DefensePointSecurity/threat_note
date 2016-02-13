@@ -8,3 +8,4 @@ Flask-Login
 Flask-RESTful
 flask-wtf
 honcho
+investigate
