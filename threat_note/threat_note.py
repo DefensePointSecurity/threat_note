@@ -21,7 +21,7 @@ from libs import cuckoo
 from libs import database
 from libs import farsight
 from libs import helpers
-from libs import investigate
+from libs import opendns
 from libs import passivetotal
 from libs import shodan
 from libs import virustotal
@@ -43,7 +43,7 @@ from libs import circl
 from libs import cuckoo
 from libs import farsight
 from libs import helpers
-from libs import investigate
+from libs import opendns
 from libs import passivetotal
 from libs import shodan
 from libs import virustotal
@@ -712,7 +712,7 @@ def objectsummary(uid):
             if settings.whoisinfo == "on":
                 whoisdata = whoisinfo.ipwhois(str(row.object))
             if settings.odnsinfo == "on":
-                odnsdata = investigate.ip_query(str(row.object))
+                odnsdata = opendns.ip_investigate(str(row.object))
             if settings.circlinfo == "on":
                 circldata = circl.circlquery(str(row.object))
             if settings.circlssl == "on":
@@ -730,7 +730,7 @@ def objectsummary(uid):
             if settings.vtinfo == "on":
                 jsonvt = virustotal.vt_domain_lookup(str(row.object))
             if settings.odnsinfo == "on":
-                odnsdata = investigate.domain_categories(str(row.object))
+                odnsdata = opendns.domains_investigate(str(row.object))
             if settings.circlinfo == "on":
                 circldata = circl.circlquery(str(row.object))
             if settings.ptinfo == "on":
@@ -906,7 +906,7 @@ def victimobject(uid):
             if settings.whoisinfo == "on":
                 whoisdata = whoisinfo.ipwhois(str(http.object))
             if settings.odnsinfo == "on":
-                odnsdata = investigate.ip_query(str(http.object))
+                odnsdata = opendns.ip_investigate(str(http.object))
             if settings.circlinfo == "on":
                 circldata = circl.circlquery(str(http.object))
             if settings.circlssl == "on":
@@ -921,7 +921,7 @@ def victimobject(uid):
             if settings.vtinfo == "on":
                 jsonvt = virustotal.vt_domain_lookup(str(http.object))
             if settings.odnsinfo == "on":
-                odnsdata = investigate.domain_categories(
+                odnsdata = opendns.domains_investigate(
                     str(http.object))
             if settings.circlinfo == "on":
                 circldata = circl.circlquery(str(http.object))
