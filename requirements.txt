@@ -7,3 +7,4 @@ Flask-SQLAlchemy
 Flask-Login
 flask-wtf
 honcho
+investigate
