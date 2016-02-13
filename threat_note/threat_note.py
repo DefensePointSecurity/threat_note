@@ -981,9 +981,13 @@ def import_indicators():
 @app.route('/download/<uid>', methods=['GET'])
 @login_required
 def download(uid):
-    if uid == 'unknown':
+    if uid == 'Unknown':
         uid = ""
     rows = Indicator.query.filter_by(campaign=uid).all()
+
+    # Lazy hack. This takes care of downloading indicators by Tags, could be put into its own app.route
+    if not rows:
+        rows = Indicator.query.filter(Indicator.tags.like('%' + uid + '%')).all()
     indlist = []
     for i in rows:
         indicator = helpers.row_to_dict(i)
