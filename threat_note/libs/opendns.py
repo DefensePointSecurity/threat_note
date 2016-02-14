@@ -37,5 +37,4 @@ def ip_investigate(ip):
     odns_data = dict()
     odns_data = {item['rr'][0:-1]: item['type'] for item in rrh['rrs']}
     #odns_data['Latest Malicious'] = ', '.join(latest_domains)
-
     return odns_data
