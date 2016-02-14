@@ -35,6 +35,6 @@ def ip_investigate(ip):
     rrh = inv.rr_history(ip)
     latest_domains = inv.latest_domains(ip)
     odns_data = dict()
-    odns_data['Record Type: ' + rrh['rrs'][0]['type']] = rrh['rrs'][0]['rr']
-    odns_data['Latest Malicious'] = ', '.join(latest_domains)
+    odns_data = {item['rr'][0:-1]: item['type'] for item in rrh['rrs']}
+    #odns_data['Latest Malicious'] = ', '.join(latest_domains)
     return odns_data
