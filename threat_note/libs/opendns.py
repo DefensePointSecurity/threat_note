@@ -27,6 +27,8 @@ def domains_investigate(domain):
     odns_data['ASN Score'] = round(sec['asn_score'], 2)
     odns_data['Prefix Score'] = round(sec['prefix_score'], 2)
     odns_data['Category'] = ', '.join(cat[domain]['content_categories'])
+    odns_data['Security Category'] = ', '.join(cat[domain]['security_categories'])
+    odns_data['Latest IP Address'] = rrh['rrs_tf'][0]['rrs'][0]['rr']
     return odns_data
 
 
