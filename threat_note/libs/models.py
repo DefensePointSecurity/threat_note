@@ -56,8 +56,12 @@ class Setting(Base):
     circlusername = Column('circlusername', String)
     circlpassword = Column('circlpassword', String)
     circlssl = Column('circlssl', String)
-    ptinfo = Column('ptinfo', String)
-    ptkey = Column('ptkey', String)
+    pt_pdns = Column('pt_pdns', String)
+    pt_whois = Column('pt_whois', String)
+    pt_pssl = Column('pt_pssl', String)
+    pt_host_attr = Column('pt_host_attr', String)
+    pt_username = Column('pt_username', String)
+    pt_api_key = Column('pt_api_key', String)
     cuckoo = Column('cuckoo', String)
     cuckoohost = Column('cuckoohost', String)
     cuckooapiport = Column('cuckooapiport', String)
@@ -66,8 +70,9 @@ class Setting(Base):
     shodaninfo = Column('shodaninfo', String)
     shodankey = Column('shodankey', String)
 
-    def __init__(self, vtinfo, whoisinfo, odnsinfo, circlinfo, farsightinfo, ptinfo, shodaninfo, circlssl, threatcrowd, vtfile,
-                 apikey, odnskey, circlusername, circlpassword, ptkey, farsightkey,
+    def __init__(self, vtinfo, whoisinfo, odnsinfo, circlinfo, farsightinfo, shodaninfo, circlssl, threatcrowd, vtfile,
+                 pt_pdns, pt_whois, pt_pssl, pt_host_attr, pt_username, pt_api_key,
+                 apikey, odnskey, circlusername, circlpassword, farsightkey,
                  cuckoo, cuckoohost, cuckooapiport, httpproxy, httpsproxy, shodankey):
         self.apikey = apikey
         self.odnskey = odnskey
@@ -82,8 +87,12 @@ class Setting(Base):
         self.circlusername = circlusername
         self.circlpassword = circlpassword
         self.circlssl = circlssl
-        self.ptinfo = ptinfo
-        self.ptkey = ptkey
+        self.pt_pdns = pt_pdns
+        self.pt_whois = pt_whois
+        self.pt_pssl = pt_pssl
+        self.pt_host_attr = pt_host_attr
+        self.pt_username = pt_username
+        self.pt_api_key = pt_api_key
         self.cuckoo = cuckoo
         self.cuckoohost = cuckoohost
         self.cuckooapiport = cuckooapiport

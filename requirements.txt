@@ -9,3 +9,4 @@ Flask-RESTful
 flask-wtf
 honcho
 investigate
+passivetotal

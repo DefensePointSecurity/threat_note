@@ -16,31 +16,22 @@ import re
 import time
 
 
-from libs import circl
-from libs import cuckoo
-from libs import database
-from libs import farsight
-from libs import helpers
-from libs import opendns
-from libs import passivetotal
-from libs import shodan
-from libs import virustotal
-from libs import whoisinfo
-from flask import Flask
 from flask import flash
+from flask import Flask
 from flask import make_response
 from flask import redirect
 from flask import render_template
 from flask import request
 from flask import url_for
-from flask.ext.login import LoginManager
 from flask.ext.login import current_user
 from flask.ext.login import login_required
 from flask.ext.login import login_user
+from flask.ext.login import LoginManager
 from flask.ext.login import logout_user
 from flask.ext.wtf import Form
 from libs import circl
 from libs import cuckoo
+from libs import database
 from libs import farsight
 from libs import helpers
 from libs import opendns
@@ -65,6 +56,8 @@ from wtforms.validators import DataRequired
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yek_terces'
+app.debug = True
+app.template_debug = True
 lm = LoginManager()
 lm.init_app(app)
 lm.login_view = 'login'
@@ -112,7 +105,7 @@ def register():
 
             # Set up the settings table when the first user is registered.
             if not Setting.query.filter_by(_id=1).first():
-                settings = Setting('off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', '', '', '',
+                settings = Setting('off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', 'off', '', '', '',
                                    '', '', '', '', '', '', '', '', '')
                 db_session.add(settings)
             # Commit all database changes once they have been completed
@@ -553,10 +546,12 @@ def updatesettings():
             settings.threatcrowd = 'on'
         else:
             settings.threatcrowd = 'off'
-        if 'ptinfo' in newdict.keys() and newdict['ptkey'] is not '':
-            settings.ptinfo = 'on'
-        else:
-            settings.ptinfo = 'off'
+        for pt_type in ['pt_pdns', 'pt_whois', 'pt_pssl', 'pt_host_attr']:
+            auth = [newdict['pt_username'], newdict['pt_api_key']]
+            if pt_type in newdict.keys() and ('' not in auth):
+                setattr(settings, pt_type, 'on')
+            else:
+                setattr(settings, pt_type, 'off')
         if 'cuckoo' in newdict.keys():
             settings.cuckoo = 'on'
         else:
@@ -603,7 +598,8 @@ def updatesettings():
         settings.cuckooapiport = newdict['cuckooapiport']
         settings.circlusername = newdict['circlusername']
         settings.circlpassword = newdict['circlpassword']
-        settings.ptkey = newdict['ptkey']
+        settings.pt_username = newdict['pt_username']
+        settings.pt_api_key = newdict['pt_api_key']
         settings.shodankey = newdict['shodankey']
 
         db_session.commit()
@@ -716,8 +712,14 @@ def objectsummary(uid):
                 circldata = circl.circlquery(str(row.object))
             if settings.circlssl == "on":
                 circlssl = circl.circlssl(str(row.object))
-            if settings.ptinfo == "on":
-                ptdata = passivetotal.pt(str(row.object))
+            if settings.pt_pdns == "on":
+                pt_pdns_data = passivetotal.pt_lookup('dns', str(row.object))
+            if settings.pt_whois == "on":
+                pt_whois_data = passivetotal.pt_lookup('whois', str(row.object))
+            if settings.pt_pssl == "on":
+                pt_pssl_data = passivetotal.pt_lookup('ssl', str(row.object))
+            if settings.pt_host_attr == "on":
+                pt_host_attr_data = passivetotal.pt_lookup('attributes', str(row.object))
             if settings.farsightinfo == "on":
                 farsightdata = farsight.farsightip(str(row.object))
             if settings.shodaninfo == "on":
@@ -732,8 +734,14 @@ def objectsummary(uid):
                 odnsdata = opendns.domains_investigate(str(row.object))
             if settings.circlinfo == "on":
                 circldata = circl.circlquery(str(row.object))
-            if settings.ptinfo == "on":
-                ptdata = passivetotal.pt(str(row.object))
+            if settings.pt_pdns == "on":
+                pt_pdns_data = passivetotal.pt_lookup('dns', str(row.object))
+            if settings.pt_whois == "on":
+                pt_whois_data = passivetotal.pt_lookup('whois', str(row.object))
+            if settings.pt_pssl == "on":
+                pt_pssl_data = passivetotal.pt_lookup('ssl', str(row.object))
+            if settings.pt_host_attr == "on":
+                pt_host_attr_data = passivetotal.pt_lookup('attributes', str(row.object))
             if settings.farsightinfo == "on":
                 farsightdata = farsight.farsightdomain(str(row.object))
             if settings.shodaninfo == "on":
@@ -749,8 +757,10 @@ def objectsummary(uid):
             address = "Information about " + str(row.object)
         return render_template('networkobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
                                odnsdata=odnsdata, settingsvars=settings, address=address,
-                               ptdata=ptdata, temprel=temprel, circldata=circldata, circlssl=circlssl, reldata=reldata,
-                               taglist=taglist, farsightdata=farsightdata, shodandata=shodandata)
+                               temprel=temprel, circldata=circldata, circlssl=circlssl, reldata=reldata,
+                               taglist=taglist, farsightdata=farsightdata, shodandata=shodandata,
+                               pt_pdns_data=pt_pdns_data, pt_whois_data=pt_whois_data, pt_pssl_data=pt_pssl_data,
+                               pt_host_attr_data=pt_host_attr_data)
     except Exception as e:
         return render_template('error.html', error=e)
 
@@ -910,8 +920,14 @@ def victimobject(uid):
                 circldata = circl.circlquery(str(http.object))
             if settings.circlssl == "on":
                 circlssl = circl.circlssl(str(http.object))
-            if settings.ptinfo == "on":
-                ptdata = passivetotal.pt(str(http.object))
+            if settings.pt_pdns == "on":
+                pt_pdns_data = passivetotal.pt_lookup('dns', str(http.object))
+            if settings.pt_whois == "on":
+                pt_whois_data = passivetotal.pt_lookup('whois', str(http.object))
+            if settings.pt_pssl == "on":
+                pt_pssl_data = passivetotal.pt_lookup('ssl', str(http.object))
+            if settings.pt_host_attr == "on":
+                pt_host_attr_data = passivetotal.pt_lookup('attributes', str(http.object))
             if settings.farsightinfo == "on":
                 farsightdata = farsight.farsightip(str(http.object))
         elif str(http.type) == "Domain":
@@ -924,8 +940,14 @@ def victimobject(uid):
                     str(http.object))
             if settings.circlinfo == "on":
                 circldata = circl.circlquery(str(http.object))
-            if settings.ptinfo == "on":
-                ptdata = passivetotal.pt(str(http.object))
+            if settings.pt_pdns == "on":
+                pt_pdns_data = passivetotal.pt_lookup('dns', str(http.object))
+            if settings.pt_whois == "on":
+                pt_whois_data = passivetotal.pt_lookup('whois', str(http.object))
+            if settings.pt_pssl == "on":
+                pt_pssl_data = passivetotal.pt_lookup('ssl', str(http.object))
+            if settings.pt_host_attr == "on":
+                pt_host_attr_data = passivetotal.pt_lookup('attributes', str(http.object))
         if settings.whoisinfo == "on":
             if str(http.type) == "Domain":
                 address = str(whoisdata['city']) + ", " + str(
@@ -937,8 +959,9 @@ def victimobject(uid):
             address = "Information about " + str(http.object)
         return render_template('victimobject.html', records=newdict, jsonvt=jsonvt, whoisdata=whoisdata,
                                odnsdata=odnsdata, circldata=circldata, circlssl=circlssl, settingsvars=settings,
-                               address=address, temprel=temprel, reldata=reldata, taglist=taglist, ptdata=ptdata,
-                               farsightdata=farsightdata)
+                               address=address, temprel=temprel, reldata=reldata, taglist=taglist, farsightdata=farsightdata,
+                               pt_pdns_data=pt_pdns_data, pt_whois_data=pt_whois_data, pt_pssl_data=pt_pssl_data,
+                               pt_host_attr_data=pt_host_attr_data)
     except Exception as e:
         return render_template('error.html', error=e)
 
