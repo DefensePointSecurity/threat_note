@@ -697,7 +697,10 @@ def objectsummary(uid):
         odnsdata = ""
         circldata = ""
         circlssl = ""
-        ptdata = ""
+        pt_pdns_data = ""
+        pt_whois_data = ""
+        pt_pssl_data = ""
+        pt_host_attr_data = ""
         farsightdata = ""
         shodandata = ""
         # Run ipwhois or domainwhois based on the type of indicator
@@ -905,7 +908,10 @@ def victimobject(uid):
         odnsdata = ""
         circldata = ""
         circlssl = ""
-        ptdata = ""
+        pt_pdns_data = ""
+        pt_whois_data = ""
+        pt_pssl_data = ""
+        pt_host_attr_data = ""
         farsightdata = ""
         # shodaninfo = ""
         # Run ipwhois or domainwhois based on the type of indicator
