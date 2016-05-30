@@ -1,239 +1,272 @@
 {% extends "base.html" %} {% block content %}
 <div class="main-panel">
-  <nav class="navbar navbar-default navbar-fixed">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navigation-example-2">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="#">Settings</a>
-      </div>
-      {% include "userdropdown.html" %}
-    </div>
-  </nav>
-  <div class="content">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-12">
-          <div class="card">
-            <div class="header">
-              <h4 class="title">Settings</h4>
+    <nav class="navbar navbar-default navbar-fixed">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navigation-example-2">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">Settings</a>
             </div>
-            <div class="content">
-              On this page you can turn on any available 3rd party integrations as well as add your API keys for applicable services. You can also configure proxy settings if you need proxy support to reach certain integrations.</p>
-            </div>
-          </div>
+            {% include "userdropdown.html" %}
         </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card ">
-          <form class="form-horizontal" action="/update/settings/" enctype="application/x-www-form-urlencoded" method="POST">
-            <div class="header">
-              <h4 class="title">Proxy Settings</h4>
-              <p class="category">Network Proxy Configuration Settings</p>
-            </div>
-            <div class="content">
-              <div class="row">
-                <div class="col-md-8">
-                  <fieldset>
-                    <label>HTTP</label>
-                    <input type="text" class="form-control" name="httpproxy" value="{{ records['httpproxy'] }}" placeholder="http://127.0.0.1:8080">
-                    </br>
-                    <label>HTTPS</label>
-                    <input type="text" class="form-control" name="httpsproxy" value="{{ records['httpsproxy'] }}" placeholder="https://127.0.0.1:8080">
-                    </br>
-                  </fieldset>
+    </nav>
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="header">
+                            <h4 class="title">Settings</h4>
+                        </div>
+                        <div class="content">
+                            On this page you can turn on any available 3rd party integrations as well as add your API keys for applicable services. You can also configure proxy settings if you need proxy support to reach certain integrations.</p>
+                        </div>
+                    </div>
                 </div>
-              </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card ">
+                    <form class="form-horizontal" action="/update/settings/" enctype="application/x-www-form-urlencoded" method="POST">
+                        <div class="header">
+                            <h4 class="title">Proxy Settings</h4>
+                            <p class="category">Network Proxy Configuration Settings</p>
+                        </div>
+                        <div class="content">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <fieldset>
+                                        <label>HTTP</label>
+                                        <input type="text" class="form-control" name="httpproxy" value="{{ records['httpproxy'] }}" placeholder="http://127.0.0.1:8080">
+                                        </br>
+                                        <label>HTTPS</label>
+                                        <input type="text" class="form-control" name="httpsproxy" value="{{ records['httpsproxy'] }}" placeholder="https://127.0.0.1:8080">
+                                        </br>
+                                    </fieldset>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card ">
+                    <div class="header">
+                        <h4 class="title">3rd Party Integrations</h4>
+                        <p class="category">Configure 3rd Party Data Providers Options</p>
+                    </div>
+                    <div class="header">
+                        <p class="category">Network</p>
+                    </div>
+                    <div class="content table-responsive table-full-width">
+                        <fieldset>
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            {% if records['whoisinfo'] == "on" %}
+                                            <label class="checkbox">
+                                                <input type="checkbox" class="form-control" name="whoisinfo" checked data-toggle="checkbox"> {% else %}
+                                                <label class="checkbox">
+                                                    <input type="checkbox" class="form-control" name="whoisinfo" data-toggle="checkbox"> {% endif %}
+                                        </td>
+                                        <td>Whois Information</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {% if records['farsightinfo'] == "on" %}
+                                            <label class="checkbox">
+                                                <input type="checkbox" class="form-control" name="farsightinfo" checked data-toggle="checkbox"> {% else %}
+                                                <label class="checkbox">
+                                                    <input type="checkbox" class="form-control" name="farsightinfo" data-toggle="checkbox"> {% endif %}
+                                        </td>
+                                        <td>Farsight Passive DNS</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {% if records['vtinfo'] == "on" %}
+                                            <label class="checkbox">
+                                                <input type="checkbox" class="form-control" name="vtinfo" checked data-toggle="checkbox"> {% else %}
+                                                <label class="checkbox">
+                                                    <input type="checkbox" class="form-control" name="vtinfo" data-toggle="checkbox"> {% endif %}
+                                        </td>
+                                        <td>VirusTotal Passive DNS</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {% if records['pt_pdns'] == "on" %}
+                                            <label class="checkbox">
+                                                <input type="checkbox" class="form-control" name="pt_pdns" checked data-toggle="checkbox"> {% else %}
+                                                <label class="checkbox">
+                                                    <input type="checkbox" class="form-control" name="pt_pdns" data-toggle="checkbox"> {% endif %}
+                                        </td>
+                                        <td>PassiveTotal Passive DNS</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {% if records['pt_whois'] == "on" %}
+                                            <label class="checkbox">
+                                                <input type="checkbox" class="form-control" name="pt_whois" checked data-toggle="checkbox"> {% else %}
+                                                <label class="checkbox">
+                                                    <input type="checkbox" class="form-control" name="pt_whois" data-toggle="checkbox"> {% endif %}
+                                        </td>
+                                        <td>PassiveTotal WHOIS</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {% if records['pt_pssl'] == "on" %}
+                                            <label class="checkbox">
+                                                <input type="checkbox" class="form-control" name="pt_pssl" checked data-toggle="checkbox"> {% else %}
+                                                <label class="checkbox">
+                                                    <input type="checkbox" class="form-control" name="pt_pssl" data-toggle="checkbox"> {% endif %}
+                                        </td>
+                                        <td>PassiveTotal Passive SSL</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {% if records['pt_host_attr'] == "on" %}
+                                            <label class="checkbox">
+                                                <input type="checkbox" class="form-control" name="pt_host_attr" checked data-toggle="checkbox"> {% else %}
+                                                <label class="checkbox">
+                                                    <input type="checkbox" class="form-control" name="pt_host_attr" data-toggle="checkbox"> {% endif %}
+                                        </td>
+                                        <td>PassiveTotal Host Attributes</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {% if records['odnsinfo'] == "on" %}
+                                            <label class="checkbox">
+                                                <input type="checkbox" class="form-control" name="odnsinfo" checked data-toggle="checkbox"> {% else %}
+                                                <label class="checkbox">
+                                                    <input type="checkbox" class="form-control" name="odnsinfo" data-toggle="checkbox"> {% endif %}
+                                        </td>
+                                        <td>OpenDNS Investigate</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {% if records['circlinfo'] == "on" %}
+                                            <label class="checkbox">
+                                                <input type="checkbox" class="form-control" name="circlinfo" checked data-toggle="checkbox"> {% else %}
+                                                <label class="checkbox">
+                                                    <input type="checkbox" class="form-control" name="circlinfo" data-toggle="checkbox"> {% endif %}
+                                        </td>
+                                        <td>CIRCL Passive DNS</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {% if records['circlssl'] == "on" %}
+                                            <label class="checkbox">
+                                                <input type="checkbox" class="form-control" name="circlssl" checked data-toggle="checkbox"> {% else %}
+                                                <label class="checkbox">
+                                                    <input type="checkbox" class="form-control" name="circlssl" data-toggle="checkbox"> {% endif %}
+                                        </td>
+                                        <td>CIRCL Passive SSL</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {% if records['shodaninfo'] == "on" %}
+                                            <label class="checkbox">
+                                                <input type="checkbox" class="form-control" name="shodaninfo" checked data-toggle="checkbox"> {% else %}
+                                                <label class="checkbox">
+                                                    <input type="checkbox" class="form-control" name="shodaninfo" data-toggle="checkbox"> {% endif %}
+                                        </td>
+                                        <td>Shodan Data</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                    </div>
+                    <div class="header">
+                        <p class="category">File</p>
+                    </div>
+                    <div class="content table-responsive table-full-width">
+                        <fieldset>
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            {% if records['vtfile'] == "on" %}
+                                            <label class="checkbox">
+                                                <input type="checkbox" class="form-control" name="vtfile" checked data-toggle="checkbox"> {% else %}
+                                                <label class="checkbox">
+                                                    <input type="checkbox" class="form-control" name="vtfile" data-toggle="checkbox"> {% endif %}
+                                        </td>
+                                        <td>VirusTotal File Information</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {% if records['cuckoo'] == "on" %}
+                                            <label class="checkbox">
+                                                <input type="checkbox" class="form-control" name="cuckoo" checked data-toggle="checkbox"> {% else %}
+                                                <label class="checkbox">
+                                                    <input type="checkbox" class="form-control" name="cuckoo" data-toggle="checkbox"> {% endif %}
+                                        </td>
+                                        <td>Cuckoo Sandbox</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                    </div>
+                    <div class="header">
+                        <p class="category">Visualization</p>
+                    </div>
+                    <div class="content table-responsive table-full-width">
+                        <fieldset>
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            {% if records['threatcrowd'] == "on" %}
+                                            <label class="checkbox">
+                                                <input type="checkbox" class="form-control" name="threatcrowd" checked data-toggle="checkbox"> {% else %}
+                                                <label class="checkbox">
+                                                    <input type="checkbox" class="form-control" name="threatcrowd" data-toggle="checkbox"> {% endif %}
+                                        </td>
+                                        <td>ThreatCrowd Visualizations</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                    </div>
+                    <div class="content">
+                        <h4 class="title">Configure 3rd Party Integrations</h4>
+                        <label>VirusTotal API Key</label>
+                        <input type="text" class="form-control" name="apikey" value="{{ records['apikey'] }}" placeholder="149d08c494b4db323420180b09312b2f34e529230496cddfa868c01eea">
+                        </br>
+                        <label>OpenDNS Investigate API Key</label>
+                        <input type="text" class="form-control" name="odnskey" value="{{ records['odnskey'] }}" placeholder="89ba67a0-b1f2-75ef-9fb9-04eae0434963">
+                        </br>
+                        <label>CIRCL Username</label>
+                        <input type="text" class="form-control" name="circlusername" value="{{ records['circlusername'] }}" placeholder="Username">
+                        </br>
+                        <label>CIRCL Password</label>
+                        <input type="password" class="form-control" name="circlpassword" value="{{ records['circlpassword'] }}" placeholder="********">
+                        </br>
+                        <label>PassiveTotal Username</label>
+                        <input type="text" class="form-control" name="pt_username" value="{{ records['pt_username'] }}" placeholder="username@domain.com">
+                        </br>
+                        <label>PassiveTotal API Key</label>
+                        <input type="text" class="form-control" name="pt_api_key" value="{{ records['pt_api_key'] }}" placeholder="149d08c494b4db323420180b09312b2f34e529230496cddfa868c01eea">
+                        </br>
+                        <label> Cuckoo Host</label>
+                        <input type="text" class="form-control" name="cuckoohost" value="{{ records['cuckoohost'] }}" placeholder="127.0.0.1">
+                        </br>
+                        <label>Cuckoo API Port</label>
+                        <input type="text" class="form-control" name="cuckooapiport" value="{{ records['cuckooapiport'] }}" placeholder="8090">
+                        </br>
+                        <label>Farsight API Key</label>
+                        <input type="text" class="form-control" name="farsightkey" value="{{ records['farsightkey'] }}" placeholder="149d08c494b4db323420180b09312b2f34e529230496cddfa868c01eea">
+                        </br>
+                        <label>Shodan API Key</label>
+                        <input type="text" class="form-control" name="shodankey" value="{{ records['shodankey'] }}" placeholder=" mO22M3Tyke2341rxMmQAyFKTm0HfjZul">
+                        </br>
+                        <button type="submit" class="btn btn-info btn-fill">Submit</button>
+                    </div>
+                    </fieldset>
+                </div>
             </div>
         </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card ">
-          <div class="header">
-            <h4 class="title">3rd Party Integrations</h4>
-            <p class="category">Configure 3rd Party Data Providers Options</p>
-          </div>
-          <div class="header">
-            <p class="category">Network</p>
-          </div>
-          <div class="content table-responsive table-full-width">
-            <fieldset>
-              <table class="table">
-                <tbody>
-                  <tr>
-                    <td>
-                      {% if records['whoisinfo'] == "on" %}
-                      <label class="checkbox">
-                        <input type="checkbox" class="form-control" name="whoisinfo" checked data-toggle="checkbox"> {% else %}
-                        <label class="checkbox">
-                          <input type="checkbox" class="form-control" name="whoisinfo" data-toggle="checkbox"> {% endif %}
-                    </td>
-                    <td>Whois Information</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      {% if records['farsightinfo'] == "on" %}
-                      <label class="checkbox">
-                        <input type="checkbox" class="form-control" name="farsightinfo" checked data-toggle="checkbox"> {% else %}
-                        <label class="checkbox">
-                          <input type="checkbox" class="form-control" name="farsightinfo" data-toggle="checkbox"> {% endif %}
-                    </td>
-                    <td>Farsight Passive DNS</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      {% if records['vtinfo'] == "on" %}
-                      <label class="checkbox">
-                        <input type="checkbox" class="form-control" name="vtinfo" checked data-toggle="checkbox"> {% else %}
-                        <label class="checkbox">
-                          <input type="checkbox" class="form-control" name="vtinfo" data-toggle="checkbox"> {% endif %}
-                    </td>
-                    <td>VirusTotal Passive DNS</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      {% if records['ptinfo'] == "on" %}
-                      <label class="checkbox">
-                        <input type="checkbox" class="form-control" name="ptinfo" checked data-toggle="checkbox"> {% else %}
-                        <label class="checkbox">
-                          <input type="checkbox" class="form-control" name="ptinfo" data-toggle="checkbox"> {% endif %}
-                    </td>
-                    <td>PassiveTotal Passive DNS</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      {% if records['odnsinfo'] == "on" %}
-                      <label class="checkbox">
-                        <input type="checkbox" class="form-control" name="odnsinfo" checked data-toggle="checkbox"> {% else %}
-                        <label class="checkbox">
-                          <input type="checkbox" class="form-control" name="odnsinfo" data-toggle="checkbox"> {% endif %}
-                    </td>
-                    <td>OpenDNS Investigate</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      {% if records['circlinfo'] == "on" %}
-                      <label class="checkbox">
-                        <input type="checkbox" class="form-control" name="circlinfo" checked data-toggle="checkbox"> {% else %}
-                        <label class="checkbox">
-                          <input type="checkbox" class="form-control" name="circlinfo" data-toggle="checkbox"> {% endif %}
-                    </td>
-                    <td>CIRCL Passive DNS</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      {% if records['circlssl'] == "on" %}
-                      <label class="checkbox">
-                        <input type="checkbox" class="form-control" name="circlssl" checked data-toggle="checkbox"> {% else %}
-                        <label class="checkbox">
-                          <input type="checkbox" class="form-control" name="circlssl" data-toggle="checkbox"> {% endif %}
-                    </td>
-                    <td>CIRCL Passive SSL</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      {% if records['shodaninfo'] == "on" %}
-                      <label class="checkbox">
-                        <input type="checkbox" class="form-control" name="shodaninfo" checked data-toggle="checkbox"> {% else %}
-                        <label class="checkbox">
-                          <input type="checkbox" class="form-control" name="shodaninfo" data-toggle="checkbox"> {% endif %}
-                    </td>
-                    <td>Shodan Data</td>
-                  </tr>
-                </tbody>
-              </table>
-          </div>
-          <div class="header">
-            <p class="category">File</p>
-          </div>
-          <div class="content table-responsive table-full-width">
-            <fieldset>
-              <table class="table">
-                <tbody>
-                  <tr>
-                    <td>
-                      {% if records['vtfile'] == "on" %}
-                      <label class="checkbox">
-                        <input type="checkbox" class="form-control" name="vtfile" checked data-toggle="checkbox"> {% else %}
-                        <label class="checkbox">
-                          <input type="checkbox" class="form-control" name="vtfile" data-toggle="checkbox"> {% endif %}
-                    </td>
-                    <td>VirusTotal File Information</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      {% if records['cuckoo'] == "on" %}
-                      <label class="checkbox">
-                        <input type="checkbox" class="form-control" name="cuckoo" checked data-toggle="checkbox"> {% else %}
-                        <label class="checkbox">
-                          <input type="checkbox" class="form-control" name="cuckoo" data-toggle="checkbox"> {% endif %}
-                    </td>
-                    <td>Cuckoo Sandbox</td>
-                  </tr>
-                </tbody>
-              </table>
-          </div>
-          <div class="header">
-            <p class="category">Visualization</p>
-          </div>
-          <div class="content table-responsive table-full-width">
-            <fieldset>
-              <table class="table">
-                <tbody>
-                  <tr>
-                    <td>
-                      {% if records['threatcrowd'] == "on" %}
-                      <label class="checkbox">
-                        <input type="checkbox" class="form-control" name="threatcrowd" checked data-toggle="checkbox"> {% else %}
-                        <label class="checkbox">
-                          <input type="checkbox" class="form-control" name="threatcrowd" data-toggle="checkbox"> {% endif %}
-                    </td>
-                    <td>ThreatCrowd Visualizations</td>
-                  </tr>
-                </tbody>
-              </table>
-          </div>
-          <div class="content">
-            <h4 class="title">Configure 3rd Party Integrations</h4>
-            <label>VirusTotal API Key</label>
-            <input type="text" class="form-control" name="apikey" value="{{ records['apikey'] }}" placeholder="149d08c494b4db323420180b09312b2f34e529230496cddfa868c01eea">
-            </br>
-            <label>OpenDNS Investigate API Key</label>
-            <input type="text" class="form-control" name="odnskey" value="{{ records['odnskey'] }}" placeholder="89ba67a0-b1f2-75ef-9fb9-04eae0434963">
-            </br>
-            <label>CIRCL Username</label>
-            <input type="text" class="form-control" name="circlusername" value="{{ records['circlusername'] }}" placeholder="Username">
-            </br>
-            <label>CIRCL Password</label>
-            <input type="password" class="form-control" name="circlpassword" value="{{ records['circlpassword'] }}" placeholder="********">
-            </br>
-            <label>PassiveTotal API Key</label>
-            <input type="text" class="form-control" name="ptkey" value="{{ records['ptkey'] }}" placeholder="149d08c494b4db323420180b09312b2f34e529230496cddfa868c01eea">
-            </br>
-            <label> Cuckoo Host</label>
-            <input type="text" class="form-control" name="cuckoohost" value="{{ records['cuckoohost'] }}" placeholder="127.0.0.1">
-            </br>
-            <label>Cuckoo API Port</label>
-            <input type="text" class="form-control" name="cuckooapiport" value="{{ records['cuckooapiport'] }}" placeholder="8090">
-            </br>
-            <label>Farsight API Key</label>
-            <input type="text" class="form-control" name="farsightkey" value="{{ records['farsightkey'] }}" placeholder="149d08c494b4db323420180b09312b2f34e529230496cddfa868c01eea">
-            </br>
-            <label>Shodan API Key</label>
-            <input type="text" class="form-control" name="shodankey" value="{{ records['shodankey'] }}" placeholder=" mO22M3Tyke2341rxMmQAyFKTm0HfjZul">
-            </br>
-            <button type="submit" class="btn btn-info btn-fill">Submit</button>
-          </div>
-          </fieldset>
-        </div>
-      </div>
     </div>
-  </div>
-  {% include "footer.html" %}
+    {% include "footer.html" %}
 </div>
 </div>
 {% endblock content %}

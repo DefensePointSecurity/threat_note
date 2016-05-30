@@ -14,6 +14,9 @@ RUN apt-get update && \
 RUN apt-get install -y --no-install-recommends \
   python-pip  \
   python-dev \
+  libxml2-dev \
+  libxslt-dev \
+  zlib1g-dev \
   build-essential \
   git && \
 
@@ -24,7 +27,7 @@ WORKDIR /home
 RUN git clone https://github.com/defpoint/threat_note.git && \
   chown -R threatnote:threatnote /home/threat_note && \
   cd threat_note && \
-  pip install -r requirements-dev.txt
+  pip install -r requirements.txt
 
 USER threatnote
 ENV HOME /home/threat_note

@@ -37,7 +37,7 @@
                   <div class="header">
                     <h4 class="title"><i class="pe-7s-global"></i>
                       <span style="padding-left:10px"></span>{{ records['object'] }}<div style="float: right;"><a href="/relationships/{{ records['id'] }}" class="btn btn-info btn-fill" rel="tooltip" title="Add Relationship"><i class="fa fa-link" ></i></a>
-                    <a href="/edit/{{ records['id'] }}" class="btn btn-info btn-fill" rel="tooltip" title="Edit Object"><i class="fa fa-pencil"></i> </a>
+                    <a href="/edit/{{ records['object'] }}" class="btn btn-info btn-fill" rel="tooltip" title="Edit Object"><i class="fa fa-pencil"></i> </a>
                   </div></h4>
                     <p class="category">{{ address }}</p>
                   </div>
@@ -454,40 +454,158 @@
                     </div>
                     </div>
                     {% endif %}
-{% if settingsvars['ptinfo'] == "on" %}
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="card">
-                      <div class="header">
-                        <h4 class="title">PassiveTotal Passive DNS</h4>
-                        <p class="category">More information can be found at <a href="https://www.passivetotal.org/" target="_blank">PassiveTotal</a></p>
-                      </div>
-                      <div class="content">
-                       <table class="table table-hover table-striped">
+            {% if settingsvars['pt_pdns'] == "on" %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">PassiveTotal Passive DNS <p class="pull-right" data-toggle="collapse" data-target="#pdns">toggle</p></h4>
+                    <p class="category">PassiveTotal aggregates a number of passive DNS sources from all over the world to create the most comprehensive passive DNS database. Results are filtered to the most recent 1,000 entries, but more data can be found by visiting our <a href="https://www.passivetotal.org/" target="_blank">website</a>.</p>
+                  </div>
+                  <div class="content collapse in" id="pdns">
+                    {% if 'error' in pt_pdns_data %}
+                      <div class="alert alert-danger" role="alert"><strong>{{ pt_pdns_data['error']['message'] }}</strong> {{ pt_pdns_data['error']['developer_message'] }}</div>
+                    {% else %}
+                    <table class="table table-hover table-striped">
                       <thead>
                         <th>Resolved</th>
                         <th>First Seen</th>
                         <th>Last Seen</th>
-
+                        <th>Sources</th>
                       </thead>
                       <tbody>
-                      {% for result in ptdata['results']['records'] %}
-                      <tr>
-                      <td>{{ result['resolve'] }}</td>
-                      <td>{{ result['firstSeen'] }}</td>
-                      <td>{{ result['lastSeen'] }}</td>
-                      </tr>
-                      {% endfor %}
-
-                            <tr>
-
-                            </tbody>
-                            </table>
-                      </div>
-                    </div>
-                    </div>
-                    </div>
+                        {% for result in pt_pdns_data.get('results', []) %}
+                        <tr>
+                          <td>{{ result['resolve'] }}</td>
+                          <td>{{ result['firstSeen'] }}</td>
+                          <td>{{ result['lastSeen'] }}</td>
+                          <td>{{ ', '.join(result['source']) }}</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
                     {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+            {% if settingsvars['pt_whois'] == "on" %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">PassiveTotal WHOIS <p class="pull-right" data-toggle="collapse" data-target="#whois">toggle</p></h4>
+                    <p class="category">This is the most recent WHOIS record collected by PassiveTotal. In order to run more advanced searches and get additional details, please visit our <a href="https://www.passivetotal.org/" target="_blank">website</a>.</p>
+                  </div>
+                  <div class="content collapse in" id="whois">
+                    {% if 'error' in pt_whois_data %}
+                      <div class="alert alert-danger" role="alert"><strong>{{ pt_whois_data['error']['message'] }}</strong> {{ pt_whois_data['error']['developer_message'] }}</div>
+                    {% else %}
+                    <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Key</th>
+                        <th>Value</th>
+                      </thead>
+                      <tbody>
+                      {% for key in ['contactEmail', 'registrar', 'whoisServer', 'registered', 'registryUpdatedAt', 'expiresAt'] %}
+                        <tr>
+                          <td>{{key}}</td>
+                          <td>{{pt_whois_data.get(key, '')}}</td>
+                        </tr>
+                      {% endfor %}
+                        <tr>
+                          <td>nameServers</td>
+                          <td>{{', '.join(pt_whois_data.get('nameServers', []))}}</td>
+                        </tr>
+                      {% for key, value in pt_whois_data.get('compact', {}).iteritems() %}
+                        <tr>
+                          <td>{{key}}</td>
+                          <td>{{value.get('string', '')}}</td>
+                        </tr>
+                      {% endfor %}
+                      </tbody>
+                    </table>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+            {% if settingsvars['pt_pssl'] == "on" %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">PassiveTotal SSL History <p class="pull-right" data-toggle="collapse" data-target="#ssl">toggle</p></h4>
+                    <p class="category">PassiveTotal has collected years of SSL certificates and their associations to IP addresses. Below is the history of SSL certificates associated with an IP address. For more advanced searches, visit our <a href="https://www.passivetotal.org/" target="_blank">website</a>.</p>
+                  </div>
+                  <div class="content collapse in" id="ssl">
+                    {% if 'error' in pt_pssl_data %}
+                      <div class="alert alert-danger" role="alert"><strong>{{ pt_pssl_data['error']['message'] }}</strong> {{ pt_pssl_data['error']['developer_message'] }}</div>
+                    {% else %}
+                    <table class="table table-hover table-striped">
+                      <thead>
+                        <th>SHA-1</th>
+                        <th>First Seen</th>
+                        <th>Last Seen</th>
+                        <th>IP addresses</th>
+                      </thead>
+                      <tbody>
+                      {% for record in pt_pssl_data.get('results', []) %}
+                        <tr>
+                          <td>{{record.get('sha1', 'N/A')}}</td>
+                          <td>{{record.get('firstSeen', 'N/A')}}</td>
+                          <td>{{record.get('lastSeen', 'N/A')}}</td>
+                          <td>{{', '.join(record.get('ipAddresses', []))}}</td>
+                        </tr>
+                      {% endfor %}
+                      </tbody>
+                    </table>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+            {% if settingsvars['pt_host_attr'] == "on" %}
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="header">
+                    <h4 class="title">PassiveTotal Host Attributes <p class="pull-right" data-toggle="collapse" data-target="#attr">toggle</p></h4>
+                    <p class="category">By leveraging RiskIQ's infrastructure crawling, PassiveTotal has created one of the most comprehensive databases of analytics tracking codes. These include sources like Google, New Relic, Mix Panel and Clicky. For more advanced searches and additional details, visit our <a href="https://www.passivetotal.org/" target="_blank">website</a>.</p>
+                  </div>
+                  <div class="content collapse in" id="attr">
+                    {% if 'error' in pt_host_attr_data %}
+                      <div class="alert alert-danger" role="alert"><strong>{{ pt_host_attr_data['error']['message'] }}</strong> {{ pt_host_attr_data['error']['developer_message'] }}</div>
+                    {% else %}
+                    <table class="table table-hover table-striped">
+                      <thead>
+                        <th>Hostname</th>
+                        <th>First Seen</th>
+                        <th>Last Seen</th>
+                        <th>Type</th>
+                        <th>Value</th>
+                      </thead>
+                      <tbody>
+                      {% for record in pt_host_attr_data.get('results', []) %}
+                        <tr>
+                          <td>{{record.get('hostname', 'N/A')}}</td>
+                          <td>{{record.get('firstSeen', 'N/A')}}</td>
+                          <td>{{record.get('lastSeen', 'N/A')}}</td>
+                          <td>{{record.get('attributeType', 'N/A')}}</td>
+                          <td>{{record.get('attributeValue', 'N/A')}}</td>
+                        </tr>
+                      {% endfor %}
+                      </tbody>
+                    </table>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
 
                               {% if settingsvars['farsightinfo'] == "on" %}
                     {% if records['type'] == "IPv4" %}
