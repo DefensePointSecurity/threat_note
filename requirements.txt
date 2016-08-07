@@ -10,7 +10,7 @@ Flask-WTF==0.12
 future==0.15.2
 gunicorn==19.6.0
 honcho==0.7.1
-investigate==1.1.3
+investigate==1.2.0
 ipaddr==2.1.11
 ipwhois==0.13.0
 itsdangerous==0.24
