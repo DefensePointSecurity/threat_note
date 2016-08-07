@@ -43,6 +43,9 @@ def ip_investigate(ip):
     sh = inv.samples(ip, limit=10)
     odns_data = dict()
     odns_data['Domains'] = ', '.join([d['rr'][0:-1] for d in rrh['rrs']])
-    odns_data['Associated Hashes'] = '\n'.join([h['sha256'] for h in sh['samples']])
+    if sh['error']:
+        pass
+    else:
+        odns_data['Associated Hashes'] = '\n'.join([h['sha256'] for h in sh['samples']])
     odns_data['Latest Malicious'] = ', '.join(lds)
     return odns_data
