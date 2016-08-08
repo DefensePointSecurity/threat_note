@@ -47,5 +47,5 @@ def ip_investigate(ip):
         pass
     else:
         odns_data['Associated Hashes'] = '\n'.join([h['sha256'] for h in sh['samples']])
-    odns_data['Latest Malicious'] = ', '.join(lds)
+    odns_data['Latest Malicious Domains'] = ', '.join(lds)
     return odns_data
