@@ -55,9 +55,7 @@ from wtforms.validators import DataRequired
 #
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'yek_terces'
-app.debug = True
-app.template_debug = True
+app.config.from_pyfile('config.py')
 lm = LoginManager()
 lm.init_app(app)
 lm.login_view = 'login'

@@ -1,0 +1,3 @@
+SECRET_KEY = 'yek_terces'
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
