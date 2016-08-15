@@ -19,7 +19,6 @@ def report_data(cuckoo_task_id):
                 # http_data = r.json()['network']['http']
                 dns_data = r.json()['network']['dns']
                 host_data = r.json()['network']['hosts']
-
                 return host_data, dns_data, sha1, task_started
             except:
                 pass

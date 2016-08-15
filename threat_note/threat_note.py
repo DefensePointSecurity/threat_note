@@ -355,6 +355,7 @@ def newobject():
             if host_data and dns_data and sha1 and firstseen:
                 # Import IP Indicators from Cuckoo Task
                 for ip in host_data:
+                    ip = ip['ip']
                     ind = Indicator.query.filter_by(object=ip).first()
                     if ind is None:
                         indicator = Indicator(ip.strip(), 'IPv4', firstseen, '', 'Infrastructure', records['campaign'],

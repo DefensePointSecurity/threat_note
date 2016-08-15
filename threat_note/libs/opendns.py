@@ -23,16 +23,47 @@ def domains_investigate(domain):
     # rel = inv.related(domain)
 
     odns_data = dict()
-    odns_data['ASN'] = ', '.join(['AS' + str(i) for i in rrh['features']['asns']])
-    odns_data['Prefix'] = ', '.join(rrh['features']['prefixes'])
-    odns_data['Country'] = ' '.join(rrh['features']['country_codes'])
-    odns_data['Age'] = rrh['features']['age']
-    odns_data['ASN Score'] = round(sec['asn_score'], 2)
-    odns_data['Prefix Score'] = round(sec['prefix_score'], 2)
-    odns_data['Category'] = ', '.join(cat[domain]['content_categories'])
-    odns_data['Security Category'] = ', '.join(cat[domain]['security_categories'])
-    odns_data['Latest IP Address'] = rrh['rrs_tf'][0]['rrs'][0]['rr']
-    odns_data['Associated Hashes'] = '\n'.join([h['sha256'] for h in sh['samples']])
+    try:
+        odns_data['ASN'] = ', '.join(['AS' + str(i) for i in rrh['features']['asns']])
+    except:
+        pass
+    try:
+        odns_data['Prefix'] = ', '.join(rrh['features']['prefixes'])
+    except:
+        pass
+    try:
+        odns_data['Country'] = ' '.join(rrh['features']['country_codes'])
+    except:
+        pass
+    try:
+        odns_data['Age'] = rrh['features']['age']
+    except:
+        pass
+    try:
+        odns_data['ASN Score'] = round(sec['asn_score'], 2)
+    except:
+        pass
+    try:
+        odns_data['Prefix Score'] = round(sec['prefix_score'], 2)
+    except:
+        pass
+    try:
+        odns_data['Category'] = ', '.join(cat[domain]['content_categories'])
+    except:
+        pass
+    try:
+        odns_data['Security Category'] = ', '.join(cat[domain]['security_categories'])
+    except:
+        pass
+    try:
+        odns_data['Latest IP Address'] = rrh['rrs_tf'][0]['rrs'][0]['rr']
+    except:
+        pass
+    try:
+        odns_data['Associated Hashes'] = '\n'.join([h['sha256'] for h in sh['samples']])
+    except:
+        pass
+
     return odns_data
 
 
