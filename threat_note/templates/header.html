@@ -1,6 +1,6 @@
 {% block head %}
 <meta charset="utf-8" />
-<link rel="icon" type="image/png" href="../../static/img/favicon.ico">
+<link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.ico') }}"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 
 <title>threat_note | Security Researchers Notebook</title>
@@ -9,20 +9,20 @@
 <meta name="viewport" content="width=device-width" />
 
 <!-- Bootstrap core CSS     -->
-<link href="../../static/css/bootstrap.min.css" rel="stylesheet" />
-<link href="../../static/css/bootstrap-tokenfield.css" rel="stylesheet" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-tokenfield.css') }}"/>
 
 <!-- Animation library for notifications   -->
-<link href="../../static/css/animate.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/animate.min.css') }}"/>
 
 <!--  Light Bootstrap Table core CSS    -->
-<link href="../../static/css/light-bootstrap-dashboard.css" rel="stylesheet"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/light-bootstrap-dashboard.css') }}"/>
 
 <!--  CSS for Demo Purpose, don't include it in your project     -->
-<link href="../../static/css/demo.css" rel="stylesheet" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/demo.css') }}"/>
 
 <!--     Fonts and icons     -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 <link href='http://fonts.googleapis.com/css?family=Roboto:400,700,300' rel='stylesheet' type='text/css'>
-<link href="../../static/css/pe-icon-7-stroke.css" rel="stylesheet" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pe-icon-7-stroke.css') }}"/>
 {% endblock %}
