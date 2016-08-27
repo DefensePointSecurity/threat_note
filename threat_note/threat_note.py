@@ -769,7 +769,7 @@ def objectsummary(uid):
         return render_template('error.html', error=e)
 
 
-@app.route('/threatactors/<uid>/info', methods=['GET'])
+@app.route('/threatactors/<path:uid>/info', methods=['GET'])
 @login_required
 def threatactorobject(uid):
     try:
@@ -1035,8 +1035,6 @@ def download(uid):
         "Content-Disposition"] = "attachment; filename=" + uid + "-campaign.csv"
     response.headers["Content-type"] = "text/csv"
     return response
-
-
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
